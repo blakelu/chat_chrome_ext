@@ -1,0 +1,27 @@
+{
+  "name": "lxw-extension",
+  "description": "A Chrome extension demo.",
+  "version": "1.0.0",
+  "icons": {
+    "16": "assets/icons/temp.png",
+    "48": "assets/icons/temp.png",
+    "128": "assets/icons/temp.png"
+  },
+  "action": {
+    "default_popup": "../popup.html"
+  },
+  "content_scripts": [{
+    "matches": [ "<all_urls>" ],
+    "js": ["content-scripts/content.ts"],
+    "run_at": "document_start"
+  }],
+  "host_permissions": [ "*://*/*" ],
+  "background": {
+    "service_worker": "background.ts"
+  },
+  "web_accessible_resources": [{
+    "matches": ["<all_urls>"],
+    "resources": ["assets/*"]
+  }],
+  "manifest_version": 3
+}
