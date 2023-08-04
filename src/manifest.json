@@ -1,11 +1,11 @@
 {
-  "name": "lxw-extension",
+  "name": "closeAI",
   "description": "A Chrome extension demo.",
   "version": "1.0.0",
   "icons": {
-    "16": "assets/icons/temp.png",
-    "48": "assets/icons/temp.png",
-    "128": "assets/icons/temp.png"
+    "16": "assets/icons/ChatGPT.png",
+    "48": "assets/icons/ChatGPT.png",
+    "128": "assets/icons/ChatGPT.png"
   },
   "action": {
     "default_popup": "../popup.html"

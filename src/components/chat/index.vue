@@ -199,6 +199,9 @@ onMounted(() => {
 })
 </script>
 <style lang="less" scoped>
+:deep(.hljs) {
+  padding: 6px;
+}
 .chat {
   display: flex;
   flex-direction: column;
