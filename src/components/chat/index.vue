@@ -31,9 +31,10 @@ import { md } from '@/composables/markdown'
 
 interface Message {
   id: number
-  role: boolean
+  role: string
   avatar: string
   content: string
+  errorMessage?: string
 }
 interface SubmitMessage {
   role: string
@@ -56,7 +57,7 @@ const clearChat = () => {
   chatMessages.value.splice(0, chatMessages.value.length)
   chatContext.value.splice(0, chatContext.value.length)
 }
-function getContent(item) {
+function getContent(item: Message) {
   return item.role === 'assistant' ? item.content + (item.errorMessage ?? '') : item.content
 }
 const composing = ref(false)
@@ -81,19 +82,19 @@ const handleInputEnter = async () => {
     content: ''
   })
   let id = chatMessages.value.length + 1
-  fetchStream(`https://ai.fakeopen.com/v1/chat/completions`, {
+  fetchStream(`${import.meta.env.VITE_OPEN_AI_URL}/v1/chat/completions`, {
     method: 'POST',
     headers: {
       accept: 'text/event-stream',
       'Content-Type': 'application/json',
-      Authorization: 'Bearer pk-this-is-a-real-free-pool-token-for-everyone'
+      Authorization: `Bearer ${import.meta.env.VITE_OPEN_AI_TOKEN}`
     },
     body: JSON.stringify({
       model: 'gpt-3.5-turbo-16k',
       stream: true,
       messages: chatContext.value
     }),
-    onmessage: (chunk) => {
+    onmessage: (chunk: string) => {
       const lines = chunk
         .split(/\r?\n/)
         .map((line) => line.replace(/(\n)?^data:\s*/, '').trim()) // remove prefix
@@ -120,7 +121,7 @@ const handleInputEnter = async () => {
   })
   scrollToBottom()
 }
-function Uint8ArrayToString(array) {
+function Uint8ArrayToString(array: Uint8Array) {
   var out, i, len, c
   var char2, char3
   let tempAry: Uint8Array = array as Uint8Array
@@ -158,9 +159,9 @@ function Uint8ArrayToString(array) {
   return out
 }
 
-const fetchStream = (url, params) => {
+const fetchStream = (url: string, params: Record<string, any>) => {
   const { onmessage, onclose, ...otherParams } = params
-  const push = async (controller, reader) => {
+  const push = async (controller: any, reader: any) => {
     const { value, done } = await reader.read()
     if (done) {
       controller.close()
