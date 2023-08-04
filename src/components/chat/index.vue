@@ -1,23 +1,37 @@
 <template>
   <div class="chat">
     <div class="messages" ref="messages">
-      <div class="message" v-for="message in chatMessages" :key="message.id" :class="{ 'is-self': message.isSelf }">
-        <div class="avatar"><img :src="message.avatar" /></div>
-        <div class="content">{{ message.content }}</div>
+      <div class="message" v-for="message in chatMessages" :key="message.id" :class="{ 'is-self': message.role == 'user' }">
+        <div class="avatar" :style="[message.role == 'user' ? 'margin-left: 10px' : 'margin-right : 10px']">
+          <img :src="message.avatar" />
+        </div>
+        <div
+          class="content"
+          :style="{ background: message.role == 'user' ? '#5d5cde' : '#efefef', color: message.role == 'user' ? 'white' : '' }"
+        >
+          <div v-html="md.render(getContent(message))"></div>
+        </div>
       </div>
     </div>
     <div class="operate_wrap">
-      <el-input v-model="input" placeholder="请输入您的问题" @keydown.enter="handleInputEnter"></el-input>
+      <el-input
+        v-model="input"
+        placeholder="请输入您的问题"
+        @keydown.enter="handleInputEnter"
+        @compositionstart="composing = true"
+        @compositionend="composing = false"
+      ></el-input>
       <el-button @click="clearChat">清除聊天记录</el-button>
     </div>
   </div>
 </template>
 <script lang="ts" setup>
 import { onMounted, ref, watch } from 'vue'
+import { md } from '@/composables/markdown'
 
 interface Message {
   id: number
-  isSelf: boolean
+  role: boolean
   avatar: string
   content: string
 }
@@ -27,7 +41,7 @@ interface SubmitMessage {
 }
 const historyMessage = JSON.parse(localStorage.chatMessages || '[]')
 const historyContext = JSON.parse(localStorage.chatContext || '[]')
-// console.log(historyMessage)
+
 const chatMessages = ref<Message[]>(historyMessage) // 聊天的message
 const chatContext = ref<SubmitMessage[]>(historyContext) // 聊天上下文
 const input = ref<string>('')
@@ -42,49 +56,28 @@ const clearChat = () => {
   chatMessages.value.splice(0, chatMessages.value.length)
   chatContext.value.splice(0, chatContext.value.length)
 }
-
+function getContent(item) {
+  return item.role === 'assistant' ? item.content + (item.errorMessage ?? '') : item.content
+}
+const composing = ref(false)
 const handleInputEnter = async () => {
   const prompt = input.value
-  if (!prompt) {
+  if (!prompt || composing.value) {
     return
   }
-  // console.log(chatMessages.value, 123)
   chatMessages.value.push({
     id: chatMessages.value.length + 1,
-    isSelf: true,
-    avatar: 'https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_960_720.png',
+    role: 'user',
+    avatar: 'https://resource-yswy.oss-cn-hangzhou.aliyuncs.com/web/test/user.png',
     content: prompt
   })
   chatContext.value.push({ role: 'user', content: prompt })
   input.value = ''
   scrollToBottom()
-  // const response = await axios.post(
-  //   'https://ai.fakeopen.com/v1/chat/completions',
-  //   {
-  //     model: 'gpt-3.5-turbo-16k',
-  //     stream: true,
-  //     messages: chatContext.value // [{ role: 'user', content: prompt }]
-  //   },
-  //   {
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //       Authorization: 'Bearer pk-this-is-a-real-free-pool-token-for-everyone'
-  //     }
-  //   }
-  // )
-
-  // chatContext.value.push(response.data.choices[0].message)
-  // const message = response.data.choices[0].message.content
-  // chatMessages.value.push({
-  //   id: chatMessages.value.length + 1,
-  //   isSelf: false,
-  //   avatar: 'https://cdn.pixabay.com/photo/2016/03/31/19/58/avatar-1295429_960_720.png',
-  //   content: message
-  // })
   chatMessages.value.push({
     id: chatMessages.value.length + 1,
-    isSelf: false,
-    avatar: 'https://cdn.pixabay.com/photo/2016/03/31/19/58/avatar-1295429_960_720.png',
+    role: 'assistant',
+    avatar: 'https://resource-yswy.oss-cn-hangzhou.aliyuncs.com/web/test/ChatGPT.png',
     content: ''
   })
   let id = chatMessages.value.length + 1
@@ -101,12 +94,10 @@ const handleInputEnter = async () => {
       messages: chatContext.value
     }),
     onmessage: (chunk) => {
-      // todo
       const lines = chunk
-        .toString()
-        .split('\n')
-        .filter((line) => line.trim() !== '')
-      console.log(lines)
+        .split(/\r?\n/)
+        .map((line) => line.replace(/(\n)?^data:\s*/, '').trim()) // remove prefix
+        .filter((line) => line !== '') // remove empty lines
       for (const line of lines) {
         const message = line.replace(/^data: /, '')
         if (message.includes('"finish_reason":"stop"')) {
@@ -115,17 +106,12 @@ const handleInputEnter = async () => {
           return
         } else if (message == '[DONE]') {
           // ctx.sse.send("[DONE]");
+          return
         } else {
-          console.log(22222, message)
           const parsed = JSON.parse(message)
           if (parsed.choices[0].delta.content) {
             //解析出来的内容
             let content = parsed.choices[0].delta.content
-            if (content.startsWith(':')) {
-              //转义
-              content = '\\\\' + content
-            }
-            console.log(content, chatMessages.value, id - 2)
             chatMessages.value[id - 2].content += content
           }
         }
@@ -189,7 +175,7 @@ const fetchStream = (url, params) => {
   return fetch(url, otherParams)
     .then((response) => {
       // 以ReadableStream解析数据
-      const reader = response.body.getReader()
+      const reader = response.body?.getReader()
       const stream = new ReadableStream({
         start(controller) {
           push(controller, reader)
@@ -218,6 +204,7 @@ onMounted(() => {
   height: 100%;
   background-color: #f5f5f5;
   padding: 20px 20px 134px 20px;
+
   .operate_wrap {
     position: fixed;
     bottom: 0;
@@ -235,12 +222,11 @@ onMounted(() => {
 .messages {
   flex: 1;
   // overflow-y: scroll;
-  padding: 10px;
 }
 
 .message {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   margin-bottom: 10px;
 }
 
@@ -249,9 +235,8 @@ onMounted(() => {
 }
 
 .avatar {
-  width: 50px;
-  height: 50px;
-  margin-right: 10px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
@@ -264,7 +249,7 @@ onMounted(() => {
 
 .content {
   color: #333;
-  padding: 10px;
+  padding: 0 10px;
   border-radius: 10px;
   background-color: #fff;
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
