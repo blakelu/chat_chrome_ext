@@ -14,8 +14,6 @@
 </template>
 <script lang="ts" setup>
 import { onMounted, ref, watch } from 'vue'
-import axios from 'axios'
-import openai from 'openai'
 
 interface Message {
   id: number
