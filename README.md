@@ -1,3 +1,11 @@
+# how to use
+· 下载release下的 ext.zip
+· 解压
+· 在支持chrome插件的浏览器 如chrome/edge... 加载已解压的扩展程序， 即可在右上角插件图片点击激活使用
+![image](https://github.com/blakelu/chat_chrome_ext/assets/13463232/7a5a1670-ca08-48d0-99fe-e9d7c8cda3c8)
+
+
+
 # chrome插件开发学习记录（mv3版本）
 
 ## manifest.json 文件
