@@ -1,17 +1,11 @@
 <template>
   <div class="chat">
     <div class="messages" ref="messages">
-      <div class="message" v-for="message in chatMessages" :key="message.id" :class="{ 'is-self': message.role == 'user' }">
-        <div class="avatar" :style="[message.role == 'user' ? 'margin-left: 10px' : 'margin-right : 10px']">
-          <img :src="message.avatar" />
-        </div>
-        <div
-          class="content"
-          :style="{ background: message.role == 'user' ? '#5d5cde' : '#efefef', color: message.role == 'user' ? 'white' : '' }"
-        >
-          <div v-html="md.render(getContent(message))"></div>
-        </div>
-      </div>
+      <Message
+        v-for="message in chatMessages"
+        :key="message.id"
+        :message="message"
+      />
     </div>
     <div class="operate_wrap">
       <el-input
@@ -26,8 +20,6 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { onMounted, ref, watch } from 'vue'
-import { md } from '@/composables/markdown'
 
 interface Message {
   id: number
@@ -57,70 +49,73 @@ const clearChat = () => {
   chatMessages.value.splice(0, chatMessages.value.length)
   chatContext.value.splice(0, chatContext.value.length)
 }
-function getContent(item: Message) {
-  return item.role === 'assistant' ? item.content + (item.errorMessage ?? '') : item.content
-}
 const composing = ref(false)
-const handleInputEnter = async () => {
-  const prompt = input.value
-  if (!prompt || composing.value) {
-    return
-  }
-  chatMessages.value.push({
-    id: chatMessages.value.length + 1,
-    role: 'user',
-    avatar: 'https://resource-yswy.oss-cn-hangzhou.aliyuncs.com/web/test/user.png',
-    content: prompt
-  })
-  chatContext.value.push({ role: 'user', content: prompt })
-  input.value = ''
-  scrollToBottom()
-  chatMessages.value.push({
-    id: chatMessages.value.length + 1,
-    role: 'assistant',
-    avatar: 'https://resource-yswy.oss-cn-hangzhou.aliyuncs.com/web/test/ChatGPT.png',
-    content: ''
-  })
-  let id = chatMessages.value.length + 1
-  fetchStream(`${import.meta.env.VITE_OPEN_AI_URL}/v1/chat/completions`, {
-    method: 'POST',
-    headers: {
-      accept: 'text/event-stream',
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${import.meta.env.VITE_OPEN_AI_TOKEN}`
-    },
-    body: JSON.stringify({
-      model: 'gpt-3.5-turbo-16k',
-      stream: true,
-      messages: chatContext.value
-    }),
-    onmessage: (chunk: string) => {
-      const lines = chunk
+const USER_AVATAR = 'https://resource-yswy.oss-cn-hangzhou.aliyuncs.com/web/test/user.png';
+const ASSISTANT_AVATAR = 'https://resource-yswy.oss-cn-hangzhou.aliyuncs.com/web/test/ChatGPT.png';
+const MODEL_NAME = 'gpt-3.5-turbo-16k';
+const AUTHORIZATION_HEADER = `Bearer ${import.meta.env.VITE_OPEN_AI_TOKEN}`;
+
+function createMessage(id, role, avatar, content) {
+    return {
+        id,
+        role,
+        avatar,
+        content,
+    }
+}
+
+function parseMessageData(data) {
+    return data
         .split(/\r?\n/)
         .map((line) => line.replace(/(\n)?^data:\s*/, '').trim()) // remove prefix
-        .filter((line) => line !== '') // remove empty lines
-      for (const line of lines) {
-        const message = line.replace(/^data: /, '')
-        if (message.includes('"finish_reason":"stop"')) {
-          // 通信结束
-          // ctx.sse.send("[DONE]");
-          return
-        } else if (message == '[DONE]') {
-          // ctx.sse.send("[DONE]");
-          return
-        } else {
-          const parsed = JSON.parse(message)
-          if (parsed.choices[0].delta.content) {
-            //解析出来的内容
-            let content = parsed.choices[0].delta.content
-            chatMessages.value[id - 2].content += content
-          }
-        }
-      }
-    }
-  })
-  scrollToBottom()
+        .filter((line) => line !== ''); // remove empty lines
 }
+
+async function handleInputEnter() {
+    const prompt = input.value;
+    if (!prompt || composing.value) {
+        return;
+    }
+
+    chatMessages.value.push(createMessage(chatMessages.value.length + 1, 'user', USER_AVATAR, prompt));
+    chatContext.value.push({ role: 'user', content: prompt });
+    input.value = '';
+    scrollToBottom();
+
+    chatMessages.value.push(createMessage(chatMessages.value.length + 1, 'assistant', ASSISTANT_AVATAR, ''));
+    let id = chatMessages.value.length + 1;
+
+    fetchStream(`${import.meta.env.VITE_OPEN_AI_URL}/v1/chat/completions`, {
+        method: 'POST',
+        headers: {
+            accept: 'text/event-stream',
+            'Content-Type': 'application/json',
+            Authorization: AUTHORIZATION_HEADER,
+        },
+        body: JSON.stringify({
+            model: MODEL_NAME,
+            stream: true,
+            messages: chatContext.value
+        }),
+        onmessage: (chunk) => {
+            const lines = parseMessageData(chunk);
+            for (const line of lines) {
+                const message = line.replace(/^data: /, '');
+                if (message.includes('"finish_reason":"stop"') || message === '[DONE]') {
+                    return;
+                } else {
+                    const parsed = JSON.parse(message);
+                    if (parsed.choices[0].delta.content) {
+                        let content = parsed.choices[0].delta.content;
+                        chatMessages.value[id - 2].content += content;
+                    }
+                }
+            }
+        }
+    })
+    scrollToBottom();
+}
+
 function Uint8ArrayToString(array: Uint8Array) {
   var out, i, len, c
   var char2, char3
@@ -221,60 +216,5 @@ onMounted(() => {
 
 .el-input {
   margin-bottom: 10px;
-}
-
-.messages {
-  flex: 1;
-  // overflow-y: scroll;
-}
-
-.message {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.message.is-self {
-  flex-direction: row-reverse;
-}
-
-.avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
-.avatar img {
-  width: 100%;
-  height: 100%;
-}
-
-.content {
-  color: #333;
-  padding: 0 10px;
-  border-radius: 10px;
-  background-color: #fff;
-  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-  max-width: 80%;
-  word-wrap: break-word;
-}
-
-.content.is-self {
-  background-color: #efefef;
-}
-
-.content.is-self:before {
-  content: '';
-  display: inline-block;
-  position: relative;
-  bottom: -1px;
-  width: 0;
-  height: 0;
-  border-style: solid;
-  border-width: 0 10px 10px 0;
-  border-color: transparent #efefef transparent transparent;
-  margin-right: 10px;
 }
 </style>
