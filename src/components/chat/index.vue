@@ -1,11 +1,7 @@
 <template>
   <div class="chat">
     <div class="messages" ref="messages">
-      <Message
-        v-for="message in chatMessages"
-        :key="message.id"
-        :message="message"
-      />
+      <Message v-for="message in chatMessages" :key="message.id" :message="message" />
     </div>
     <div class="operate_wrap">
       <el-input
@@ -20,7 +16,6 @@
   </div>
 </template>
 <script lang="ts" setup>
-
 interface Message {
   id: number
   role: string
@@ -50,70 +45,70 @@ const clearChat = () => {
   chatContext.value.splice(0, chatContext.value.length)
 }
 const composing = ref(false)
-const USER_AVATAR = 'https://resource-yswy.oss-cn-hangzhou.aliyuncs.com/web/test/user.png';
-const ASSISTANT_AVATAR = 'https://resource-yswy.oss-cn-hangzhou.aliyuncs.com/web/test/ChatGPT.png';
-const MODEL_NAME = 'gpt-3.5-turbo-16k';
-const AUTHORIZATION_HEADER = `Bearer ${import.meta.env.VITE_OPEN_AI_TOKEN}`;
+const USER_AVATAR = 'https://resource-yswy.oss-cn-hangzhou.aliyuncs.com/web/test/user.png'
+const ASSISTANT_AVATAR = 'https://resource-yswy.oss-cn-hangzhou.aliyuncs.com/web/test/ChatGPT.png'
+const MODEL_NAME = 'gpt-3.5-turbo-16k'
+const AUTHORIZATION_HEADER = `Bearer ${import.meta.env.VITE_OPEN_AI_TOKEN}`
 
 function createMessage(id, role, avatar, content) {
-    return {
-        id,
-        role,
-        avatar,
-        content,
-    }
+  return {
+    id,
+    role,
+    avatar,
+    content
+  }
 }
 
 function parseMessageData(data) {
-    return data
-        .split(/\r?\n/)
-        .map((line) => line.replace(/(\n)?^data:\s*/, '').trim()) // remove prefix
-        .filter((line) => line !== ''); // remove empty lines
+  return data
+    .split(/\r?\n/)
+    .map((line) => line.replace(/(\n)?^data:\s*/, '').trim()) // remove prefix
+    .filter((line) => line !== '') // remove empty lines
 }
 
 async function handleInputEnter() {
-    const prompt = input.value;
-    if (!prompt || composing.value) {
-        return;
-    }
+  const prompt = input.value
+  if (!prompt || composing.value) {
+    return
+  }
 
-    chatMessages.value.push(createMessage(chatMessages.value.length + 1, 'user', USER_AVATAR, prompt));
-    chatContext.value.push({ role: 'user', content: prompt });
-    input.value = '';
-    scrollToBottom();
+  chatMessages.value.push(createMessage(chatMessages.value.length + 1, 'user', USER_AVATAR, prompt))
+  chatContext.value.push({ role: 'user', content: prompt })
+  input.value = ''
+  scrollToBottom()
 
-    chatMessages.value.push(createMessage(chatMessages.value.length + 1, 'assistant', ASSISTANT_AVATAR, ''));
-    let id = chatMessages.value.length + 1;
+  chatMessages.value.push(createMessage(chatMessages.value.length + 1, 'assistant', ASSISTANT_AVATAR, ''))
+  let id = chatMessages.value.length + 1
 
-    fetchStream(`${import.meta.env.VITE_OPEN_AI_URL}/v1/chat/completions`, {
-        method: 'POST',
-        headers: {
-            accept: 'text/event-stream',
-            'Content-Type': 'application/json',
-            Authorization: AUTHORIZATION_HEADER,
-        },
-        body: JSON.stringify({
-            model: MODEL_NAME,
-            stream: true,
-            messages: chatContext.value
-        }),
-        onmessage: (chunk) => {
-            const lines = parseMessageData(chunk);
-            for (const line of lines) {
-                const message = line.replace(/^data: /, '');
-                if (message.includes('"finish_reason":"stop"') || message === '[DONE]') {
-                    return;
-                } else {
-                    const parsed = JSON.parse(message);
-                    if (parsed.choices[0].delta.content) {
-                        let content = parsed.choices[0].delta.content;
-                        chatMessages.value[id - 2].content += content;
-                    }
-                }
-            }
+  fetchStream(`${import.meta.env.VITE_OPEN_AI_URL}/v1/chat/completions`, {
+    method: 'POST',
+    headers: {
+      accept: 'text/event-stream',
+      'Content-Type': 'application/json',
+      Authorization: AUTHORIZATION_HEADER
+    },
+    body: JSON.stringify({
+      model: MODEL_NAME,
+      stream: true,
+      messages: chatContext.value
+    }),
+    onmessage: (chunk) => {
+      const lines = parseMessageData(chunk)
+      for (const line of lines) {
+        const message = line.replace(/^data: /, '')
+        if (message.includes('"finish_reason":"stop"') || message === '[DONE]') {
+          return
+        } else {
+          const parsed = JSON.parse(message)
+          if (parsed.choices[0].delta.content) {
+            let content = parsed.choices[0].delta.content
+            chatMessages.value[id - 2].content += content
+          }
         }
-    })
-    scrollToBottom();
+      }
+    }
+  })
+  scrollToBottom()
 }
 
 function Uint8ArrayToString(array: Uint8Array) {
@@ -154,32 +149,45 @@ function Uint8ArrayToString(array: Uint8Array) {
   return out
 }
 
-const fetchStream = (url: string, params: Record<string, any>) => {
+const fetchStream = async (url: string, params: Record<string, any>): Promise<string> => {
   const { onmessage, onclose, ...otherParams } = params
-  const push = async (controller: any, reader: any) => {
+
+  const processStream: any = async (reader: ReadableStreamDefaultReader<Uint8Array>) => {
     const { value, done } = await reader.read()
     if (done) {
-      controller.close()
       onclose?.()
-    } else {
-      onmessage?.(Uint8ArrayToString(value))
-      controller.enqueue(value)
-      push(controller, reader)
+      return
+    }
+    onmessage?.(Uint8ArrayToString(value))
+    return processStream(reader)
+  }
+
+  const getStreamFromResponse = async (response: Response): Promise<ReadableStream<Uint8Array>> => {
+    if (!response.ok) throw new Error('Unexpected status code: ' + response.status)
+    const reader = response.body?.getReader()
+    return new ReadableStream({
+      async start(controller) {
+        try {
+          await processStream(reader!)
+          controller.close()
+        } catch (error) {
+          console.error('Failed to process stream:', error)
+        }
+      }
+    })
+  }
+
+  const fetchAndProcess: any = async () => {
+    try {
+      const response = await fetch(url, otherParams)
+      const stream = await getStreamFromResponse(response)
+      return new Response(stream, { headers: { 'Content-Type': 'text/html' } }).text()
+    } catch (err) {
+      console.error('error', err)
+      return fetchAndProcess()
     }
   }
-  // 发送请求
-  return fetch(url, otherParams)
-    .then((response) => {
-      // 以ReadableStream解析数据
-      const reader = response.body?.getReader()
-      const stream = new ReadableStream({
-        start(controller) {
-          push(controller, reader)
-        }
-      })
-      return stream
-    })
-    .then((stream) => new Response(stream, { headers: { 'Content-Type': 'text/html' } }).text())
+  fetchAndProcess()
 }
 const scrollToBottom = () => {
   setTimeout(() => {
@@ -197,6 +205,7 @@ onMounted(() => {
 :deep(.hljs) {
   padding: 6px;
 }
+
 .chat {
   display: flex;
   flex-direction: column;
