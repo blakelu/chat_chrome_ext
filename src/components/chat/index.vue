@@ -36,7 +36,7 @@ const historyMode = localStorage.mode || ''
 const chatMessages = ref<Message[]>(historyMessage) // 聊天的message
 const chatContext = ref<SubmitMessage[]>(historyContext) // 聊天上下文
 const input = ref<string>('')
-const selectMode = ref<String>(historyMode)
+const selectMode = ref(historyMode)
 
 const systemPrompt = {
   role: 'system',
@@ -146,7 +146,6 @@ async function handleInputEnter() {
     systemPrompt.content = prompts[selectMode.value]
     customPrompt = [systemPrompt, ...chatContext.value.slice(-29)]
   }
-  // const fuckMessages = [girlfriend, ...chatContext.value.slice(-29)]
 
   fetchStream(`${import.meta.env.VITE_OPEN_AI_URL}/v1/chat/completions`, {
     method: 'POST',
@@ -159,7 +158,6 @@ async function handleInputEnter() {
       model: MODEL_NAME,
       stream: true,
       messages: selectMode.value ? customPrompt : chatContext.value.slice(-29)
-      // messages: chatContext.value.slice(-29)
     }),
     onmessage: (chunk) => {
       const lines = parseMessageData(chunk)
@@ -259,10 +257,11 @@ const fetchStream = async (url: string, params: Record<string, any>): Promise<st
   }
   fetchAndProcess()
 }
+const messages = ref()
 const scrollToBottom = () => {
   setTimeout(() => {
-    const messagesDiv: any = document.querySelector('html')
-    messagesDiv.scrollTop = messagesDiv.scrollHeight
+    const scrollContainer = messages.value;
+    scrollContainer.scrollTop = scrollContainer.scrollHeight;
   })
 }
 scrollToBottom()
@@ -291,7 +290,7 @@ onMounted(() => {
   flex-direction: column;
   height: 100%;
   min-height: 100px;
-  background: linear-gradient(0deg,#abbaab,#ffffff);
+  background: linear-gradient(0deg, #abbaab, #ffffff);
   padding: 20px 20px 110px 20px;
 
   .operate_wrap {
@@ -311,5 +310,4 @@ onMounted(() => {
 
 .el-input {
   margin-bottom: 10px;
-}
-</style>
+}</style>
