@@ -12,7 +12,8 @@ declare module '@vue/runtime-core' {
     Chat: typeof import('./src/components/chat/index.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElInput: typeof import('element-plus/es')['ElInput']
-    ElSwitch: typeof import('element-plus/es')['ElSwitch']
+    ElOption: typeof import('element-plus/es')['ElOption']
+    ElSelect: typeof import('element-plus/es')['ElSelect']
     Message: typeof import('./src/components/chat/message.vue')['default']
   }
 }

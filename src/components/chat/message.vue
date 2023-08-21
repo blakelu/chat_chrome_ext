@@ -35,12 +35,12 @@ const isAssistant = computed(() => props.message.role === 'assistant')
 }
 
 .content-user {
-  background: #5d5cde;
+  background: #186c3e;
   color: white !important;
 }
 
 .content-assistant {
-  background: #efefef;
+  background: #f0f0f0;
 }
 
 .message {
