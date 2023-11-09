@@ -11,8 +11,13 @@
       <Message v-for="message in chatMessages" :key="message.id" :message="message" />
     </div>
     <div class="operate_wrap">
-      <el-input v-model="input" placeholder="请输入您的问题" @keydown.enter="handleInputEnter"
-        @compositionstart="composing = true" @compositionend="composing = false"></el-input>
+      <el-input
+        v-model="input"
+        placeholder="请输入您的问题"
+        @keydown.enter="handleInputEnter"
+        @compositionstart="composing = true"
+        @compositionend="composing = false"
+      ></el-input>
       <el-button @click="clearChat">清除聊天记录</el-button>
     </div>
   </div>
@@ -147,6 +152,7 @@ async function handleInputEnter() {
     customPrompt = [systemPrompt, ...chatContext.value.slice(-29)]
   }
 
+  repeatCount.value = 0 // 重置请求次数
   fetchStream(`${import.meta.env.VITE_OPEN_AI_URL}/v1/chat/completions`, {
     method: 'POST',
     headers: {
@@ -216,7 +222,8 @@ function Uint8ArrayToString(array: Uint8Array) {
   }
   return out
 }
-
+const repeatCount = ref(0) // 当前重试次数
+const maxRepeatCount = 4 // 每次请求最大重试次数
 const fetchStream = async (url: string, params: Record<string, any>): Promise<string> => {
   const { onmessage, onclose, ...otherParams } = params
 
@@ -251,7 +258,11 @@ const fetchStream = async (url: string, params: Record<string, any>): Promise<st
       const stream = await getStreamFromResponse(response)
       return new Response(stream, { headers: { 'Content-Type': 'text/html' } }).text()
     } catch (err) {
+      repeatCount.value++
       console.error('error', err)
+      if (maxRepeatCount < repeatCount.value) {
+        return
+      }
       return fetchAndProcess()
     }
   }
@@ -260,8 +271,8 @@ const fetchStream = async (url: string, params: Record<string, any>): Promise<st
 const messages = ref()
 const scrollToBottom = () => {
   setTimeout(() => {
-    const scrollContainer = messages.value;
-    scrollContainer.scrollTop = scrollContainer.scrollHeight;
+    const scrollContainer = messages.value
+    scrollContainer.scrollTop = scrollContainer.scrollHeight
   })
 }
 scrollToBottom()
@@ -310,4 +321,5 @@ onMounted(() => {
 
 .el-input {
   margin-bottom: 10px;
-}</style>
+}
+</style>
