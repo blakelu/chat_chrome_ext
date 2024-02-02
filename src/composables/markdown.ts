@@ -12,10 +12,11 @@ const mdOptions: Markdown.Options = {
       try {
         return (
           '<pre class="hljs"><code>' +
-          highlight.highlight(lang, str, true).value +
+          highlight.highlight(str, {language: lang, ignoreIllegals: true }).value +
           "</code></pre>"
         );
-      } catch (__) {}
+      } catch (__) {
+      }
     }
     return "";
   },
