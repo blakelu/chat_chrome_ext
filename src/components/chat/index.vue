@@ -1,26 +1,26 @@
 <template>
-  <div class="chat">
-    <div class="mode-select">
-      <label>选择模式：</label>
-      <el-select v-model="selectMode" :disabled="chatContext.length > 0" placeholder="请选择模式" clearable size="small">
-        <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
-      </el-select>
-    </div>
-
-    <div class="messages" ref="messages">
-      <Message v-for="message in chatMessages" :key="message.id" :message="message" />
-    </div>
-    <div class="operate_wrap">
-      <el-input
-        v-model="input"
-        placeholder="请输入您的问题"
-        @keydown.enter="handleInputEnter"
-        @compositionstart="composing = true"
-        @compositionend="composing = false"
-      ></el-input>
-      <el-button @click="clearChat">清除聊天记录</el-button>
-    </div>
+  <div class="messages" ref="messages">
+    <Message v-for="message in chatMessages" :key="message.id" :message="message" />
   </div>
+  <div class="operate_wrap">
+    <el-input
+      v-model="input"
+      placeholder="请输入您的问题"
+      @keydown.enter="handleInputEnter"
+      @compositionstart="composing = true"
+      @compositionend="composing = false"
+    ></el-input>
+    <el-button @click="clearChat">清除聊天记录</el-button>
+  </div>
+  <el-dialog v-model="dialogVisible" title="提示" width="80%">
+    <el-input v-model="API_KEY" placeholder="请输入Api key" />
+    <a href="https://freeapi.iil.im/" target="_blank">获取我的API Key</a>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button type="primary" @click="handleConfirm"> 确认 </el-button>
+      </span>
+    </template>
+  </el-dialog>
 </template>
 <script lang="ts" setup>
 interface Message {
@@ -34,14 +34,32 @@ interface SubmitMessage {
   role: string
   content: string
 }
-const historyMessage = JSON.parse(localStorage.chatMessages || '[]')
-const historyContext = JSON.parse(localStorage.chatContext || '[]')
-const historyMode = localStorage.mode || ''
+const props = defineProps({
+  model: {
+    type: String,
+    default: 'gpt-3.5-turbo'
+  }
+})
+const historyMessage = JSON.parse(localStorage.chatgptMessages || '[]')
+const historyContext = JSON.parse(localStorage.chatgptContext || '[]')
 
 const chatMessages = ref<Message[]>(historyMessage) // 聊天的message
 const chatContext = ref<SubmitMessage[]>(historyContext) // 聊天上下文
 const input = ref<string>('')
-const selectMode = ref(historyMode)
+const selectMode = ref('')
+const dialogVisible = ref(false)
+const API_KEY = ref(localStorage.GPT_API_KEY || '')
+
+onMounted(() => {
+  if (!API_KEY.value) {
+    dialogVisible.value = true
+  }
+})
+
+const handleConfirm = () => {
+  localStorage.setItem('GPT_API_KEY', API_KEY.value)
+  dialogVisible.value = false
+}
 
 const systemPrompt = {
   role: 'system',
@@ -100,12 +118,11 @@ const options = [
 ]
 
 watch(chatMessages.value, (val) => {
-  localStorage.chatMessages = JSON.stringify(val)
+  localStorage.chatgptMessages = JSON.stringify(val)
 })
 watch(chatContext.value, (val) => {
-  localStorage.chatContext = JSON.stringify(val)
+  localStorage.chatgptContext = JSON.stringify(val)
 })
-watch(selectMode, (val) => (localStorage.mode = val))
 const clearChat = () => {
   chatMessages.value.splice(0, chatMessages.value.length)
   chatContext.value.splice(0, chatContext.value.length)
@@ -113,8 +130,7 @@ const clearChat = () => {
 const composing = ref(false)
 const USER_AVATAR = 'https://resource-yswy.oss-cn-hangzhou.aliyuncs.com/web/test/user.png'
 const ASSISTANT_AVATAR = 'https://resource-yswy.oss-cn-hangzhou.aliyuncs.com/web/test/ChatGPT.png'
-const MODEL_NAME = 'gpt-3.5-turbo-16k'
-const AUTHORIZATION_HEADER = `Bearer ${import.meta.env.VITE_OPEN_AI_TOKEN}`
+const AUTHORIZATION_HEADER = `Bearer ${API_KEY.value}`
 
 function createMessage(id, role, avatar, content) {
   return {
@@ -161,12 +177,13 @@ async function handleInputEnter() {
       Authorization: AUTHORIZATION_HEADER
     },
     body: JSON.stringify({
-      model: MODEL_NAME,
+      model: props.model,
       stream: true,
       messages: selectMode.value ? customPrompt : chatContext.value.slice(-29)
     }),
     onmessage: (chunk) => {
       const lines = parseMessageData(chunk)
+
       for (const line of lines) {
         const message = line.replace(/^data: /, '')
         if (message.includes('"finish_reason":"stop"') || message === '[DONE]') {
@@ -174,7 +191,7 @@ async function handleInputEnter() {
           return
         } else {
           const parsed = JSON.parse(message)
-          if (parsed.choices[0].delta.content) {
+          if (parsed.choices[0]?.delta.content) {
             let content = parsed.choices[0].delta.content
             chatMessages.value[id - 2].content += content
           }
@@ -286,31 +303,12 @@ onMounted(() => {
   padding: 6px;
 }
 
-.mode-select {
-  display: flex;
-  align-items: center;
-
-  label {
-    margin-right: 6px;
-    color: #666666;
-  }
-}
-
-.chat {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 100px;
-  background: linear-gradient(0deg, #abbaab, #ffffff);
-  padding: 20px 20px 110px 20px;
-
-  .operate_wrap {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: calc(100% - 40px);
-    padding: 20px 20px 20px 20px;
-  }
+.operate_wrap {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: calc(100% - 40px);
+  padding: 20px 20px 20px 20px;
 }
 
 .messages {

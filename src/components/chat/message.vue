@@ -21,7 +21,7 @@ const props = defineProps({
 
 const isUser = computed(() => props.message.role === 'user')
 
-const isAssistant = computed(() => props.message.role === 'model')
+const isAssistant = computed(() => props.message.role === 'model' || props.message.role === 'assistant')
 
 </script>
 

@@ -1,29 +1,26 @@
 <template>
-  <div class="chat">
-    <div class="messages" ref="messages">
-      <Message v-for="message in chatMessages" :key="message.id" :message="message" />
-    </div>
-    <div class="operate_wrap">
-      <el-input
-        v-model="input"
-        placeholder="请输入您的问题"
-        @keydown.enter="handleInputEnter"
-        @compositionstart="composing = true"
-        @compositionend="composing = false"
-      ></el-input>
-      <el-button @click="clearChat">清除聊天记录</el-button>
-    </div>
-    <el-dialog v-model="dialogVisible" title="提示" width="80%">
-      <el-input v-model="API_KEY" placeholder="请输入Api key" />
-      <a href="https://makersuite.google.com/app/apikey" target="_blank">获取我的API Key</a>
-      <template #footer>
-        <span class="dialog-footer">
-          import { Loading } from 'element-plus/es/components/loading/src/service'
-          <el-button type="primary" @click="handleConfirm"> 确认 </el-button>
-        </span>
-      </template>
-    </el-dialog>
+  <div class="messages" ref="messages">
+    <Message v-for="message in chatMessages" :key="message.id" :message="message" />
   </div>
+  <div class="operate_wrap">
+    <el-input
+      v-model="input"
+      placeholder="请输入您的问题"
+      @keydown.enter="handleInputEnter"
+      @compositionstart="composing = true"
+      @compositionend="composing = false"
+    ></el-input>
+    <el-button @click="clearChat">清除聊天记录</el-button>
+  </div>
+  <el-dialog v-model="dialogVisible" title="提示" width="80%">
+    <el-input v-model="API_KEY" placeholder="请输入Api key" />
+    <a href="https://makersuite.google.com/app/apikey" target="_blank">获取我的API Key</a>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button type="primary" @click="handleConfirm"> 确认 </el-button>
+      </span>
+    </template>
+  </el-dialog>
 </template>
 
 <script lang="ts" setup>
@@ -126,21 +123,12 @@ const scrollToBottom = () => {
   padding: 6px;
 }
 
-.chat {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 260px;
-  background: linear-gradient(0deg, #abbaab, #ffffff);
-  padding: 20px 20px 110px 20px;
-
-  .operate_wrap {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: calc(100% - 40px);
-    padding: 20px 20px 20px 20px;
-  }
+.operate_wrap {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: calc(100% - 40px);
+  padding: 20px 20px 20px 20px;
 }
 
 .messages {
