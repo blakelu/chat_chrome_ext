@@ -169,6 +169,7 @@ async function handleInputEnter() {
   }
 
   repeatCount.value = 0 // 重置请求次数
+  let prevTempChunk = ''
   fetchStream(`${import.meta.env.VITE_OPEN_AI_URL}/v1/chat/completions`, {
     method: 'POST',
     headers: {
@@ -182,7 +183,7 @@ async function handleInputEnter() {
       messages: selectMode.value ? customPrompt : chatContext.value.slice(-29)
     }),
     onmessage: (chunk) => {
-      const lines = parseMessageData(chunk)
+      const lines = parseMessageData(prevTempChunk ? prevTempChunk + chunk : chunk)
 
       for (const line of lines) {
         const message = line.replace(/^data: /, '')
@@ -190,10 +191,16 @@ async function handleInputEnter() {
           chatContext.value.push({ role: 'assistant', content: chatMessages.value[id - 2].content })
           return
         } else {
-          const parsed = JSON.parse(message)
-          if (parsed.choices[0]?.delta.content) {
-            let content = parsed.choices[0].delta.content
-            chatMessages.value[id - 2].content += content
+          try {
+            const parsed = JSON.parse(message)
+            if (parsed.choices[0]?.delta.content) {
+              let content = parsed.choices[0].delta.content
+              chatMessages.value[id - 2].content += content
+            }
+            prevTempChunk = ''
+          } catch (error) {
+            prevTempChunk += chunk
+            console.warn('error', error)
           }
         }
       }
