@@ -186,25 +186,28 @@ async function handleInputEnter() {
     }),
     onmessage: (chunk) => {
       const lines = parseMessageData(prevTempChunk ? prevTempChunk + chunk : chunk)
-
-      for (const line of lines) {
-        const message = line.replace(/^data: /, '')
-        if (message.includes('"finish_reason":"stop"') || message === '[DONE]') {
-          chatContext.value.push({ role: 'assistant', content: chatMessages.value[id - 2].content })
-          return
-        } else {
-          try {
+      let str = ''
+      try {
+        for (const line of lines) {
+          const message = line.replace(/^data: /, '')
+          if (message.includes('"finish_reason":"stop"') || message === '[DONE]') {
+            chatContext.value.push({ role: 'assistant', content: chatMessages.value[id - 2].content })
+            // console.log('finish', prevTempChunk ? prevTempChunk + chunk : chunk)
+            // return
+          } else {
             const parsed = JSON.parse(message)
             if (parsed.choices[0]?.delta.content) {
               let content = parsed.choices[0].delta.content
               chatMessages.value[id - 2].content += content
+              str += content
             }
-            prevTempChunk = ''
-          } catch (error) {
-            prevTempChunk += chunk
-            console.warn('error', error)
           }
         }
+        prevTempChunk = ''
+        chatMessages.value[id - 2].content = str
+      } catch (error) {
+        console.warn('error', error)
+        prevTempChunk += chunk
       }
     }
   })
