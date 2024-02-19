@@ -130,7 +130,9 @@ const clearChat = () => {
 const composing = ref(false)
 const USER_AVATAR = 'https://resource-yswy.oss-cn-hangzhou.aliyuncs.com/web/test/user.png'
 const ASSISTANT_AVATAR = 'https://resource-yswy.oss-cn-hangzhou.aliyuncs.com/web/test/ChatGPT.png'
-const AUTHORIZATION_HEADER = `Bearer ${API_KEY.value}`
+const AUTHORIZATION_HEADER = computed(() => {
+  return `Bearer ${API_KEY.value}`
+})
 
 function createMessage(id, role, avatar, content) {
   return {
@@ -175,7 +177,7 @@ async function handleInputEnter() {
     headers: {
       accept: 'text/event-stream',
       'Content-Type': 'application/json',
-      Authorization: AUTHORIZATION_HEADER
+      Authorization: AUTHORIZATION_HEADER.value
     },
     body: JSON.stringify({
       model: props.model,
