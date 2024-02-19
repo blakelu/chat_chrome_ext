@@ -13,6 +13,7 @@
     <el-button @click="clearChat">清除聊天记录</el-button>
   </div>
   <el-dialog v-model="dialogVisible" title="提示" width="80%">
+    <el-input v-model="API_URL" placeholder="请输入Api url" />
     <el-input v-model="API_KEY" placeholder="请输入Api key" />
     <a href="https://freeapi.iil.im/" target="_blank">获取我的API Key</a>
     <template #footer>
@@ -49,6 +50,7 @@ const input = ref<string>('')
 const selectMode = ref('')
 const dialogVisible = ref(false)
 const API_KEY = ref(localStorage.GPT_API_KEY || '')
+const API_URL = ref(localStorage.GPT_API_URL || 'https://freeapi.iil.im')
 
 onMounted(() => {
   if (!API_KEY.value) {
@@ -58,6 +60,7 @@ onMounted(() => {
 
 const handleConfirm = () => {
   localStorage.setItem('GPT_API_KEY', API_KEY.value)
+  localStorage.setItem('GPT_API_URL', API_URL.value)
   dialogVisible.value = false
 }
 
@@ -171,8 +174,9 @@ async function handleInputEnter() {
   }
 
   repeatCount.value = 0 // 重置请求次数
-  let prevTempChunk = ''
-  fetchStream(`${import.meta.env.VITE_OPEN_AI_URL}/v1/chat/completions`, {
+  let prevErrorTempMessage = ''
+
+  fetchStream(`${API_URL.value}/v1/chat/completions`, {
     method: 'POST',
     headers: {
       accept: 'text/event-stream',
@@ -185,29 +189,33 @@ async function handleInputEnter() {
       messages: selectMode.value ? customPrompt : chatContext.value.slice(-29)
     }),
     onmessage: (chunk) => {
-      const lines = parseMessageData(prevTempChunk ? prevTempChunk + chunk : chunk)
-      let str = ''
+      const lines = parseMessageData(chunk)
       try {
         for (const line of lines) {
           const message = line.replace(/^data: /, '')
+
           if (message.includes('"finish_reason":"stop"') || message === '[DONE]') {
             chatContext.value.push({ role: 'assistant', content: chatMessages.value[id - 2].content })
             // console.log('finish', prevTempChunk ? prevTempChunk + chunk : chunk)
-            // return
+            return
           } else {
-            const parsed = JSON.parse(message)
+            let parsed: any = {}
+            try {
+              parsed = JSON.parse(prevErrorTempMessage ? prevErrorTempMessage + message : message)
+              prevErrorTempMessage = ''
+            } catch (error) {
+              prevErrorTempMessage = message
+              console.log('prevErrorTempMessage', prevErrorTempMessage)
+            }
+
             if (parsed.choices[0]?.delta.content) {
               let content = parsed.choices[0].delta.content
               chatMessages.value[id - 2].content += content
-              str += content
             }
           }
         }
-        prevTempChunk = ''
-        chatMessages.value[id - 2].content = str
       } catch (error) {
         console.warn('error', error)
-        prevTempChunk += chunk
       }
     }
   })
