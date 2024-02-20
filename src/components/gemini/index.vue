@@ -1,6 +1,11 @@
 <template>
   <div class="messages" ref="messages">
-    <Message v-for="message in chatMessages" :key="message.id" :message="message" />
+    <Message
+      v-for="(message, index) in chatMessages"
+      :key="message.id"
+      :message="message"
+      :loading="index + 1 === chatMessages.length && loading"
+    />
   </div>
   <div class="operate_wrap">
     <el-input
@@ -34,6 +39,7 @@ const chatMessages = ref(historyMessage) // 聊天的message
 const chatContext = ref(historyContext) // 聊天上下文
 const input = ref<string>('')
 const API_KEY = ref(localStorage.API_KEY || '')
+const loading = ref(false) // 回复loading
 const composing = ref(false)
 const USER_AVATAR = 'https://resource-yswy.oss-cn-hangzhou.aliyuncs.com/web/test/user.png'
 const ASSISTANT_AVATAR = 'https://resource-yswy.oss-cn-hangzhou.aliyuncs.com/web/test/ChatGPT.png'
@@ -86,7 +92,9 @@ async function handleInputEnter() {
   chatContext.value.push({ role: 'user', parts: msg })
   let id = chatMessages.value.length + 1
   try {
+    loading.value = true
     const result = await chat.sendMessageStream(msg)
+    loading.value = false
     let text = ''
     for await (const chunk of result.stream) {
       const chunkText = chunk.text()

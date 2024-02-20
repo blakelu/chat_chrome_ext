@@ -5,6 +5,9 @@
     </div>
     <div class="content" :class="{ 'content-user': isUser, 'content-assistant': isAssistant }">
       <div v-html="md.render(message.content)"></div>
+      <el-icon v-if="isAssistant && loading" class="is-loading" color="#ff0000">
+        <ep-loading />
+      </el-icon>
     </div>
   </div>
 </template>
@@ -16,13 +19,16 @@ const props = defineProps({
   message: {
     type: Object,
     required: true
+  },
+  loading: {
+    type: Boolean,
+    default: true
   }
 })
 
 const isUser = computed(() => props.message.role === 'user')
 
 const isAssistant = computed(() => props.message.role === 'model' || props.message.role === 'assistant')
-
 </script>
 
 <style lang="less" scoped>

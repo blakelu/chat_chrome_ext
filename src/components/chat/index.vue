@@ -1,6 +1,11 @@
 <template>
   <div class="messages" ref="messages">
-    <Message v-for="message in chatMessages" :key="message.id" :message="message" />
+    <Message
+      v-for="(message, index) in chatMessages"
+      :key="message.id"
+      :message="message"
+      :loading="index + 1 === chatMessages.length && loading"
+    />
   </div>
   <div class="operate_wrap">
     <el-input
@@ -10,7 +15,7 @@
       @compositionstart="composing = true"
       @compositionend="composing = false"
     ></el-input>
-    <el-button @click="clearChat">清除聊天记录</el-button>
+    <el-button @click="clearChat">清除聊天记录 </el-button>
     <el-button @click="dialogVisible = true">设置API</el-button>
   </div>
   <el-dialog v-model="dialogVisible" title="提示" width="80%">
@@ -50,6 +55,7 @@ const chatContext = ref<SubmitMessage[]>(historyContext) // 聊天上下文
 const input = ref<string>('')
 const selectMode = ref('')
 const dialogVisible = ref(false)
+const loading = ref(false) // 回复loading
 const API_KEY = ref(localStorage.GPT_API_KEY || '')
 const API_URL = ref(localStorage.GPT_API_URL || 'https://proxy.cocopilot.org')
 
@@ -177,6 +183,7 @@ async function handleInputEnter() {
 
   repeatCount.value = 0 // 重置请求次数
   let prevErrorTempMessage = ''
+  loading.value = true
   fetchStream(`${API_URL.value}/v1/chat/completions`, {
     method: 'POST',
     headers: {
@@ -198,6 +205,7 @@ async function handleInputEnter() {
           if (message.includes('"finish_reason":"stop"') || message === '[DONE]') {
             chatContext.value.push({ role: 'assistant', content: chatMessages.value[id - 2].content })
             // console.log('finish', prevTempChunk ? prevTempChunk + chunk : chunk)
+            loading.value = false
             return
           } else {
             let parsed: any = {}
