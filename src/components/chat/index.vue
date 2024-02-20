@@ -341,7 +341,7 @@ onMounted(() => {
 }
 
 .messages {
-  margin-top: 10px;
+  margin-top: 20px;
   // max-height: 440px;
   overflow-y: auto;
   :deep(img) {

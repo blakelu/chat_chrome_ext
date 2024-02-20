@@ -63,6 +63,7 @@ watch(selectMode, (val) => {
     label {
       margin-right: 6px;
       color: #666666;
+      flex-shrink: 0;
     }
   }
 }
