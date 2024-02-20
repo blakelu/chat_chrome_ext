@@ -5,7 +5,7 @@
     </div>
     <div class="content" :class="{ 'content-user': isUser, 'content-assistant': isAssistant }">
       <div v-html="md.render(message.content)"></div>
-      <el-icon v-if="isAssistant && loading" class="is-loading" color="#ff0000">
+      <el-icon v-if="isAssistant && loading" style="margin-top: 4px" class="is-loading" color="#ff0000">
         <ep-loading />
       </el-icon>
     </div>
