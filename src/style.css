@@ -17,5 +17,10 @@
 html,
 body {
   margin: 0;
-  min-width: 520px;
+  /* min-width: 520px; */
+  height: 100%;
+}
+
+#app {
+  height: 100%;
 }

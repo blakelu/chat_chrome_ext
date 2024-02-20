@@ -55,7 +55,7 @@ watch(selectMode, (val) => {
   min-height: 260px;
   background: linear-gradient(0deg, #abbaab, #ffffff);
   padding: 20px 20px 110px 20px;
-
+  box-sizing: border-box;
   .mode-select {
     display: flex;
     align-items: center;

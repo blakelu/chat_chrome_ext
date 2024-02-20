@@ -334,7 +334,7 @@ onMounted(() => {
 
 .messages {
   margin-top: 10px;
-  max-height: 440px;
+  // max-height: 440px;
   overflow-y: auto;
 }
 

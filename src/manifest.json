@@ -8,7 +8,8 @@
     "128": "assets/icons/ChatGPT.png"
   },
   "action": {
-    "default_popup": "../popup.html"
+    "default_popup": "../popup.html",
+    "default_title": "打开侧边栏"
   },
   "content_scripts": [{
     "matches": [ "<all_urls>" ],
@@ -16,6 +17,7 @@
     "run_at": "document_start"
   }],
   "host_permissions": [ "*://*/*" ],
+  "permissions": ["sidePanel"],
   "background": {
     "service_worker": "background.ts"
   },
@@ -23,5 +25,9 @@
     "matches": ["<all_urls>"],
     "resources": ["assets/*"]
   }],
+  "side_panel": {
+    "default_path": "popup.html",
+    "openPanelOnActionClick": true
+  },
   "manifest_version": 3
 }
