@@ -16,6 +16,7 @@ declare module '@vue/runtime-core' {
     ElInput: typeof import('element-plus/es')['ElInput']
     ElRadio: typeof import('element-plus/es')['ElRadio']
     ElRadioGroup: typeof import('element-plus/es')['ElRadioGroup']
+    ElTooltip: typeof import('element-plus/es')['ElTooltip']
     Gemini: typeof import('./src/components/gemini/index.vue')['default']
     Message: typeof import('./src/components/chat/message.vue')['default']
   }

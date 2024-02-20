@@ -11,11 +11,12 @@
       @compositionend="composing = false"
     ></el-input>
     <el-button @click="clearChat">清除聊天记录</el-button>
+    <el-button @click="dialogVisible = true">设置API</el-button>
   </div>
   <el-dialog v-model="dialogVisible" title="提示" width="80%">
     <el-input v-model="API_URL" placeholder="请输入Api url" />
-    <el-input v-model="API_KEY" placeholder="请输入Api key" />
-    <a href="https://freeapi.iil.im/" target="_blank">获取我的API Key</a>
+    <el-input v-model="API_KEY" placeholder="请输入Api key,没有key就输入剑哥牛逼" />
+    <!-- <a href="https://freeapi.iil.im/" target="_blank">获取我的API Key</a> -->
     <template #footer>
       <span class="dialog-footer">
         <el-button type="primary" @click="handleConfirm"> 确认 </el-button>
@@ -50,7 +51,7 @@ const input = ref<string>('')
 const selectMode = ref('')
 const dialogVisible = ref(false)
 const API_KEY = ref(localStorage.GPT_API_KEY || '')
-const API_URL = ref(localStorage.GPT_API_URL || 'https://freeapi.iil.im')
+const API_URL = ref(localStorage.GPT_API_URL || 'https://proxy.cocopilot.org')
 
 onMounted(() => {
   if (!API_KEY.value) {
@@ -134,8 +135,9 @@ const composing = ref(false)
 const USER_AVATAR = 'https://resource-yswy.oss-cn-hangzhou.aliyuncs.com/web/test/user.png'
 const ASSISTANT_AVATAR = 'https://resource-yswy.oss-cn-hangzhou.aliyuncs.com/web/test/ChatGPT.png'
 const AUTHORIZATION_HEADER = computed(() => {
-  return `Bearer ${API_KEY.value}`
-})
+  const apiKey = API_KEY.value === '剑哥牛逼' ? 'ghu_C6Ti4NDFE6wJfgHoitCjPKm7cZ5PW53uRJBD' : API_KEY.value;
+  return `Bearer ${apiKey}`;
+});
 
 function createMessage(id, role, avatar, content) {
   return {
@@ -175,7 +177,6 @@ async function handleInputEnter() {
 
   repeatCount.value = 0 // 重置请求次数
   let prevErrorTempMessage = ''
-
   fetchStream(`${API_URL.value}/v1/chat/completions`, {
     method: 'POST',
     headers: {

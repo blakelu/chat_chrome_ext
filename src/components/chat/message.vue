@@ -73,6 +73,7 @@ const isAssistant = computed(() => props.message.role === 'model' || props.messa
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
   max-width: 80%;
   word-wrap: break-word;
+  overflow-x: auto;
 }
 
 .content.is-self {
