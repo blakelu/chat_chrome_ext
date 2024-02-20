@@ -135,9 +135,9 @@ const composing = ref(false)
 const USER_AVATAR = 'https://resource-yswy.oss-cn-hangzhou.aliyuncs.com/web/test/user.png'
 const ASSISTANT_AVATAR = 'https://resource-yswy.oss-cn-hangzhou.aliyuncs.com/web/test/ChatGPT.png'
 const AUTHORIZATION_HEADER = computed(() => {
-  const apiKey = API_KEY.value === '剑哥牛逼' ? 'ghu_C6Ti4NDFE6wJfgHoitCjPKm7cZ5PW53uRJBD' : API_KEY.value;
-  return `Bearer ${apiKey}`;
-});
+  const apiKey = API_KEY.value === '剑哥牛逼' ? 'ghu_C6Ti4NDFE6wJfgHoitCjPKm7cZ5PW53uRJBD' : API_KEY.value
+  return `Bearer ${apiKey}`
+})
 
 function createMessage(id, role, avatar, content) {
   return {
@@ -336,6 +336,9 @@ onMounted(() => {
   margin-top: 10px;
   // max-height: 440px;
   overflow-y: auto;
+  :deep(img) {
+    width: 100%;
+  }
 }
 
 .el-input {
