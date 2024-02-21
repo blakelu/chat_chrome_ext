@@ -43,7 +43,16 @@ const loading = ref(false) // 回复loading
 const composing = ref(false)
 const USER_AVATAR = 'https://resource-yswy.oss-cn-hangzhou.aliyuncs.com/web/test/user.png'
 const ASSISTANT_AVATAR = 'https://resource-yswy.oss-cn-hangzhou.aliyuncs.com/web/test/ChatGPT.png'
-
+const props = defineProps({
+  model: {
+    type: String,
+    default: 'gemini'
+  },
+  context: {
+    type: Array,
+    default: () => []
+  }
+})
 onMounted(() => {
   if (!API_KEY.value) {
     dialogVisible.value = true

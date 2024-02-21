@@ -30,6 +30,8 @@
   </el-dialog>
 </template>
 <script lang="ts" setup>
+import _ from 'lodash'
+
 interface Message {
   id: number
   role: string
@@ -45,13 +47,17 @@ const props = defineProps({
   model: {
     type: String,
     default: 'gpt-3.5-turbo'
+  },
+  context: {
+    type: Array as any,
+    default: () => []
   }
 })
 const historyMessage = JSON.parse(localStorage.chatgptMessages || '[]')
 const historyContext = JSON.parse(localStorage.chatgptContext || '[]')
 
-const chatMessages = ref<Message[]>(historyMessage) // 聊天的message
-const chatContext = ref<SubmitMessage[]>(historyContext) // 聊天上下文
+const chatMessages = ref<Message[]>([]) // 聊天的message
+const chatContext = ref<SubmitMessage[]>([]) // 聊天上下文
 const input = ref<string>('')
 const selectMode = ref('')
 const dialogVisible = ref(false)
@@ -63,6 +69,7 @@ onMounted(() => {
   if (!API_KEY.value) {
     dialogVisible.value = true
   }
+  initChat()
 })
 
 const handleConfirm = () => {
@@ -126,13 +133,39 @@ const options = [
     label: '专业DBA'
   }
 ]
-
-watch(chatMessages.value, (val) => {
+const emit = defineEmits(['saveHistory'])
+const _chatMessagesDebounce = _.debounce((val) => {
+  // console.log('chatMessages change')
   localStorage.chatgptMessages = JSON.stringify(val)
+}, 1000)
+watch(chatMessages.value, (val) => {
+  // console.log('11111')
+  _chatMessagesDebounce(val)
 })
 watch(chatContext.value, (val) => {
+  // console.log('chatgptContext change')
   localStorage.chatgptContext = JSON.stringify(val)
+  emit('saveHistory', val)
 })
+watch(
+  () => props.context,
+  (val) => {
+    console.log('context 变化', val)
+    initChat(val)
+  }
+)
+const initChat = (val: any) => {
+  const arr = val || props.context
+  chatContext.value.splice(0, chatContext.value.length, ...arr)
+  chatMessages.value = arr.map((item: any, index: number) => {
+    return {
+      ...item,
+      id: index + 1,
+      avatar: item.role === 'user' ? USER_AVATAR : ASSISTANT_AVATAR
+    }
+  })
+  console.log(chatContext.value, 'chatContext.value', props.context)
+}
 const clearChat = () => {
   chatMessages.value.splice(0, chatMessages.value.length)
   chatContext.value.splice(0, chatContext.value.length)
@@ -325,6 +358,10 @@ scrollToBottom()
 onMounted(() => {
   const inputEl = document.querySelector('.el-input__inner') as HTMLInputElement
   inputEl.focus()
+})
+defineExpose({
+  clearChat,
+  initChat
 })
 </script>
 <style lang="less" scoped>

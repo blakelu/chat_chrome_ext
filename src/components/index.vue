@@ -7,15 +7,28 @@
           <el-tooltip class="box-item" effect="dark" :content="item.desc" placement="bottom"> {{ item.value }}</el-tooltip>
         </el-radio>
       </el-radio-group>
+      <div style="margin-left: auto">
+        <el-button text type="" @click="historyDrawer = true">
+          <el-icon size="20" color="#333"><ep-clock /></el-icon>
+        </el-button>
+        <el-button style="margin-left: 0" type="success" circle size="small" @click="addNewSession">
+          <el-icon><ep-circle-plus-filled /></el-icon>
+        </el-button>
+      </div>
     </div>
-    <Chatgpt :model="selectMode" v-if="selectMode != 'gemini'" />
-    <Gemini v-else />
+    <Chatgpt v-if="selectMode != 'gemini'" ref="contentRef" :model="selectMode" :context="context" @saveHistory="saveHistory" />
+    <Gemini v-else ref="contentRef" :model="selectMode" :context="context" />
+    <!-- 历史记录 drawer -->
+    <History v-model:drawer="historyDrawer" :sessionId="sessionId" @navToHistory="navToHistory" @reload="initLastInfo" />
   </div>
 </template>
 
 <script lang="ts" setup>
+import { v4 as uuidv4 } from 'uuid'
+import dayjs from 'dayjs'
 import Chatgpt from './chat/index.vue'
 import Gemini from './gemini/index.vue'
+import History from './history/index.vue'
 
 const options = [
   {
@@ -35,12 +48,70 @@ const options = [
     desc: 'google的辣鸡模型，凑活用'
   }
 ]
-
-const historyMode = localStorage.mode || 'gpt-3.5-turbo'
-const selectMode = ref(historyMode)
+const selectMode = ref('')
+const contentRef = ref<any>(null)
+const historyDrawer = ref<boolean>(false) // 历史记录弹窗
+const sessionId = ref('') //  当前会话Id
+const context = ref<any>([]) // 当前会话上下文
 watch(selectMode, (val) => {
   localStorage.mode = val
 })
+
+// 根据timeStr距离当前最近的时间，获取上一次的历史记录
+const initLastInfo = () => {
+  const historyInfo = JSON.parse(localStorage.historyInfo || '[]')
+  const lastIndex = historyInfo.findIndex((item: any) => item.isLast)
+  if (lastIndex > -1) {
+    const { mode, context: con, sessionId: uuid } = historyInfo[lastIndex]
+    sessionId.value = uuid
+    selectMode.value = mode
+    context.value = con
+  } else {
+    sessionId.value = uuidv4()
+    selectMode.value = 'gpt-3.5-turbo'
+    context.value = []
+  }
+}
+initLastInfo()
+
+const addNewSession = () => {
+  if (contentRef.value) {
+    sessionId.value = uuidv4()
+    contentRef.value.clearChat()
+  }
+}
+// 切换历史记录
+const navToHistory = (item: any) => {
+  const { mode, context: con, sessionId: uuid } = item
+  sessionId.value = uuid
+  selectMode.value = mode
+  context.value = con
+}
+// 保存历史记录
+const saveHistory = (context: { role: string; content: string }[]) => {
+  console.log('save history', context)
+  if (context.length === 0) return
+  const historyInfo = JSON.parse(localStorage.historyInfo || '[]')
+  const historyIndex = historyInfo.findIndex((item: any) => item.sessionId === sessionId.value)
+  historyInfo.forEach((item: any) => {
+    item.isLast = false
+  })
+  const item = {
+    sessionId: sessionId.value,
+    mode: selectMode.value,
+    timeStr: dayjs().format('YYYY-MM-DD HH:mm:ss'),
+    title: context[0].content,
+    desc: context.length > 1 ? context[context.length - 1].content : '',
+    context,
+    isLast: true
+  }
+  if (historyIndex > -1) {
+    historyInfo[historyIndex] = item
+  } else {
+    historyInfo.push({ ...item, sessionId: sessionId.value })
+  }
+  localStorage.historyInfo = JSON.stringify(historyInfo)
+}
 </script>
 
 <style lang="less" scoped>
