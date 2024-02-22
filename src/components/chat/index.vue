@@ -141,6 +141,7 @@ watch(
   }
 )
 const initChat = (val?: any) => {
+  console.log(props.context, 11111)
   const arr = val || props.context
   chatContext.value.splice(0, chatContext.value.length, ...arr)
   chatMessages.value = arr.map((item: any, index: number) => {

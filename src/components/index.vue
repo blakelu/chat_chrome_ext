@@ -2,14 +2,14 @@
   <div class="chat">
     <div class="mode-select">
       <label>选择模型：</label>
-      <el-radio-group v-model="selectMode" placeholder="请选择模型" size="small">
+      <el-radio-group v-model="selectMode" placeholder="请选择模型" size="small" @change="onChangeMode">
         <el-radio v-for="item in options" :label="item.value">
           <el-tooltip class="box-item" effect="dark" :content="item.desc" placement="bottom"> {{ item.value }}</el-tooltip>
         </el-radio>
       </el-radio-group>
     </div>
-    <Chatgpt v-if="selectMode != 'gemini'" ref="contentRef" :model="selectMode" :context="context" @saveHistory="saveHistory" />
-    <Gemini v-else ref="contentRef" :model="selectMode" :context="context" @saveHistory="saveHistory" />
+    <Chatgpt v-if="selectMode != 'gemini'" ref="contentRef" :model="selectMode" :context="currentContext" @saveHistory="saveHistory" />
+    <Gemini v-else ref="contentRef" :model="selectMode" :context="currentContext" @saveHistory="saveHistory" />
     <!-- 历史记录 drawer -->
     <History v-model:drawer="historyDrawer" :sessionId="sessionId" @navToHistory="navToHistory" @reload="initLastInfo" />
     <!-- 底部 -->
@@ -53,7 +53,8 @@ const selectMode = ref('')
 const contentRef = ref<any>(null)
 const historyDrawer = ref<boolean>(false) // 历史记录弹窗
 const sessionId = ref('') //  当前会话Id
-const context = ref<any>([]) // 当前会话上下文
+const currentContext = ref<any>([]) // 当前会话上下文
+
 watch(selectMode, (val) => {
   localStorage.mode = val
 })
@@ -66,18 +67,28 @@ const initLastInfo = () => {
     const { mode, context: con, sessionId: uuid } = historyInfo[lastIndex]
     sessionId.value = uuid
     selectMode.value = mode
-    context.value = con
+    currentContext.value = con
   } else {
     sessionId.value = uuidv4()
     selectMode.value = 'gpt-3.5-turbo'
-    context.value = []
+    currentContext.value = []
   }
 }
 initLastInfo()
-
+// 模式切换
+const onChangeMode = () => {
+  const historyInfo = JSON.parse(localStorage.historyInfo || '[]')
+  const historyIndex = historyInfo.findIndex((item: any) => item.sessionId === sessionId.value)
+  if (historyIndex > -1) {
+    const { mode, context: con, sessionId: uuid } = historyInfo[historyIndex]
+    currentContext.value = con
+  } else {
+    currentContext.value = []
+  }
+}
 const addNewSession = () => {
   if (contentRef.value) {
-    context.value = []
+    currentContext.value = []
     sessionId.value = uuidv4()
     contentRef.value.clearChat()
   }
@@ -87,7 +98,7 @@ const navToHistory = (item: any) => {
   const { mode, context: con, sessionId: uuid } = item
   sessionId.value = uuid
   selectMode.value = mode
-  context.value = con
+  currentContext.value = con
 }
 // 保存历史记录
 const saveHistory = (context: { role: string; content: string }[]) => {
