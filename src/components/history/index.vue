@@ -54,6 +54,9 @@ const removeItem = (index, item) => {
   --el-dialog-padding-primary: 15px;
   :deep(.el-drawer) {
     height: 50% !important;
+    .el-drawer__header {
+      margin-bottom: 0px;
+    }
   }
   .list_content {
   }

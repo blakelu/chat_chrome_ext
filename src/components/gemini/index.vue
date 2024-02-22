@@ -31,9 +31,6 @@
 <script lang="ts" setup>
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
-const historyMessage = JSON.parse(localStorage.chatMessages || '[]')
-const historyContext = JSON.parse(localStorage.chatContext || '[]')
-
 const dialogVisible = ref(false)
 const chatMessages = ref<any>([]) // 聊天的message
 const chatContext = ref<any>([]) // 聊天上下文
@@ -75,11 +72,11 @@ watch(chatContext.value, (val) => {
 watch(
   () => props.context,
   (val) => {
-    console.log('context 变化', val)
     initChat(val)
   }
 )
 const initChat = (val?: any) => {
+  console.log('props.context', props.context)
   const arr = val || props.context
   chatContext.value.splice(0, chatContext.value.length, ...arr)
   chatMessages.value = arr.map((item: any, index: number) => {

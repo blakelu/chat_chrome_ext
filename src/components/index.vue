@@ -77,6 +77,7 @@ initLastInfo()
 
 const addNewSession = () => {
   if (contentRef.value) {
+    context.value = []
     sessionId.value = uuidv4()
     contentRef.value.clearChat()
   }
