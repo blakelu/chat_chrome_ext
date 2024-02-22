@@ -17,6 +17,7 @@ import { before } from 'lodash'; import { remove } from 'lodash'; import { emitC
             </div>
           </div>
         </div>
+        <el-empty v-if="historyInfoList.length === 0" description="无更多历史记录" />
       </div>
     </el-drawer>
   </div>

@@ -30,8 +30,6 @@
   </el-dialog>
 </template>
 <script lang="ts" setup>
-import _ from 'lodash'
-
 interface Message {
   id: number
   role: string
@@ -53,9 +51,6 @@ const props = defineProps({
     default: () => []
   }
 })
-const historyMessage = JSON.parse(localStorage.chatgptMessages || '[]')
-const historyContext = JSON.parse(localStorage.chatgptContext || '[]')
-
 const chatMessages = ref<Message[]>([]) // 聊天的message
 const chatContext = ref<SubmitMessage[]>([]) // 聊天上下文
 const input = ref<string>('')
@@ -134,17 +129,8 @@ const options = [
   }
 ]
 const emit = defineEmits(['saveHistory'])
-const _chatMessagesDebounce = _.debounce((val) => {
-  // console.log('chatMessages change')
-  localStorage.chatgptMessages = JSON.stringify(val)
-}, 1000)
-watch(chatMessages.value, (val) => {
-  // console.log('11111')
-  _chatMessagesDebounce(val)
-})
+
 watch(chatContext.value, (val) => {
-  // console.log('chatgptContext change')
-  localStorage.chatgptContext = JSON.stringify(val)
   emit('saveHistory', val)
 })
 watch(
@@ -154,7 +140,7 @@ watch(
     initChat(val)
   }
 )
-const initChat = (val: any) => {
+const initChat = (val?: any) => {
   const arr = val || props.context
   chatContext.value.splice(0, chatContext.value.length, ...arr)
   chatMessages.value = arr.map((item: any, index: number) => {
@@ -171,14 +157,14 @@ const clearChat = () => {
   chatContext.value.splice(0, chatContext.value.length)
 }
 const composing = ref(false)
-const USER_AVATAR = 'https://resource-yswy.oss-cn-hangzhou.aliyuncs.com/web/test/user.png'
-const ASSISTANT_AVATAR = 'https://resource-yswy.oss-cn-hangzhou.aliyuncs.com/web/test/ChatGPT.png'
+const USER_AVATAR = 'https://cdn.ysservice.com.cn/web/test/user.png'
+const ASSISTANT_AVATAR = 'https://cdn.ysservice.com.cn/web/test/ChatGPT.png'
 const AUTHORIZATION_HEADER = computed(() => {
   const apiKey = API_KEY.value === '剑哥牛逼' ? 'ghu_C6Ti4NDFE6wJfgHoitCjPKm7cZ5PW53uRJBD' : API_KEY.value
   return `Bearer ${apiKey}`
 })
 
-function createMessage(id, role, avatar, content) {
+function createMessage(id: any, role: string, avatar: string, content: string) {
   return {
     id,
     role,
@@ -187,7 +173,7 @@ function createMessage(id, role, avatar, content) {
   }
 }
 
-function parseMessageData(data) {
+function parseMessageData(data: string) {
   return data
     .split(/\r?\n/)
     .map((line) => line.replace(/(\n)?^data:\s*/, '').trim()) // remove prefix
@@ -229,7 +215,7 @@ async function handleInputEnter() {
       stream: true,
       messages: selectMode.value ? customPrompt : chatContext.value.slice(-29)
     }),
-    onmessage: (chunk) => {
+    onmessage: (chunk: string) => {
       const lines = parseMessageData(chunk)
       try {
         for (const line of lines) {
@@ -303,7 +289,7 @@ function Uint8ArrayToString(array: Uint8Array) {
 }
 const repeatCount = ref(0) // 当前重试次数
 const maxRepeatCount = 4 // 每次请求最大重试次数
-const fetchStream = async (url: string, params: Record<string, any>): Promise<string> => {
+const fetchStream = async (url: string, params: Record<string, any>) => {
   const { onmessage, onclose, ...otherParams } = params
 
   const processStream: any = async (reader: ReadableStreamDefaultReader<Uint8Array>) => {

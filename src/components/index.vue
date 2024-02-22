@@ -9,7 +9,7 @@
       </el-radio-group>
     </div>
     <Chatgpt v-if="selectMode != 'gemini'" ref="contentRef" :model="selectMode" :context="context" @saveHistory="saveHistory" />
-    <Gemini v-else ref="contentRef" :model="selectMode" :context="context" />
+    <Gemini v-else ref="contentRef" :model="selectMode" :context="context" @saveHistory="saveHistory" />
     <!-- 历史记录 drawer -->
     <History v-model:drawer="historyDrawer" :sessionId="sessionId" @navToHistory="navToHistory" @reload="initLastInfo" />
     <!-- 底部 -->

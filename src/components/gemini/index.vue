@@ -35,14 +35,14 @@ const historyMessage = JSON.parse(localStorage.chatMessages || '[]')
 const historyContext = JSON.parse(localStorage.chatContext || '[]')
 
 const dialogVisible = ref(false)
-const chatMessages = ref(historyMessage) // 聊天的message
-const chatContext = ref(historyContext) // 聊天上下文
+const chatMessages = ref<any>([]) // 聊天的message
+const chatContext = ref<any>([]) // 聊天上下文
 const input = ref<string>('')
 const API_KEY = ref(localStorage.API_KEY || '')
 const loading = ref(false) // 回复loading
 const composing = ref(false)
-const USER_AVATAR = 'https://resource-yswy.oss-cn-hangzhou.aliyuncs.com/web/test/user.png'
-const ASSISTANT_AVATAR = 'https://resource-yswy.oss-cn-hangzhou.aliyuncs.com/web/test/ChatGPT.png'
+const USER_AVATAR = 'https://cdn.ysservice.com.cn/web/test/user.png'
+const ASSISTANT_AVATAR = 'https://cdn.ysservice.com.cn/web/test/ChatGPT.png'
 const props = defineProps({
   model: {
     type: String,
@@ -57,20 +57,40 @@ onMounted(() => {
   if (!API_KEY.value) {
     dialogVisible.value = true
   }
+  initChat()
 })
 
 const handleConfirm = () => {
   localStorage.setItem('API_KEY', API_KEY.value)
   dialogVisible.value = false
 }
+const emit = defineEmits(['saveHistory'])
 
-watch(chatMessages.value, (val) => {
-  localStorage.chatMessages = JSON.stringify(val)
-})
 watch(chatContext.value, (val) => {
-  localStorage.chatContext = JSON.stringify(val)
+  emit(
+    'saveHistory',
+    val.map((item: any) => ({ ...item, content: item.parts }))
+  )
 })
-
+watch(
+  () => props.context,
+  (val) => {
+    console.log('context 变化', val)
+    initChat(val)
+  }
+)
+const initChat = (val?: any) => {
+  const arr = val || props.context
+  chatContext.value.splice(0, chatContext.value.length, ...arr)
+  chatMessages.value = arr.map((item: any, index: number) => {
+    return {
+      ...item,
+      content: item.parts,
+      id: index + 1,
+      avatar: item.role === 'user' ? USER_AVATAR : ASSISTANT_AVATAR
+    }
+  })
+}
 const clearChat = () => {
   chatMessages.value.splice(0, chatMessages.value.length)
   chatContext.value.splice(0, chatContext.value.length)
@@ -118,7 +138,7 @@ async function handleInputEnter() {
   }
 }
 
-function createMessage(id, role, avatar, content) {
+function createMessage(id: any, role: string, avatar: string, content: string) {
   return {
     id,
     role,
@@ -133,6 +153,10 @@ const scrollToBottom = () => {
     scrollContainer.scrollTop = scrollContainer.scrollHeight
   })
 }
+defineExpose({
+  clearChat,
+  initChat
+})
 </script>
 
 <style lang="less" scoped>
@@ -150,7 +174,7 @@ const scrollToBottom = () => {
 
 .messages {
   margin-top: 10px;
-  max-height: 440px;
+  // max-height: 440px;
   overflow-y: auto;
 }
 
