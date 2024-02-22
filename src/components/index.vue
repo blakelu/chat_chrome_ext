@@ -8,8 +8,15 @@
         </el-radio>
       </el-radio-group>
     </div>
-    <Chatgpt v-if="selectMode != 'gemini'" ref="contentRef" :model="selectMode" :context="currentContext" @saveHistory="saveHistory" />
-    <Gemini v-else ref="contentRef" :model="selectMode" :context="currentContext" @saveHistory="saveHistory" />
+    <Chatgpt
+      v-if="selectMode != 'gemini'"
+      ref="contentRef"
+      :model="selectMode"
+      :context="currentContext"
+      @clear="clearCurrentChat"
+      @saveHistory="saveHistory"
+    />
+    <Gemini v-else ref="contentRef" :model="selectMode" :context="currentContext" @clear="clearCurrentChat" @saveHistory="saveHistory" />
     <!-- 历史记录 drawer -->
     <History v-model:drawer="historyDrawer" :sessionId="sessionId" @navToHistory="navToHistory" @reload="initLastInfo" />
     <!-- 底部 -->
@@ -80,8 +87,8 @@ const onChangeMode = () => {
   const historyInfo = JSON.parse(localStorage.historyInfo || '[]')
   const historyIndex = historyInfo.findIndex((item: any) => item.sessionId === sessionId.value)
   if (historyIndex > -1) {
-    const { mode, context: con, sessionId: uuid } = historyInfo[historyIndex]
-    currentContext.value = con
+    const { context } = historyInfo[historyIndex]
+    currentContext.value = context
   } else {
     currentContext.value = []
   }
@@ -93,6 +100,10 @@ const addNewSession = () => {
     contentRef.value.clearChat()
   }
 }
+// 清除当前聊天内容
+const clearCurrentChat = () => {
+  currentContext.value = []
+}
 // 切换历史记录
 const navToHistory = (item: any) => {
   const { mode, context: con, sessionId: uuid } = item
@@ -103,7 +114,7 @@ const navToHistory = (item: any) => {
 // 保存历史记录
 const saveHistory = (context: { role: string; content: string }[]) => {
   console.log('save history', context)
-  if (context.length === 0) return
+  // if (context.length === 0) return
   const historyInfo = JSON.parse(localStorage.historyInfo || '[]')
   const historyIndex = historyInfo.findIndex((item: any) => item.sessionId === sessionId.value)
   historyInfo.forEach((item: any) => {
@@ -113,7 +124,7 @@ const saveHistory = (context: { role: string; content: string }[]) => {
     sessionId: sessionId.value,
     mode: selectMode.value,
     timeStr: dayjs().format('YYYY-MM-DD HH:mm:ss'),
-    title: context[0].content,
+    title: context?.[0]?.content ?? '',
     desc: context.length > 1 ? context[context.length - 1].content : '',
     context,
     isLast: true

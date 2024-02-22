@@ -61,7 +61,7 @@ const handleConfirm = () => {
   localStorage.setItem('API_KEY', API_KEY.value)
   dialogVisible.value = false
 }
-const emit = defineEmits(['saveHistory'])
+const emit = defineEmits(['saveHistory', 'clear'])
 
 watch(chatContext.value, (val) => {
   emit(
@@ -91,6 +91,7 @@ const initChat = (val?: any) => {
 const clearChat = () => {
   chatMessages.value.splice(0, chatMessages.value.length)
   chatContext.value.splice(0, chatContext.value.length)
+  emit('clear')
 }
 
 async function handleInputEnter() {

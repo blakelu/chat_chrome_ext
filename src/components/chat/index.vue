@@ -128,7 +128,7 @@ const options = [
     label: '专业DBA'
   }
 ]
-const emit = defineEmits(['saveHistory'])
+const emit = defineEmits(['saveHistory', 'clear'])
 
 watch(chatContext.value, (val) => {
   emit('saveHistory', val)
@@ -141,7 +141,6 @@ watch(
   }
 )
 const initChat = (val?: any) => {
-  console.log(props.context, 11111)
   const arr = val || props.context
   chatContext.value.splice(0, chatContext.value.length, ...arr)
   chatMessages.value = arr.map((item: any, index: number) => {
@@ -156,6 +155,7 @@ const initChat = (val?: any) => {
 const clearChat = () => {
   chatMessages.value.splice(0, chatMessages.value.length)
   chatContext.value.splice(0, chatContext.value.length)
+  emit('clear')
 }
 const composing = ref(false)
 const USER_AVATAR = 'https://cdn.ysservice.com.cn/web/test/user.png'
