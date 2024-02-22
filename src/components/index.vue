@@ -7,19 +7,20 @@
           <el-tooltip class="box-item" effect="dark" :content="item.desc" placement="bottom"> {{ item.value }}</el-tooltip>
         </el-radio>
       </el-radio-group>
-      <div style="margin-left: auto">
-        <el-button text type="" @click="historyDrawer = true">
-          <el-icon size="20" color="#333"><ep-clock /></el-icon>
-        </el-button>
-        <el-button style="margin-left: 0" type="success" circle size="small" @click="addNewSession">
-          <el-icon><ep-circle-plus-filled /></el-icon>
-        </el-button>
-      </div>
     </div>
     <Chatgpt v-if="selectMode != 'gemini'" ref="contentRef" :model="selectMode" :context="context" @saveHistory="saveHistory" />
     <Gemini v-else ref="contentRef" :model="selectMode" :context="context" />
     <!-- 历史记录 drawer -->
     <History v-model:drawer="historyDrawer" :sessionId="sessionId" @navToHistory="navToHistory" @reload="initLastInfo" />
+    <!-- 底部 -->
+    <div class="bottom_wrap">
+      <el-button text type="" @click="historyDrawer = true">
+        <el-icon size="20" color="#333"><ep-clock /></el-icon>
+      </el-button>
+      <el-button style="margin-left: 0" text type="" @click="addNewSession">
+        <el-icon size="20" color="#4540ff"><ep-circle-plus-filled /></el-icon>
+      </el-button>
+    </div>
   </div>
 </template>
 
@@ -136,6 +137,16 @@ const saveHistory = (context: { role: string; content: string }[]) => {
       color: #666666;
       flex-shrink: 0;
     }
+  }
+}
+.bottom_wrap {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  white-space: nowrap;
+  padding: 0 20px 20px 0;
+  button {
+    padding: 8px;
   }
 }
 </style>
