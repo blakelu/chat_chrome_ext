@@ -9,14 +9,15 @@
       </el-radio-group>
     </div>
     <Chatgpt
-      v-if="selectMode != 'gemini'"
+      v-if="selectMode != 'gemini' && selectMode != 'dall-e-3'"
       ref="contentRef"
       :model="selectMode"
       :context="currentContext"
       @clear="clearCurrentChat"
       @saveHistory="saveHistory"
     />
-    <Gemini v-else ref="contentRef" :model="selectMode" :context="currentContext" @clear="clearCurrentChat" @saveHistory="saveHistory" />
+    <!-- <Gemini v-else-if="selectMode === 'gemini'" ref="contentRef" :model="selectMode" :context="currentContext" @clear="clearCurrentChat" @saveHistory="saveHistory" />
+    <Dalle3 v-else ref="contentRef" :model="selectMode" /> -->
     <!-- 历史记录 drawer -->
     <History v-model:drawer="historyDrawer" :sessionId="sessionId" @navToHistory="navToHistory" @reload="initLastInfo" />
     <!-- 底部 -->
@@ -34,27 +35,33 @@
 <script lang="ts" setup>
 import { v4 as uuidv4 } from 'uuid'
 import dayjs from 'dayjs'
-import Chatgpt from './chat/index.vue'
+import Chatgpt from './chat/index1.vue'
 import Gemini from './gemini/index.vue'
+import Dalle3 from './dalle3/index.vue'
 import History from './history/index.vue'
 
 const options = [
   {
-    value: 'gpt-3.5-turbo',
-    desc: 'GPT-3.5, 速度较快，能力一般'
+    value: 'gpt-4-turbo',
+    desc: '遥遥遥遥领先'
   },
   {
-    value: 'gpt-4',
+    value: 'gpt-4-0125-preview',
     desc: '遥遥领先'
   },
   {
-    value: 'gpt-4-coze',
-    desc: '支持画图，速度相对gpt4较慢'
-  },
-  {
-    value: 'gemini',
-    desc: 'google的辣鸡模型，凑活用'
+    value: 'gpt-3.5-turbo',
+    desc: 'GPT-3.5, 速度较快，能力一般'
   }
+
+  // {
+  //   value: 'dall-e-3',
+  //   desc: '画图的'
+  // },
+  // {
+  //   value: 'gemini',
+  //   desc: 'google的辣鸡模型，凑活用'
+  // }
 ]
 const selectMode = ref('')
 const contentRef = ref<any>(null)

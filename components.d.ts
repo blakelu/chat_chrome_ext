@@ -11,6 +11,7 @@ declare module '@vue/runtime-core' {
   export interface GlobalComponents {
     Chat: typeof import('./src/components/chat/index.vue')['default']
     Components: typeof import('./src/components/index.vue')['default']
+    Dalle3: typeof import('./src/components/dalle3/index.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElDialog: typeof import('element-plus/es')['ElDialog']
     ElDrawer: typeof import('element-plus/es')['ElDrawer']
@@ -26,6 +27,7 @@ declare module '@vue/runtime-core' {
     EpLoading: typeof import('~icons/ep/loading')['default']
     Gemini: typeof import('./src/components/gemini/index.vue')['default']
     History: typeof import('./src/components/history/index.vue')['default']
+    Index1: typeof import('./src/components/chat/index1.vue')['default']
     Message: typeof import('./src/components/chat/message.vue')['default']
   }
 }
