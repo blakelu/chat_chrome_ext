@@ -41,18 +41,24 @@ const isAssistant = computed(() => props.message.role === 'model' || props.messa
 }
 
 .content-user {
-  background: #186c3e;
-  color: white !important;
+  // background: #b0daff !important;
+  // color: #00274d !important;
+  // background-color: #003366 !important;
+  // color: #FFFFFF !important;
 }
 
 .content-assistant {
-  background: #f0f0f0;
+  // background: #e9f0f7 !important;
+  // color: #333333 !important;
+  // background-color: #cce8cc !important;
+  // color: #205520 !important;
+  background-color: #d9e8f5 !important;
 }
 
 .message {
   display: flex;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 14px;
 }
 
 .message.is-self {
@@ -60,8 +66,8 @@ const isAssistant = computed(() => props.message.role === 'model' || props.messa
 }
 
 .avatar {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
@@ -73,11 +79,14 @@ const isAssistant = computed(() => props.message.role === 'model' || props.messa
 }
 
 .content {
-  color: #333;
-  padding: 0 10px;
+  font-size: 13px;
+  font-family: PingFangSC-Regular;
+  color: #333333;
+  background-color: #FFFFFF;
+  padding: 8px 12px;
   border-radius: 10px;
-  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-  max-width: 80%;
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1);
+  max-width: 85%;
   word-wrap: break-word;
   overflow-x: auto;
 }

@@ -1,27 +1,23 @@
 // 不支持ajax 使用fetch代替
 // import { queryLastUnfinishTaskByThirdVerifyId } from '@/api/home'
-console.log('service worker')
 
-// function queryOrder(thirdVerifyId = '') {
-//   const params = { thirdVerifyId }
-//   queryLastUnfinishTaskByThirdVerifyId(params).then((res: any) => {
-//     console.log('结果:', res)
-//   })
-// }
-// queryOrder('12312312')
-const GOOGLE_ORIGIN = 'https://www.google.com';
+chrome.commands.onCommand.addListener((command, tab) => {
+  if (command === 'openSidePanel') {
+    chrome.sidePanel.open({ windowId: tab.windowId })
+  }
+});
 
 // Allows users to open the side panel by clicking on the action toolbar icon
 chrome.sidePanel
   .setPanelBehavior({ openPanelOnActionClick: true })
   .catch((error) => console.error(error));
 
-chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
-  if (!tab.url) return;
-  // Enables the side panel on google.com
-  await chrome.sidePanel.setOptions({
-    tabId,
-    path: 'popup.html',
-    enabled: true
-  });
-});
+// chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
+//   if (!tab.url) return;
+//   // Enables the side panel on google.com
+//   await chrome.sidePanel.setOptions({
+//     tabId,
+//     path: 'popup.html',
+//     enabled: true
+//   });
+// });

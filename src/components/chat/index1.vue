@@ -8,29 +8,35 @@
     />
   </div>
   <div class="operate_wrap">
+    <div class="flex justify-end mr-[72px] mb-[7px]">
+      <el-tooltip effect="dark" content="设置" placement="top">
+        <el-button text type="" @click="dialogVisible = true">
+          <el-icon size="20" color="#333"><ep-setting /></el-icon>
+        </el-button>
+      </el-tooltip>
+      <el-tooltip effect="dark" content="清空对话" placement="top">
+        <el-button text type="" style="margin-left: 0" @click="clearChat">
+          <el-icon size="20" color="#333"><ep-delete /></el-icon>
+        </el-button>
+      </el-tooltip>
+    </div>
+
     <el-input
       v-model="input"
-      placeholder="请输入您的问题"
-      @keydown.enter="handleInputEnter"
+      type="textarea"
+      :rows="3"
+      placeholder="请输入您的问题,Ctrl+Enter发送"
+      @keydown.ctrl.enter="handleInputEnter"
       @compositionstart="composing = true"
       @compositionend="composing = false"
     ></el-input>
-    <el-button @click="clearChat">清除聊天记录 </el-button>
-    <el-button @click="dialogVisible = true">设置API</el-button>
+    <el-icon size="22" color="#666" @click="handleInputEnter" class="enter-icon"><ep-promotion /></el-icon>
   </div>
-  <el-dialog v-model="dialogVisible" title="提示" width="80%">
-    <el-input v-model="API_URL" placeholder="请输入Api url" />
-    <el-input v-model="API_KEY" placeholder="请输入Api key" />
-    <!-- <a href="https://freeapi.iil.im/" target="_blank">获取我的API Key</a> -->
-    <template #footer>
-      <span class="dialog-footer">
-        <el-button type="primary" @click="handleConfirm"> 确认 </el-button>
-      </span>
-    </template>
-  </el-dialog>
+  <choose-api v-model:show="dialogVisible" @confirm="handleConfirm" />
 </template>
 <script lang="ts" setup>
 import OpenAI from 'openai'
+import chooseApi from './chooseApi.vue'
 
 interface Message {
   id: number
@@ -48,6 +54,10 @@ const props = defineProps({
     type: String,
     default: 'gpt-3.5-turbo'
   },
+  fuckMode: {
+    type: Boolean,
+    default: false
+  },
   context: {
     type: Array as any,
     default: () => []
@@ -56,25 +66,28 @@ const props = defineProps({
 const chatMessages = ref<Message[]>([]) // 聊天的message
 const chatContext = ref<SubmitMessage[]>([]) // 聊天上下文
 const input = ref<string>('')
-const selectMode = ref(false)
-const dialogVisible = ref(false)
 const loading = ref(false) // 回复loading
-const API_KEY = ref(localStorage.GPT_API_KEY || '')
-const API_URL = ref(localStorage.GPT_API_URL || '')
+const dialogVisible = ref(false)
+const API_KEY = useStorage('GPT_API_KEY', '')
+const API_URL = useStorage('GPT_API_URL', '')
 
-const openai = new OpenAI({ baseURL: API_URL.value, apiKey: API_KEY.value, dangerouslyAllowBrowser: true })
+let openai: any = {}
+const initOpenAI = () => {
+  openai = new OpenAI({ baseURL: API_URL.value + '/v1', apiKey: API_KEY.value, dangerouslyAllowBrowser: true })
+}
 
 onMounted(() => {
   if (!API_KEY.value) {
     dialogVisible.value = true
   }
   initChat()
+  initOpenAI()
 })
 
-const handleConfirm = () => {
-  localStorage.setItem('GPT_API_KEY', API_KEY.value)
-  localStorage.setItem('GPT_API_URL', API_URL.value)
-  dialogVisible.value = false
+const handleConfirm = (data: any) => {
+  API_URL.value = data.API_URL
+  API_KEY.value = data.API_KEY
+  initOpenAI()
 }
 
 const systemPrompt = {
@@ -188,17 +201,16 @@ async function handleInputEnter() {
   chatMessages.value.push(createMessage(chatMessages.value.length + 1, 'assistant', ASSISTANT_AVATAR, ''))
   let id = chatMessages.value.length + 1
 
-  let customPrompt: any = []
-  if (selectMode.value) {
-    // systemPrompt.content = prompts[selectMode.value]
-    systemPrompt.content = prompts.fuckMode
-    customPrompt = [systemPrompt, ...chatContext.value.slice(-29)]
+  let customPrompt: any = [...chatContext.value.slice(-29)]
+  if (props.fuckMode && props.model === 'gpt-3.5-turbo') {
+    systemPrompt.content = prompts.fuckMode;
+    customPrompt.unshift(systemPrompt);
   }
 
   loading.value = true
   const completion = await openai.chat.completions.create({
     model: props.model,
-    messages: selectMode.value ? customPrompt : chatContext.value.slice(-29),
+    messages: customPrompt,
     stream: true
   })
 
@@ -212,7 +224,6 @@ async function handleInputEnter() {
   loading.value = false
   scrollToBottom()
 }
-
 
 const messages = ref()
 const scrollToBottom = () => {
@@ -233,20 +244,38 @@ defineExpose({
 </script>
 <style lang="less" scoped>
 :deep(.hljs) {
-  padding: 6px;
+  margin: 6px 0;
+  padding: 10px 6px;
+  white-space: pre-wrap;
 }
 
 .operate_wrap {
   position: fixed;
   bottom: 0;
   left: 0;
-  width: calc(100% - 40px);
+  width: 100%;
   padding: 20px 20px 20px 20px;
+  button {
+    padding: 8px;
+  }
+  .el-textarea {
+    border-radius: 6px;
+    :deep(.el-textarea__inner) {
+      padding-right: 36px;
+      resize: none;
+    }
+  }
+  .enter-icon {
+    position: absolute;
+    right: 32px;
+    bottom: 48px;
+    cursor: pointer;
+  }
 }
 
 .messages {
-  margin-top: 20px;
-  // max-height: 440px;
+  padding: 10px 20px;
+  height: calc(100% - 180px);
   overflow-y: auto;
   :deep(img) {
     width: 100%;

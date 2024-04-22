@@ -29,5 +29,14 @@
     "default_path": "popup.html",
     "openPanelOnActionClick": true
   },
+  "commands": {
+    "openSidePanel": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+P",
+        "mac": "Ctrl+Shift+P"
+      },
+      "description": "Open side panel"
+    }
+  },
   "manifest_version": 3
 }

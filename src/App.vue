@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="app">
     <Index />
   </div>
 </template>
@@ -8,7 +8,7 @@ import Index from '@/components/index.vue'
 </script>
 
 <style scoped lang="less">
-.container {
+.app {
   background: none;
   height: 100%;
 }

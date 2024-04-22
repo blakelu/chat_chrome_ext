@@ -2,16 +2,25 @@
   <div class="chat">
     <div class="mode-select">
       <label>选择模型：</label>
-      <el-radio-group v-model="selectMode" placeholder="请选择模型" size="small" @change="onChangeMode">
-        <el-radio v-for="item in options" :label="item.value">
-          <el-tooltip class="box-item" effect="dark" :content="item.desc" placement="bottom"> {{ item.value }}</el-tooltip>
-        </el-radio>
-      </el-radio-group>
+      <el-select v-model="selectMode" placeholder="选择模型" size="small" style="width: 160px" @change="onChangeMode">
+        <el-option v-for="item in options" :key="item.value" :label="item.value" :value="item.value" />
+      </el-select>
+      <el-input
+        v-if="selectMode === '自定义模型'"
+        v-model="customModel"
+        placeholder="请输入模型"
+        size="small"
+        style="width: 160px"
+        class="ml-[12px] flex-shrink-0"
+      />
+      <el-tooltip effect="dark" content="不稳定，最好用免费账号，避免封号风险" placement="bottom">
+        <el-checkbox v-if="selectMode === 'gpt-3.5-turbo'" v-model="fuckMode" class="ml-[12px]">国粹模式</el-checkbox>
+      </el-tooltip>
     </div>
     <Chatgpt
-      v-if="selectMode != 'gemini' && selectMode != 'dall-e-3'"
       ref="contentRef"
-      :model="selectMode"
+      :model="selectMode != '自定义模型' ? selectMode : customModel"
+      :fuckMode="fuckMode"
       :context="currentContext"
       @clear="clearCurrentChat"
       @saveHistory="saveHistory"
@@ -22,12 +31,16 @@
     <History v-model:drawer="historyDrawer" :sessionId="sessionId" @navToHistory="navToHistory" @reload="initLastInfo" />
     <!-- 底部 -->
     <div class="bottom_wrap">
-      <el-button text type="" @click="historyDrawer = true">
-        <el-icon size="20" color="#333"><ep-clock /></el-icon>
-      </el-button>
-      <el-button style="margin-left: 0" text type="" @click="addNewSession">
-        <el-icon size="20" color="#4540ff"><ep-circle-plus-filled /></el-icon>
-      </el-button>
+      <el-tooltip effect="dark" content="历史记录" placement="top">
+        <el-button text type="" @click="historyDrawer = true">
+          <el-icon size="20" color="#333"><ep-clock /></el-icon>
+        </el-button>
+      </el-tooltip>
+      <el-tooltip effect="dark" content="新对话" placement="top">
+        <el-button style="margin-left: 0" text type="" @click="addNewSession">
+          <el-icon size="20" color="#666"><ep-circle-plus-filled /></el-icon>
+        </el-button>
+      </el-tooltip>
     </div>
   </div>
 </template>
@@ -52,6 +65,10 @@ const options = [
   {
     value: 'gpt-3.5-turbo',
     desc: 'GPT-3.5, 速度较快，能力一般'
+  },
+  {
+    value: '自定义模型',
+    desc: '自定义模型'
   }
 
   // {
@@ -63,15 +80,13 @@ const options = [
   //   desc: 'google的辣鸡模型，凑活用'
   // }
 ]
-const selectMode = ref('')
+const selectMode = useStorage('mode', 'gpt-3.5-turbo')
+const customModel = useStorage('customModel', '') // 自定义模型
+const fuckMode = useStorage('fuckMode', false) // 国粹模式
 const contentRef = ref<any>(null)
 const historyDrawer = ref<boolean>(false) // 历史记录弹窗
 const sessionId = ref('') //  当前会话Id
 const currentContext = ref<any>([]) // 当前会话上下文
-
-watch(selectMode, (val) => {
-  localStorage.mode = val
-})
 
 // 根据timeStr距离当前最近的时间，获取上一次的历史记录
 const initLastInfo = () => {
@@ -146,35 +161,33 @@ const saveHistory = (context: { role: string; content: string }[]) => {
 </script>
 
 <style lang="less" scoped>
-:deep(.hljs) {
-  padding: 6px;
-}
-
 .chat {
   display: flex;
   flex-direction: column;
   height: 100%;
   min-height: 260px;
-  background: linear-gradient(0deg, #abbaab, #ffffff);
-  padding: 20px 20px 110px 20px;
+  // background: linear-gradient(0deg, #abbaab, #ffffff);
+  background-color: #f3f9f9;
   box-sizing: border-box;
   .mode-select {
     display: flex;
     align-items: center;
+    background: linear-gradient(226deg, #1fca6d, #43bff0);
+    padding: 12px 16px;
 
     label {
       margin-right: 6px;
-      color: #666666;
+      font-weight: 500;
+      color: #fff;
       flex-shrink: 0;
     }
   }
 }
 .bottom_wrap {
   position: fixed;
-  bottom: 0;
-  right: 0;
+  bottom: 100px;
+  right: 20px;
   white-space: nowrap;
-  padding: 0 20px 20px 0;
   button {
     padding: 8px;
   }

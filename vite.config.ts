@@ -17,7 +17,7 @@ export const commonConfig = {
       manifest: './src/manifest.json'
     }),
     AutoImport({
-      imports: ['vue', 'vue-router'],
+      imports: ['vue', 'vue-router', '@vueuse/core'],
       dts: true,
       resolvers: [
         ElementPlusResolver(),
