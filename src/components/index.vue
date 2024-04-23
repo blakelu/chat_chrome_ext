@@ -14,7 +14,7 @@
         class="ml-[12px] flex-shrink-0"
       />
       <el-tooltip effect="dark" content="不稳定，最好用免费账号，避免封号风险" placement="bottom">
-        <el-checkbox v-if="selectMode === 'gpt-3.5-turbo'" v-model="fuckMode" class="ml-[12px]">国粹模式</el-checkbox>
+        <el-checkbox v-if="selectMode === 'gpt-3.5-turbo'" v-model="fuckMode" class="ml-[12px] !h-auto">国粹模式</el-checkbox>
       </el-tooltip>
     </div>
     <Chatgpt

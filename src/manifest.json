@@ -32,10 +32,17 @@
   "commands": {
     "openSidePanel": {
       "suggested_key": {
-        "default": "Ctrl+Shift+P",
-        "mac": "Ctrl+Shift+P"
+        "default": "Ctrl+Shift+I",
+        "mac": "MacCtrl+Shift+I"
       },
       "description": "Open side panel"
+    },
+    "newChat": {
+      "suggested_key": {
+        "default": "Ctrl+I",
+        "mac": "MacCtrl+I"
+      },
+      "description": "New chat"
     }
   },
   "manifest_version": 3

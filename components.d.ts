@@ -25,6 +25,7 @@ declare module '@vue/runtime-core' {
     ElTabPane: typeof import('element-plus/es')['ElTabPane']
     ElTabs: typeof import('element-plus/es')['ElTabs']
     ElTooltip: typeof import('element-plus/es')['ElTooltip']
+    Empty: typeof import('./src/components/chat/empty.vue')['default']
     EpCirclePlusFilled: typeof import('~icons/ep/circle-plus-filled')['default']
     EpClock: typeof import('~icons/ep/clock')['default']
     EpDelete: typeof import('~icons/ep/delete')['default']
