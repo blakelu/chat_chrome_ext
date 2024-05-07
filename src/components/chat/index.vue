@@ -371,7 +371,7 @@ defineExpose({
   .enter-icon {
     position: absolute;
     right: 32px;
-    bottom: 48px;
+    bottom: 58px;
     cursor: pointer;
   }
 }
