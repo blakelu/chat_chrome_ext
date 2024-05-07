@@ -3,90 +3,72 @@
     <div class="mode-select">
       <label>选择模型：</label>
       <el-select v-model="selectMode" placeholder="选择模型" size="small" style="width: 160px" @change="onChangeMode">
-        <el-option v-for="item in options" :key="item.value" :label="item.value" :value="item.value" />
+        <el-option v-for="item in options" :key="item" :label="item" :value="item" />
+        <template #footer>
+          <el-button v-if="!isAdding" text bg size="small" @click="addModel"> Add a model </el-button>
+          <template v-else>
+            <el-input ref="inputRef" v-model="optionName" class="mb-[8px]" placeholder="input model name" size="small" />
+            <el-button type="primary" size="small" @click="onConfirm"> confirm </el-button>
+            <el-button size="small" @click="clear">cancel</el-button>
+          </template>
+        </template>
       </el-select>
-      <el-input
-        v-if="selectMode === '自定义模型'"
-        v-model="customModel"
-        placeholder="请输入模型"
-        size="small"
-        style="width: 160px"
-        class="ml-[12px] flex-shrink-0"
-      />
+
       <el-tooltip effect="dark" content="不稳定，最好用免费账号，避免封号风险" placement="bottom">
-        <el-checkbox v-if="selectMode === 'gpt-3.5-turbo'" v-model="fuckMode" class="ml-[12px] !h-auto">国粹模式</el-checkbox>
+        <el-checkbox v-if="selectMode === 'gpt-3.5-turbo'" v-model="fuckMode" class="ml-[12px] !h-auto">自由模式</el-checkbox>
       </el-tooltip>
     </div>
     <Chatgpt
       ref="contentRef"
-      :model="selectMode != '自定义模型' ? selectMode : customModel"
+      :model="selectMode"
       :fuckMode="fuckMode"
       :context="currentContext"
+      @showHistory="historyDrawer = true"
+      @addNewSession="addNewSession"
       @clear="clearCurrentChat"
       @saveHistory="saveHistory"
     />
-    <!-- <Gemini v-else-if="selectMode === 'gemini'" ref="contentRef" :model="selectMode" :context="currentContext" @clear="clearCurrentChat" @saveHistory="saveHistory" />
-    <Dalle3 v-else ref="contentRef" :model="selectMode" /> -->
+    <!-- <Gemini v-else-if="selectMode === 'gemini'" ref="contentRef" :model="selectMode" :context="currentContext" @clear="clearCurrentChat" @saveHistory="saveHistory" /> -->
     <!-- 历史记录 drawer -->
     <History v-model:drawer="historyDrawer" :sessionId="sessionId" @navToHistory="navToHistory" @reload="initLastInfo" />
-    <!-- 底部 -->
-    <div class="bottom_wrap">
-      <el-tooltip effect="dark" content="历史记录" placement="top">
-        <el-button text type="" @click="historyDrawer = true">
-          <el-icon size="20" color="#333"><ep-clock /></el-icon>
-        </el-button>
-      </el-tooltip>
-      <el-tooltip effect="dark" content="新对话" placement="top">
-        <el-button style="margin-left: 0" text type="" @click="addNewSession">
-          <el-icon size="20" color="#666"><ep-circle-plus-filled /></el-icon>
-        </el-button>
-      </el-tooltip>
-    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { v4 as uuidv4 } from 'uuid'
 import dayjs from 'dayjs'
-import Chatgpt from './chat/index1.vue'
+import Chatgpt from './chat/index.vue'
 import Gemini from './gemini/index.vue'
-import Dalle3 from './dalle3/index.vue'
 import History from './history/index.vue'
 
-const options = [
-  {
-    value: 'gpt-4-turbo',
-    desc: '遥遥遥遥领先'
-  },
-  {
-    value: 'gpt-4-0125-preview',
-    desc: '遥遥领先'
-  },
-  {
-    value: 'gpt-3.5-turbo',
-    desc: 'GPT-3.5, 速度较快，能力一般'
-  },
-  {
-    value: '自定义模型',
-    desc: '自定义模型'
-  }
-
-  // {
-  //   value: 'dall-e-3',
-  //   desc: '画图的'
-  // },
-  // {
-  //   value: 'gemini',
-  //   desc: 'google的辣鸡模型，凑活用'
-  // }
-]
+const options = useStorage('modelList', ['gpt-3.5-turbo', 'gpt-4-0125-preview', 'gpt-4-turbo-2024-04-09', 'dall-e-3'])
 const selectMode = useStorage('mode', 'gpt-3.5-turbo')
-const customModel = useStorage('customModel', '') // 自定义模型
+const inputRef = ref()
+const isAdding = ref(false)
+const optionName = ref('')
 const fuckMode = useStorage('fuckMode', false) // 国粹模式
 const contentRef = ref<any>(null)
 const historyDrawer = ref<boolean>(false) // 历史记录弹窗
 const sessionId = ref('') //  当前会话Id
 const currentContext = ref<any>([]) // 当前会话上下文
+
+const addModel = () => {
+  isAdding.value = true
+  nextTick(() => {
+    inputRef.value?.focus()
+  })
+}
+const onConfirm = () => {
+  if (optionName.value) {
+    options.value.push(optionName.value)
+    clear()
+  }
+}
+
+const clear = () => {
+  optionName.value = ''
+  isAdding.value = false
+}
 
 // 根据timeStr距离当前最近的时间，获取上一次的历史记录
 const initLastInfo = () => {

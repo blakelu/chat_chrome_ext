@@ -1,10 +1,10 @@
 <template>
   <div class="message" :class="{ 'is-self': isUser }">
     <div class="avatar" :class="{ 'avatar-left': isUser, 'avatar-right': isAssistant }">
-      <img :src="message.avatar" />
+      <img :src="realMessage.avatar" />
     </div>
-    <div class="content" :class="{ 'content-user': isUser, 'content-assistant': isAssistant }">
-      <div v-html="md.render(message.content)"></div>
+    <div class="content" :class="{ 'content-assistant': isAssistant }">
+      <div v-html="md.render(realMessage.content)"></div>
       <el-icon v-if="isAssistant && loading" style="margin-top: 4px" class="is-loading" color="#333">
         <ep-loading />
       </el-icon>
@@ -26,6 +26,20 @@ const props = defineProps({
   }
 })
 
+const realMessage = computed(() => {
+  const { content } = props.message
+  if (Array.isArray(content)) {
+    const textInfo = content.find((item) => item.type === 'text')
+    const imageList = content.filter((item) => item.type === 'image_url').map((item) => item.image_url.url)
+    const imgs = imageList.map((item) => `![image](${item})`).join('\n')
+    return {
+      ...props.message,
+      content: `${imgs}\n${textInfo?.text}`
+    }
+  }
+  return props.message
+})
+
 const isUser = computed(() => props.message.role === 'user')
 
 const isAssistant = computed(() => props.message.role === 'model' || props.message.role === 'assistant')
@@ -40,25 +54,17 @@ const isAssistant = computed(() => props.message.role === 'model' || props.messa
   margin-right: 10px;
 }
 
-.content-user {
-  // background: #b0daff !important;
-  // color: #00274d !important;
-  // background-color: #003366 !important;
-  // color: #FFFFFF !important;
-}
-
 .content-assistant {
-  // background: #e9f0f7 !important;
-  // color: #333333 !important;
-  // background-color: #cce8cc !important;
-  // color: #205520 !important;
   background-color: #d9e8f5 !important;
 }
 
 .message {
+  &:not(:last-child) {
+    margin-bottom: 14px;
+  }
   display: flex;
   align-items: center;
-  margin-bottom: 14px;
+  // margin-bottom: 14px;
 }
 
 .message.is-self {
@@ -82,7 +88,7 @@ const isAssistant = computed(() => props.message.role === 'model' || props.messa
   font-size: 13px;
   font-family: PingFangSC-Regular;
   color: #333333;
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   padding: 8px 12px;
   border-radius: 10px;
   box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1);

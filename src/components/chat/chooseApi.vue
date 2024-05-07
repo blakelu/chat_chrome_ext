@@ -1,108 +1,112 @@
 <template>
-  <div class="choose-dialog">
-    <el-dialog v-model="dialogVisible" title="提示" width="80%">
-      <el-tabs v-model="apiSelectedValue" type="card" editable @edit="handleTabsEdit">
-        <el-tab-pane v-for="item in apiList" :key="item.name" :label="item.title" :name="item.name">
-          <el-input v-model="item.API_URL" placeholder="请输入Api url" />
-          <el-input v-model="item.API_KEY" placeholder="请输入Api key" />
-          <div class="text-[12px] text-[#2761ff]">
-            <a href="https://burn.hair/register?aff=ac6k" target="_blank">获取我的API Key</a>
-            <a href="https://api1.zhtec.xyz/register?aff=8fuF" target="_blank" class="ml-[10px]">获取我的API Key</a>
-            <a href="https://gptgod.online/#/register?invite_code=37n35elx0pt5p99lxoxysiaky" target="_blank" class="ml-[10px]">获取我的API Key</a>
-          </div>
-        </el-tab-pane>
-      </el-tabs>
-
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button type="primary" @click="handleConfirm"> 确认 </el-button>
-        </span>
-      </template>
-    </el-dialog>
+  <div class="choose_api">
+    <div class="text-[12px] text-[#2761ff]">
+      <a href="https://burn.hair/register?aff=ac6k" target="_blank">获取我的API Key</a>
+      <a href="https://hot-sam-xcstudio6.koyeb.app/register?aff=5B0Y" target="_blank" class="ml-[10px]">获取我的API Key</a>
+      <a href="https://api1.zhtec.xyz/register?aff=8fuF" target="_blank" class="ml-[10px]">获取我的API Key</a>
+    </div>
+    <div ref="apiListRef">
+      <div v-for="(item, index) in apiList" :key="index" class="list-item" :class="{ active: item.selected }">
+        <img
+          :src="item.selected ? selected : unselect"
+          class="w-[18px] h-[18px] mr-[10px] cursor-pointer'"
+          @click="handleClick(item, index)"
+        />
+        <div class="flex-1">
+          <el-input v-model="item.API_URL" size="small" placeholder="请输入Api Url" />
+          <el-input v-model="item.API_KEY" size="small" placeholder="请输入Api Key" class="mt-[8px]" />
+          <el-input v-model="item.remark" size="small" placeholder="请输入备注" class="mt-[8px]" />
+        </div>
+        <el-icon v-if="apiList.length > 1" size="16" color="#666" class="ml-[10px] cursor-pointer" @click="handleDelete(item, index)"
+          ><ep-delete
+        /></el-icon>
+      </div>
+      <div class="flex justify-center mt-[10px]">
+        <el-button type="primary" @click="handleAdd">添加</el-button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { TabPaneName } from 'element-plus'
+import selected from '@/assets/icons/selected.png'
+import unselect from '@/assets/icons/unselect.png'
+import { useDraggable, type UseDraggableReturn } from 'vue-draggable-plus'
 
-const props = defineProps({
-  show: {
-    type: Boolean,
-    default: false
-  }
-})
-const emit = defineEmits(['update:show', 'confirm'])
-
-const dialogVisible = useVModel(props, 'show', emit)
+const emit = defineEmits(['confirm'])
+const apiListRef = ref()
 const apiList = useStorage('apiList', [
   {
-    title: 'api1',
-    name: '1',
     API_URL: 'https://chatapi.ylsagi.io',
-    API_KEY: '1'
+    API_KEY: '1',
+    remark: '',
+    selected: true
   },
   {
-    title: 'api2',
-    name: '2',
     API_URL: 'https://chat.flss.world/api/openai',
-    API_KEY: 'nk-2311676378'
+    API_KEY: 'nk-2311676378',
+    remark: '',
+    selected: false
   }
 ])
-const apiSelectedValue = ref(localStorage.getItem('apiSelectedValue') || '1')
-const handleTabsEdit = async (targetName: TabPaneName | undefined, action: 'remove' | 'add') => {
-  if (action === 'add') {
-    let tabIndex = apiList.value.length
-    const newTabName = `${++tabIndex}`
-    apiList.value.push({
-      title: `api${tabIndex}`,
-      name: newTabName,
-      API_URL: '',
-      API_KEY: ''
-    })
-    apiSelectedValue.value = newTabName
-  } else if (action === 'remove') {
-    const res = await ElMessageBox.confirm('确认删除吗?', '提示', {
-      confirmButtonText: 'OK',
-      cancelButtonText: 'Cancel',
-      type: 'warning'
-    })
-    if (res) {
-      const tabs = apiList.value
-      let activeName = apiSelectedValue.value
-      if (activeName === targetName) {
-        tabs.forEach((tab, index) => {
-          if (tab.name === targetName) {
-            const nextTab = tabs[index + 1] || tabs[index - 1]
-            if (nextTab) {
-              activeName = nextTab.name
-            }
-          }
-        })
-      }
 
-      apiSelectedValue.value = activeName
-      apiList.value = tabs.filter((tab) => tab.name !== targetName)
-    }
-  }
-}
-const handleConfirm = () => {
-  dialogVisible.value = false
-  localStorage.setItem('apiSelectedValue', apiSelectedValue.value)
-  emit('confirm', {
-    API_URL: apiList.value[Number(apiSelectedValue.value) - 1].API_URL,
-    API_KEY: apiList.value[Number(apiSelectedValue.value) - 1].API_KEY
+useDraggable<UseDraggableReturn>(apiListRef, apiList, { animation: 150, handle: '.list-item' })
+
+const handleAdd = () => {
+  apiList.value.push({
+    API_URL: '',
+    API_KEY: '',
+    remark: '',
+    selected: false
   })
+}
+
+const handleClick = (item: any, index: number) => {
+  apiList.value.forEach((item: any) => {
+    item.selected = false
+  })
+  item.selected = true
+  emit('confirm', {
+    API_URL: item.API_URL,
+    API_KEY: item.API_KEY
+  })
+}
+
+const handleDelete = async (item: any, index: number) => {
+  const res = await ElMessageBox.confirm('Are you sure to delete?', 'tip', {
+    confirmButtonText: 'OK',
+    cancelButtonText: 'Cancel',
+    type: 'warning'
+  })
+  if (res === 'confirm') {
+    if (item.selected) {
+      const nextIndex = index > 0 ? index - 1 : index + 1
+      const nextSelected = apiList.value[nextIndex]
+      nextSelected.selected = true
+      emit('confirm', {
+        API_URL: nextSelected.API_URL,
+        API_KEY: nextSelected.API_KEY
+      })
+    }
+    apiList.value.splice(index, 1)
+  }
 }
 </script>
 <style lang="less" scoped>
-.choose-dialog {
-  :deep(.el-tabs__content) {
-    padding: 12px;
-    background: #fafafa;
+.list-item {
+  margin: 16px 0;
+  padding: 12px 10px;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  background-color: #fafafa;
+  display: flex;
+  align-items: center;
+  cursor: move;
+  &:hover {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   }
 }
-
-.el-input {
-  margin-bottom: 10px;
+.active {
+  border: 1px solid #2da7e0;
 }
 </style>
