@@ -14,7 +14,13 @@
         </template>
       </el-select>
 
-      <el-input v-if="selectMode === 'tts-az-1'" v-model="ttsvoice" class="ml-3 !w-[140px]" placeholder="请输入发音人" size="small" />
+      <el-input
+        v-if="['tts-az-1', 'tts-1', 'tts-1-hd'].includes(selectMode)"
+        v-model="ttsvoice"
+        class="ml-3 !w-[140px]"
+        placeholder="请输入发音人"
+        size="small"
+      />
       <a
         v-if="selectMode === 'tts-az-1'"
         href="https://learn.microsoft.com/en-us/azure/ai-services/speech-service/language-support?tabs=tts"

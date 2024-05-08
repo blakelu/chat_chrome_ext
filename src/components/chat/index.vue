@@ -212,8 +212,13 @@ const initChat = (val?: any) => {
   const arr = val || props.context
   chatContext.value.splice(0, chatContext.value.length, ...arr)
   chatMessages.value = arr.map((item: any, index: number) => {
+    let content = item.content
+    if (content.indexOf('"type":"audio"') !== -1) {
+      content = JSON.parse(content)
+    }
     return {
       ...item,
+      content,
       id: index + 1,
       avatar: item.role === 'user' ? USER_AVATAR : ASSISTANT_AVATAR
     }
@@ -237,7 +242,7 @@ function createMessage(id: any, role: string, avatar: string, content: string) {
 }
 function updateMessageAndContext(id: number, content: any) {
   chatMessages.value[id].content = content
-  chatContext.value.push({ role: 'assistant', content })
+  chatContext.value.push({ role: 'assistant', content: JSON.stringify(content) })
 }
 
 async function handleInputEnter() {
@@ -279,7 +284,7 @@ async function handleInputEnter() {
       const url = `![image](${image.data[0].url})`
       updateMessageAndContext(temporaryMessageId - 1, url)
     }
-    else if (['tts-az-1'].includes(props.model)) {
+    else if (['tts-1', 'tts-1-hd','tts-az-1'].includes(props.model)) {
       const mp3 = await openai.audio.speech.create({
         model: props.model,
         voice: props.ttsvoice,

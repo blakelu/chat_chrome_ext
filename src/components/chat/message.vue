@@ -54,6 +54,7 @@ const formatMessage = async (val: any) => {
         audioUrl: content.audioUrl
       }
     }
+    return
   }
   realMessage.value = val
 }
