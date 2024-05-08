@@ -275,9 +275,9 @@ async function handleInputEnter() {
   const isOpenAI = notOpenAIList.every((item: string) => API_URL.value.indexOf(item) === -1)
   try {
     if (props.model === 'dall-e-3' && isOpenAI) {
-      const image = await openai.images.generate({ model: props.model, prompt: prompt.value })
-      const content = `![image](${image.data[0].url})`
-      updateMessageAndContext(temporaryMessageId - 1, content)
+      const image = await openai.images.generate({ model: props.model, prompt: content })
+      const url = `![image](${image.data[0].url})`
+      updateMessageAndContext(temporaryMessageId - 1, url)
     }
     else if (['tts-az-1'].includes(props.model)) {
       const mp3 = await openai.audio.speech.create({
