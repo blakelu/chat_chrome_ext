@@ -4,7 +4,15 @@
       <img :src="realMessage.avatar" />
     </div>
     <div class="content" :class="{ 'content-assistant': isAssistant }">
-      <div v-html="md.render(realMessage.content)"></div>
+      <div v-if="realMessage.content?.type == 'audio'">
+        <audio controls>
+          <source :src="realMessage.content.audioUrl" type="audio/mpeg" />
+        </audio>
+        <a :href="realMessage.content.audioUrl" target="_blank" download="audio.mp3" class="block mt-2 pl-2 font-[500] text-[#2761ff]"
+          >下载音频(暂不支持历史记录)</a
+        >
+      </div>
+      <div v-else v-html="md.render(realMessage.content)"></div>
       <el-icon v-if="isAssistant && loading" style="margin-top: 4px" class="is-loading" color="#333">
         <ep-loading />
       </el-icon>
@@ -25,20 +33,37 @@ const props = defineProps({
     default: true
   }
 })
+const realMessage = ref<any>({})
 
-const realMessage = computed(() => {
-  const { content } = props.message
+const formatMessage = async (val: any) => {
+  const { content } = val
   if (Array.isArray(content)) {
     const textInfo = content.find((item) => item.type === 'text')
     const imageList = content.filter((item) => item.type === 'image_url').map((item) => item.image_url.url)
     const imgs = imageList.map((item) => `![image](${item})`).join('\n')
-    return {
-      ...props.message,
+    realMessage.value = {
+      ...val,
       content: `${imgs}\n${textInfo?.text}`
     }
+    return
+  } else if (content?.type === 'audio') {
+    realMessage.value = {
+      avatar: val.avatar,
+      content: {
+        type: 'audio',
+        audioUrl: content.audioUrl
+      }
+    }
   }
-  return props.message
-})
+  realMessage.value = val
+}
+watch(
+  () => props.message,
+  (val) => {
+    formatMessage(val)
+  },
+  { immediate: true }
+)
 
 const isUser = computed(() => props.message.role === 'user')
 

@@ -107,6 +107,10 @@ const props = defineProps({
   context: {
     type: Array as any,
     default: () => []
+  },
+  ttsvoice: {
+    type: String,
+    default: 'zh-CN-XiaoxiaoNeural'
   }
 })
 const emit = defineEmits(['showHistory', 'addNewSession', 'saveHistory', 'clear'])
@@ -231,7 +235,7 @@ function createMessage(id: any, role: string, avatar: string, content: string) {
     content
   }
 }
-function updateMessageAndContext(id: number, content: string) {
+function updateMessageAndContext(id: number, content: any) {
   chatMessages.value[id].content = content
   chatContext.value.push({ role: 'assistant', content })
 }
@@ -275,20 +279,22 @@ async function handleInputEnter() {
       const content = `![image](${image.data[0].url})`
       updateMessageAndContext(temporaryMessageId - 1, content)
     }
-    // else if (['tts-1', 'tts-1-hd'].includes(props.model)) {
-    //   const mp3 = await openai.audio.speech.create({
-    //     model: props.model,
-    //     voice: 'alloy',
-    //     input: prompt
-    //   })
-    //   const response = new Response(mp3.body)
-    //   // 将Response对象转换为Blob
-    //   const audioBlob = await response.blob()
-    //   // 创建一个Blob对象的URL，设置为audio元素的src属性
-    //   const audioUrl = URL.createObjectURL(audioBlob)
-
-    //   updateMessageAndContext(temporaryMessageId - 1, content)
-    // }
+    else if (['tts-az-1'].includes(props.model)) {
+      const mp3 = await openai.audio.speech.create({
+        model: props.model,
+        voice: props.ttsvoice,
+        input: content
+      })
+      const response = new Response(mp3.body)
+      // 将Response对象转换为Blob
+      const audioBlob = await response.blob()
+      const audioUrl = URL.createObjectURL(audioBlob)
+      const data = {
+        type: 'audio',
+        audioUrl
+      }
+      updateMessageAndContext(temporaryMessageId - 1, data)
+    }
     else {
       const completion = await openai.chat.completions.create({
         model: props.model,

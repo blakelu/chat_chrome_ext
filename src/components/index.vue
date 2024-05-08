@@ -7,20 +7,29 @@
         <template #footer>
           <el-button v-if="!isAdding" text bg size="small" @click="addModel"> Add a model </el-button>
           <template v-else>
-            <el-input ref="inputRef" v-model="optionName" class="mb-[8px]" placeholder="input model name" size="small" />
+            <el-input ref="inputRef" v-model="optionName" class="mb-2" placeholder="input model name" size="small" />
             <el-button type="primary" size="small" @click="onConfirm"> confirm </el-button>
             <el-button size="small" @click="clear">cancel</el-button>
           </template>
         </template>
       </el-select>
 
+      <el-input v-if="selectMode === 'tts-az-1'" v-model="ttsvoice" class="ml-3 !w-[140px]" placeholder="请输入发音人" size="small" />
+      <a
+        v-if="selectMode === 'tts-az-1'"
+        href="https://learn.microsoft.com/en-us/azure/ai-services/speech-service/language-support?tabs=tts"
+        target="_blank"
+        class="ml-3"
+        >更多声音</a
+      >
       <el-tooltip effect="dark" content="不稳定，最好用免费账号，避免封号风险" placement="bottom">
-        <el-checkbox v-if="selectMode === 'gpt-3.5-turbo'" v-model="fuckMode" class="ml-[12px] !h-auto">自由模式</el-checkbox>
+        <el-checkbox v-if="selectMode === 'gpt-3.5-turbo'" v-model="fuckMode" class="ml-3 !h-auto">自由模式</el-checkbox>
       </el-tooltip>
     </div>
     <Chatgpt
       ref="contentRef"
       :model="selectMode"
+      :ttsvoice="ttsvoice"
       :fuckMode="fuckMode"
       :context="currentContext"
       @showHistory="historyDrawer = true"
@@ -41,7 +50,7 @@ import Chatgpt from './chat/index.vue'
 import Gemini from './gemini/index.vue'
 import History from './history/index.vue'
 
-const options = useStorage('modelList', ['gpt-3.5-turbo', 'gpt-4-0125-preview', 'gpt-4-turbo-2024-04-09', 'dall-e-3'])
+const options = useStorage('modelList', ['gpt-3.5-turbo', 'gpt-4-0125-preview', 'gpt-4-turbo-2024-04-09', 'dall-e-3', 'tts-az-1'])
 const selectMode = useStorage('mode', 'gpt-3.5-turbo')
 const inputRef = ref()
 const isAdding = ref(false)
@@ -51,6 +60,7 @@ const contentRef = ref<any>(null)
 const historyDrawer = ref<boolean>(false) // 历史记录弹窗
 const sessionId = ref('') //  当前会话Id
 const currentContext = ref<any>([]) // 当前会话上下文
+const ttsvoice = ref('zh-CN-henan-YundengNeural')
 
 const addModel = () => {
   isAdding.value = true
@@ -156,6 +166,7 @@ const saveHistory = (context: { role: string; content: string }[]) => {
     align-items: center;
     background: linear-gradient(226deg, #1fca6d, #43bff0);
     padding: 12px 16px;
+    white-space: nowrap;
 
     label {
       margin-right: 6px;
