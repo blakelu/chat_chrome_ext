@@ -56,6 +56,15 @@ import Chatgpt from './chat/index.vue'
 import Gemini from './gemini/index.vue'
 import History from './history/index.vue'
 
+chrome.runtime.onMessage.addListener((message) => {
+  if (message === 'closeSidePanel') {
+    window.close()
+  }
+})
+onMounted(() => {
+  chrome.runtime.sendMessage('sidePanelOpened')
+})
+
 const options = useStorage('modelList', ['gpt-3.5-turbo', 'gpt-4-0125-preview', 'gpt-4-turbo-2024-04-09', 'dall-e-3', 'tts-az-1'])
 const selectMode = useStorage('mode', 'gpt-3.5-turbo')
 const inputRef = ref()

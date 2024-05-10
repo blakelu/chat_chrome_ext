@@ -5,7 +5,6 @@
         <el-tabs v-model="activeName">
           <el-tab-pane label="API设置" name="API"></el-tab-pane>
           <el-tab-pane label="模型设置" name="model"></el-tab-pane>
-          <el-tab-pane label="其它设置" name="other"></el-tab-pane>
         </el-tabs>
       </template>
       <component :is="component[activeName]" @confirm="onConfirm" />
@@ -16,7 +15,6 @@
 <script setup lang="ts">
 import chooseApi from './chooseApi.vue'
 import chooseModel from './chooseModel.vue'
-import commonSetting from './commonSetting.vue'
 
 const props = defineProps({
   show: {
@@ -30,8 +28,7 @@ const drawer = useVModel(props, 'show', emit)
 const activeName = ref('API')
 const component: any = {
   API: chooseApi,
-  model: chooseModel,
-  other: commonSetting
+  model: chooseModel
 }
 const onConfirm = (val: any) => {
   emit('confirm', val)

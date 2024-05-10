@@ -2,7 +2,7 @@
   <div class="choose_api">
     <div class="text-[12px] text-[#2761ff]">
       <a href="https://burn.hair/register?aff=ac6k" target="_blank">获取我的API Key</a>
-      <a href="https://hot-sam-xcstudio6.koyeb.app/register?aff=5B0Y" target="_blank" class="ml-[10px]">获取我的API Key</a>
+      <a href="https://attractive-bibbie-smnet3-c5142d1c.koyeb.app/register?aff=5B0Y" target="_blank" class="ml-[10px]">获取我的API Key</a>
       <a href="https://api1.zhtec.xyz/register?aff=8fuF" target="_blank" class="ml-[10px]">获取我的API Key</a>
     </div>
     <div ref="apiListRef">
@@ -39,18 +39,12 @@ const apiList = useStorage('apiList', [
   {
     API_URL: 'https://chatapi.ylsagi.io',
     API_KEY: '1',
-    remark: '',
+    remark: '仅支持gpt-3.5-turbo',
     selected: true
   },
-  {
-    API_URL: 'https://chat.flss.world/api/openai',
-    API_KEY: 'nk-2311676378',
-    remark: '',
-    selected: false
-  }
 ])
 
-useDraggable<UseDraggableReturn>(apiListRef, apiList, { animation: 150, handle: '.list-item' })
+useDraggable(apiListRef, apiList, { animation: 150, handle: '.list-item' })
 
 const handleAdd = () => {
   apiList.value.push({
