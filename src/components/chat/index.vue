@@ -200,7 +200,7 @@ watch(
     }
   }
 )
-const showPicUpload = computed(() => ['gpt-4-vision-preview', 'gpt-4-turbo-2024-04-09', 'gpt-4-turbo'].includes(props.model))
+const showPicUpload = computed(() => ['gpt-4-vision-preview', 'gpt-4-turbo-2024-04-09', 'gpt-4-turbo', 'gpt-4o'].includes(props.model))
 const picList = ref<string[]>([])
 const uploadPic = () => {
   const input = document.createElement('input')

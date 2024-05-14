@@ -65,7 +65,7 @@ onMounted(() => {
   chrome.runtime.sendMessage('sidePanelOpened')
 })
 
-const options = useStorage('modelList', ['gpt-3.5-turbo', 'gpt-4-0125-preview', 'gpt-4-turbo-2024-04-09', 'dall-e-3', 'tts-az-1'])
+const options = useStorage('modelList', ['gpt-3.5-turbo', 'gpt-4o', 'gpt-4-0125-preview', 'gpt-4-turbo-2024-04-09', 'dall-e-3', 'tts-az-1'])
 const selectMode = useStorage('mode', 'gpt-3.5-turbo')
 const inputRef = ref()
 const isAdding = ref(false)
@@ -179,7 +179,7 @@ const saveHistory = (context: { role: string; content: string }[]) => {
   .mode-select {
     display: flex;
     align-items: center;
-    background: linear-gradient(226deg, #1fca6d, #43bff0);
+    background: linear-gradient(246deg, #B7F8D9, #43bff0);
     padding: 12px 16px;
     white-space: nowrap;
 
