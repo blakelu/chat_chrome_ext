@@ -1,25 +1,24 @@
-import Markdown from "markdown-it";
-import highlight from "highlight.js";
-import 'highlight.js/styles/atom-one-dark.css'
-
-const mdOptions: Markdown.Options = {
+import MarkdownIt from 'markdown-it';
+import markdownItCodeCopy from 'markdown-it-code-copy';
+import highlight from 'highlight.js';
+import 'highlight.js/styles/atom-one-dark.css';
+ 
+const mdOptions: MarkdownIt.Options = {
   linkify: true,
   typographer: true,
   breaks: true,
-  langPrefix: "language-",
-  highlight(str, lang) {
+  langPrefix: 'language-',
+  highlight(str: string, lang: string) {
     if (lang && highlight.getLanguage(lang)) {
       try {
-        return (
-          '<pre class="hljs"><code>' +
-          highlight.highlight(str, {language: lang, ignoreIllegals: true }).value +
-          "</code></pre>"
-        );
-      } catch (__) {
-      }
+        return '<pre class="hljs"><code>' + highlight.highlight(str, { language: lang, ignoreIllegals: true }).value + '</code></pre>';
+      } catch (__) {}
     }
-    return "";
-  },
+    return '';
+  }
 };
 
-export const md = new Markdown(mdOptions);
+export default new MarkdownIt(mdOptions).use(markdownItCodeCopy, {
+  iconStyle: 'color: white; font-size: 18px;',
+  iconClass: 'iconfont icon-copy_code'
+});

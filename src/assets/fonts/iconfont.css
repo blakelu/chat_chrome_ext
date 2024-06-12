@@ -1,0 +1,20 @@
+@font-face {
+  font-family: "iconfont"; /* Project id 4566987 */
+  src: url('./iconfont.woff2') format('woff2'),
+       url('./iconfont.woff') format('woff'),
+       url('./iconfont.ttf') format('truetype');
+}
+
+[class^="icon-"],
+[class*="icon-"] {
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-copy_code:before {
+  content: "\e603";
+}
+

@@ -43,7 +43,6 @@
       @clear="clearCurrentChat"
       @saveHistory="saveHistory"
     />
-    <!-- <Gemini v-else-if="selectMode === 'gemini'" ref="contentRef" :model="selectMode" :context="currentContext" @clear="clearCurrentChat" @saveHistory="saveHistory" /> -->
     <!-- 历史记录 drawer -->
     <History v-model:drawer="historyDrawer" :sessionId="sessionId" @navToHistory="navToHistory" @reload="initLastInfo" />
   </div>
@@ -53,16 +52,16 @@
 import { v4 as uuidv4 } from 'uuid'
 import dayjs from 'dayjs'
 import Chatgpt from './chat/index.vue'
-import Gemini from './gemini/index.vue'
 import History from './history/index.vue'
 
-chrome.runtime.onMessage.addListener((message) => {
-  if (message === 'closeSidePanel') {
-    window.close()
-  }
-})
 onMounted(() => {
-  chrome.runtime.sendMessage('sidePanelOpened')
+  if (!chrome) return
+  chrome?.runtime?.sendMessage('sidePanelOpened')
+  chrome?.runtime?.onMessage.addListener((message) => {
+    if (message === 'closeSidePanel') {
+      window.close()
+    }
+  })
 })
 
 const defaultModels = ['gpt-3.5-turbo', 'gpt-4-0125-preview', 'gpt-4-turbo-2024-04-09', 'dall-e-3', 'tts-az-1']
@@ -184,7 +183,7 @@ const saveHistory = (context: { role: string; content: string }[]) => {
   .mode-select {
     display: flex;
     align-items: center;
-    background: linear-gradient(246deg, #B7F8D9, #43bff0);
+    background: linear-gradient(246deg, #b7f8d9, #43bff0);
     padding: 12px 16px;
     white-space: nowrap;
 
@@ -193,6 +192,7 @@ const saveHistory = (context: { role: string; content: string }[]) => {
       font-weight: 500;
       color: #fff;
       flex-shrink: 0;
+      font-size: 14px;
     }
   }
 }

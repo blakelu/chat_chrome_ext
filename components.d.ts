@@ -39,7 +39,6 @@ declare module '@vue/runtime-core' {
     EpPicture: typeof import('~icons/ep/picture')['default']
     EpPromotion: typeof import('~icons/ep/promotion')['default']
     EpSetting: typeof import('~icons/ep/setting')['default']
-    Gemini: typeof import('./src/components/gemini/index.vue')['default']
     History: typeof import('./src/components/history/index.vue')['default']
     Message: typeof import('./src/components/chat/message.vue')['default']
     Setting: typeof import('./src/components/chat/setting.vue')['default']

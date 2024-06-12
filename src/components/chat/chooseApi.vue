@@ -2,8 +2,6 @@
   <div class="choose_api">
     <div class="text-[12px] text-[#2761ff]">
       <a href="https://burn.hair/register?aff=ac6k" target="_blank">获取我的API Key</a>
-      <a href="https://attractive-bibbie-smnet3-c5142d1c.koyeb.app/register?aff=5B0Y" target="_blank" class="ml-[10px]">获取我的API Key</a>
-      <a href="https://api1.zhtec.xyz/register?aff=8fuF" target="_blank" class="ml-[10px]">获取我的API Key</a>
     </div>
     <div ref="apiListRef">
       <div v-for="(item, index) in apiList" :key="index" class="list-item" :class="{ active: item.selected }">
@@ -31,18 +29,11 @@
 <script setup lang="ts">
 import selected from '@/assets/icons/selected.png'
 import unselect from '@/assets/icons/unselect.png'
-import { useDraggable, type UseDraggableReturn } from 'vue-draggable-plus'
+import { useDraggable } from 'vue-draggable-plus'
 
 const emit = defineEmits(['confirm'])
 const apiListRef = ref()
-const apiList = useStorage('apiList', [
-  {
-    API_URL: 'https://chatapi.ylsagi.io',
-    API_KEY: '1',
-    remark: '仅支持gpt-3.5-turbo',
-    selected: true
-  },
-])
+const apiList = useStorage('apiList', [] as any)
 
 useDraggable(apiListRef, apiList, { animation: 150, handle: '.list-item' })
 

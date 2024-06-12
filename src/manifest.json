@@ -17,7 +17,7 @@
     "run_at": "document_start"
   }],
   "host_permissions": [ "*://*/*" ],
-  "permissions": ["sidePanel"],
+  "permissions": ["sidePanel", "audioCapture"],
   "background": {
     "service_worker": "background.ts"
   },

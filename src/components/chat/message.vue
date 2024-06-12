@@ -21,7 +21,7 @@
 </template>
 
 <script lang="ts" setup>
-import { md } from '@/composables/markdown'
+import md from '@/composables/markdown'
 
 const props = defineProps({
   message: {

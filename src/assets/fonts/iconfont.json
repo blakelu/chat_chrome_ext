@@ -1,0 +1,16 @@
+{
+  "id": "4566987",
+  "name": "chat",
+  "font_family": "font_family",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "40534404",
+      "name": "copy_code",
+      "font_class": "copy_code",
+      "unicode": "e603",
+      "unicode_decimal": 58883
+    }
+  ]
+}

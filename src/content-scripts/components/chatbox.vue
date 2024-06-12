@@ -7,7 +7,7 @@
 <script setup lang="ts">
 
 onMounted(() => {
-  chrome.runtime.onMessage.addListener((message) => {
+  chrome?.runtime?.onMessage.addListener((message) => {
     if (message.type === 'newChat') {
       dialogVisible.value = true
     }
