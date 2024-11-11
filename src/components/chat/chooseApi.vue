@@ -7,7 +7,7 @@
       <div v-for="(item, index) in apiList" :key="index" class="list-item" :class="{ active: item.selected }">
         <img
           :src="item.selected ? selected : unselect"
-          class="w-[18px] h-[18px] mr-[10px] cursor-pointer'"
+          class="w-[18px] h-[18px] mr-[10px] cursor-pointer"
           @click="handleClick(item, index)"
         />
         <div class="flex-1">

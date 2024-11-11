@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-[140px] mx-[26px] flex flex-col items-center">
+  <div class="empty">
     <img src="@/assets/icons/robot.svg" class="w-[60px] h-[60px]" />
     <div class="text-[18px] text-[#333] font-[600] my-[20px]">今天我能为你做什么？</div>
     <div v-for="item in list" :key="item" class="question-item" @click="$emit('confirm', item)">{{ item }}→</div>
@@ -17,6 +17,16 @@ const list = ref([
 ])
 </script>
 <style lang="less" scoped>
+.empty {
+  position: absolute;
+  left: 30px;
+  right: 30px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 .question-item {
   width: 100%;
   text-align: left;

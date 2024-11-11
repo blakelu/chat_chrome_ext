@@ -4,12 +4,8 @@
       <empty @confirm="emptyConfirm" />
     </template>
     <template v-else>
-      <Message
-        v-for="(message, index) in chatMessages"
-        :key="message.id"
-        :message="message"
-        :loading="index + 1 === chatMessages.length && loading"
-      />
+      <Message v-for="(message, index) in chatMessages" :key="message.id" :message="message"
+        :loading="index + 1 === chatMessages.length && loading" />
     </template>
   </div>
   <div class="operate_wrap">
@@ -89,33 +85,17 @@
     <div v-else class="custom-textarea">
       <div v-if="picList.length" class="pt-4 pb-3 mx-3 border-b border-solid border-[#f7f7f7] flex flex-wrap gap-3">
         <div v-for="(url, index) in picList" :key="url" class="relative w-[50px]">
-          <el-image
-            :src="url"
-            fit="cover"
-            :preview-src-list="picList"
-            :initial-index="index"
-            hide-on-click-modal
-            style="width: 50px; height: 50px; border-radius: 6px; display: block"
-          />
-          <el-icon
-            size="16"
+          <el-image :src="url" fit="cover" :preview-src-list="picList" :initial-index="index" hide-on-click-modal
+            style="width: 50px; height: 50px; border-radius: 6px; display: block" />
+          <el-icon size="16"
             class="!absolute top-[-5px] right-[-5px] rounded-[50%] p-[2px] bg-[rgba(0,0,0,.25)] cursor-pointer"
-            @click="handleDeletePic(index)"
-            ><ep-CloseBold
-          /></el-icon>
+            @click="handleDeletePic(index)"><ep-CloseBold /></el-icon>
         </div>
       </div>
-      <el-input
-        v-model="prompt"
-        type="textarea"
-        ref="inputRef"
-        :rows="4"
-        placeholder="请输入您的问题,Ctrl+Enter发送,高贵的Mac用户当然可以Command+Enter发送"
-        @keydown.ctrl.enter="handleInputEnter"
-        @keydown.meta.enter="handleInputEnter"
-        @compositionstart="composing = true"
-        @compositionend="composing = false"
-      ></el-input>
+      <el-input v-model="prompt" type="textarea" ref="inputRef" :rows="4"
+        placeholder="请输入您的问题,Ctrl+Enter发送,高贵的Mac用户当然可以Command+Enter发送" @keydown.ctrl.enter="handleInputEnter"
+        @keydown.meta.enter="handleInputEnter" @compositionstart="composing = true"
+        @compositionend="composing = false"></el-input>
       <el-icon size="22" color="#666" @click="handleInputEnter" class="enter-icon"><ep-promotion /></el-icon>
     </div>
   </div>
@@ -167,17 +147,20 @@ const loading = ref(false) // 回复loading
 const dialogVisible = ref(false)
 const API_KEY = useStorage('GPT_API_KEY', '')
 const API_URL = useStorage('GPT_API_URL', '')
-const commonSettings = useStorage('COMMON_SETTINGS', {
-  temperature: 0.4,
+const settings = ref({
+  temperature: 1,
   limitContext: 6,
   quality: 'standard',
   dalleSize: '1024x1024',
-  dalleStyle: 'vivid'
+  dalleStyle: 'vivid',
+  stream: false
 })
+const commonSettings = useStorage('COMMON_SETTINGS', settings, localStorage, { mergeDefaults: true })
 
 let openai: any = {}
 const initOpenAI = () => {
-  openai = new OpenAI({ baseURL: API_URL.value + '/v1', apiKey: API_KEY.value, dangerouslyAllowBrowser: true })
+  const baseURL = API_URL.value === 'https://models.inference.ai.azure.com' ? API_URL.value : API_URL.value + '/v1'
+  openai = new OpenAI({ baseURL, apiKey: API_KEY.value, dangerouslyAllowBrowser: true })
 }
 
 onMounted(() => {
@@ -194,15 +177,32 @@ const handleConfirm = (data: any) => {
   initOpenAI()
 }
 
+const picModel = [
+  'gpt-4-vision-preview',
+  'gpt-4-turbo-2024-04-09',
+  'gpt-4-turbo',
+  'gpt-4o',
+  'gpt-4o-mini',
+  'gpt-4o-2024-08-06',
+  'gpt-4-all',
+  'claude-3-opus-20240229',
+  'claude-3-5-sonnet-20240620',
+  'o1-preview',
+  'o1-mini',
+]
 watch(
   () => props.model,
   (val) => {
-    if (!['gpt-4-vision-preview', 'gpt-4-turbo-2024-04-09', 'gpt-4-turbo'].includes(val)) {
+    if (
+      !picModel.includes(val)
+    ) {
       picList.value = []
     }
   }
 )
-const showPicUpload = computed(() => ['gpt-4-vision-preview', 'gpt-4-turbo-2024-04-09', 'gpt-4-turbo', 'gpt-4o', 'claude-3-opus-20240229'].includes(props.model))
+const showPicUpload = computed(() =>
+  picModel.includes(props.model)
+)
 const picList = ref<string[]>([])
 const uploadPic = () => {
   const inputFile = document.getElementById('inputFile')
@@ -444,17 +444,22 @@ async function handleChatModelResponse(customPrompt: any, temporaryMessageId: nu
     model: props.model,
     messages: customPrompt,
     temperature: unref(commonSettings).temperature,
-    stream: true
+    stream: unref(commonSettings).stream
   })
-
-  for await (const chunk of completion) {
-    const content = chunk.choices[0]?.delta?.content
-    if (!content) continue
-    if (chunk.choices[0]?.finish_reason === 'stop') break
-    chatMessages.value[temporaryMessageId - 1].content += content
+  console.log(unref(commonSettings).stream, 'unref(commonSettings).stream')
+  if (unref(commonSettings).stream) {
+    for await (const chunk of completion) {
+      const content = chunk.choices[0]?.delta?.content
+      if (!content) continue
+      if (chunk.choices[0]?.finish_reason === 'stop') break
+      chatMessages.value[temporaryMessageId - 1].content += content
+    }
+    chatContext.value.push({ role: 'assistant', content: chatMessages.value[temporaryMessageId - 1].content })
+    inputRef.value.focus()
+  } else {
+    const content = completion.choices[0]?.message?.content
+    updateMessageAndContext(temporaryMessageId - 1, content)
   }
-  inputRef?.value?.focus()
-  chatContext.value.push({ role: 'assistant', content: chatMessages.value[temporaryMessageId - 1].content })
 }
 
 let recorder = new Recorder()
@@ -472,37 +477,79 @@ function startRecord() {
     )
   } else {
     isRecording.value = false
-    const blob = recorder.getWAVBlob()
-    const renameFile = new File([blob], 'user.wav', { type: 'audio/wav' })
+    let wavBlob = recorder.getWAVBlob()
+    let renameFile = new File([wavBlob], 'user.wav', { type: 'audio/wav' })
     const audioUrl = URL.createObjectURL(renameFile)
     const data = { type: 'audio', audioUrl }
     handleWhisper(data, renameFile)
   }
 }
 async function handleWhisper(content: any, file: any) {
-  updateUserChat(content)
+  // updateUserChat(content)
   const transcription = await openai.audio.transcriptions.create({
     file,
-    model: "whisper-1",
-  });
+    model: 'whisper-1'
+  })
   updateUserChat(transcription.text)
   const temporaryMessageId = addTemporaryAssistantMessage()
   const customPrompt = prepareCustomPrompt()
   await handleChatModelResponse(customPrompt, temporaryMessageId)
   const newtemporaryMessageId = addTemporaryAssistantMessage()
   const text = chatContext.value[chatContext.value.length - 1].content
-  const mp3 = await openai.audio.speech.create({
+  playStream(text)
+  // const mp3 = openai.audio.speech.create({
+  //   model: 'tts-1',
+  //   voice: 'alloy',
+  //   input: text
+  // })
+  // const response = new Response(mp3.body)
+  // const audioBlob = await response.blob()
+  // const audioUrl = URL.createObjectURL(audioBlob)
+  // const audio = new Audio(audioUrl)
+  // audio.play()
+  // const data = { type: 'audio', audioUrl }
+  // updateMessageAndContext(newtemporaryMessageId - 1, data)
+}
+const audioContext = new (window.AudioContext || window.webkitAudioContext)()
+
+async function playStream(text) {
+  // Fetch the stream
+  const openai = new OpenAI({
+    baseURL: 'https://oai.itsfurry.com' + '/v1',
+    apiKey: 'sk-vwn8sRusxMd2ZiRNAa9eEbA4Be8b400e9257936e96F61063',
+    dangerouslyAllowBrowser: true
+  })
+  const response = await openai.audio.speech.create({
     model: 'tts-1',
     voice: 'alloy',
     input: text
   })
-  const response = new Response(mp3.body)
-  const audioBlob = await response.blob()
-  const audioUrl = URL.createObjectURL(audioBlob)
-  const data = { type: 'audio', audioUrl }
-  updateMessageAndContext(newtemporaryMessageId - 1, data)
-}
+  const reader = response.body.getReader()
+  const stream = new ReadableStream({
+    start(controller) {
+      function push() {
+        reader.read().then(({ done, value }) => {
+          if (done) {
+            controller.close()
+            return
+          }
+          console.log(value, 'value')
+          controller.enqueue(value)
+          push()
+        })
+      }
 
+      push()
+    }
+  })
+  const audioBuffer = await new Response(stream).arrayBuffer()
+  const decodedAudio = await audioContext.decodeAudioData(audioBuffer)
+  const source = audioContext.createBufferSource()
+  console.log(source, 'source')
+  source.buffer = decodedAudio
+  source.connect(audioContext.destination)
+  source.start(0)
+}
 const emptyConfirm = (data: string) => {
   prompt.value = data
   handleInputEnter()
@@ -535,9 +582,11 @@ defineExpose({
   // left: 0;
   width: 100%;
   padding: 10px 20px 20px;
+
   button {
     padding: 8px;
   }
+
   .custom-textarea {
     border-radius: 8px;
     overflow: auto;
@@ -545,20 +594,24 @@ defineExpose({
     background-color: #fff;
     position: relative;
   }
+
   .el-textarea {
     :deep(.el-textarea__inner) {
       padding-right: 40px;
       box-shadow: none;
       // word-break: break-all;
       resize: none;
+
       &:hover {
         box-shadow: none;
       }
+
       &:focus {
         box-shadow: none;
       }
     }
   }
+
   .enter-icon {
     position: absolute;
     right: 10px;
@@ -569,10 +622,12 @@ defineExpose({
 }
 
 .messages {
+  position: relative;
   padding: 16px 20px 8px;
   // height: calc(100% - 180px);
   flex: 1 1 0%;
   overflow-y: auto;
+
   :deep(img) {
     width: 100%;
   }

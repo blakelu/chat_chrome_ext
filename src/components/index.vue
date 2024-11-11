@@ -14,37 +14,21 @@
         </template>
       </el-select>
 
-      <el-input
-        v-if="['tts-az-1', 'tts-1', 'tts-1-hd'].includes(selectMode)"
-        v-model="ttsvoice"
-        class="ml-3 !w-[140px]"
-        placeholder="请输入发音人"
-        size="small"
-      />
-      <a
-        v-if="selectMode === 'tts-az-1'"
+      <el-input v-if="['tts-az-1', 'tts-1', 'tts-1-hd'].includes(selectMode)" v-model="ttsvoice" class="ml-3 !w-[140px]"
+        placeholder="请输入发音人" size="small" />
+      <a v-if="selectMode === 'tts-az-1'"
         href="https://learn.microsoft.com/en-us/azure/ai-services/speech-service/language-support?tabs=tts"
-        target="_blank"
-        class="ml-3"
-        >更多声音</a
-      >
-      <el-tooltip effect="dark" content="不稳定，最好用免费账号，避免封号风险" placement="bottom">
-        <el-checkbox v-if="selectMode === 'gpt-3.5-turbo'" v-model="fuckMode" class="ml-3 !h-auto">自由模式</el-checkbox>
-      </el-tooltip>
+        target="_blank" class="ml-3">更多声音</a>
+      <!-- <el-tooltip effect="dark" content="stream模式" placement="bottom"> -->
+        <el-checkbox v-model="commonSettings.stream" class="ml-3 !h-auto">stream模式</el-checkbox>
+      <!-- </el-tooltip> -->
     </div>
-    <Chatgpt
-      ref="contentRef"
-      :model="selectMode"
-      :ttsvoice="ttsvoice"
-      :fuckMode="fuckMode"
-      :context="currentContext"
-      @showHistory="historyDrawer = true"
-      @addNewSession="addNewSession"
-      @clear="clearCurrentChat"
-      @saveHistory="saveHistory"
-    />
+    <Chatgpt ref="contentRef" :model="selectMode" :ttsvoice="ttsvoice" :fuckMode="fuckMode" :context="currentContext"
+      @showHistory="historyDrawer = true" @addNewSession="addNewSession" @clear="clearCurrentChat"
+      @saveHistory="saveHistory" />
     <!-- 历史记录 drawer -->
-    <History v-model:drawer="historyDrawer" :sessionId="sessionId" @navToHistory="navToHistory" @reload="initLastInfo" />
+    <History v-model:drawer="historyDrawer" :sessionId="sessionId" @navToHistory="navToHistory"
+      @reload="initLastInfo" />
   </div>
 </template>
 
@@ -64,13 +48,10 @@ onMounted(() => {
   })
 })
 
-const defaultModels = ['gpt-3.5-turbo', 'gpt-4-0125-preview', 'gpt-4-turbo-2024-04-09', 'dall-e-3', 'tts-az-1']
-const options = useStorage('modelList', defaultModels)
-const newModels = ['gpt-4o']
-const updatedModels = Array.from(new Set([...options.value, ...newModels]))
-options.value = updatedModels
+const defaultModels = ref(['o1-preview', 'o1-mini', 'gpt-4o-mini', 'gpt-4o', 'gpt-4o-2024-08-06', 'gpt-4-0125-preview', 'gpt-4-turbo-2024-04-09', 'claude-3-5-sonnet-20240620', 'dall-e-3', 'tts-az-1'])
+const options = useStorage('modelList', defaultModels, localStorage, { mergeDefaults: (storageValue, defaults) => Array.from(new Set([...storageValue, ...defaults])) })
 
-const selectMode = useStorage('mode', 'gpt-3.5-turbo')
+const selectMode = useStorage('mode', 'gpt-4o')
 const inputRef = ref()
 const isAdding = ref(false)
 const optionName = ref('')
@@ -80,6 +61,15 @@ const historyDrawer = ref<boolean>(false) // 历史记录弹窗
 const sessionId = ref('') //  当前会话Id
 const currentContext = ref<any>([]) // 当前会话上下文
 const ttsvoice = ref('zh-CN-henan-YundengNeural')
+const settings = ref({
+  temperature: 1,
+  limitContext: 6,
+  quality: 'standard',
+  dalleSize: '1024x1024',
+  dalleStyle: 'vivid',
+  stream: true
+})
+const commonSettings = useStorage('COMMON_SETTINGS', settings, localStorage, { mergeDefaults: true })
 
 const addModel = () => {
   isAdding.value = true
@@ -110,7 +100,7 @@ const initLastInfo = () => {
     currentContext.value = con
   } else {
     sessionId.value = uuidv4()
-    selectMode.value = 'gpt-3.5-turbo'
+    selectMode.value = 'gpt-4o'
     currentContext.value = []
   }
 }
@@ -180,6 +170,7 @@ const saveHistory = (context: { role: string; content: string }[]) => {
   // background: linear-gradient(0deg, #abbaab, #ffffff);
   background-color: #f3f9f9;
   box-sizing: border-box;
+
   .mode-select {
     display: flex;
     align-items: center;
@@ -196,11 +187,13 @@ const saveHistory = (context: { role: string; content: string }[]) => {
     }
   }
 }
+
 .bottom_wrap {
   position: fixed;
   bottom: 100px;
   right: 20px;
   white-space: nowrap;
+
   button {
     padding: 8px;
   }
