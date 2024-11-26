@@ -14,21 +14,34 @@
         </template>
       </el-select>
 
-      <el-input v-if="['tts-az-1', 'tts-1', 'tts-1-hd'].includes(selectMode)" v-model="ttsvoice" class="ml-3 !w-[140px]"
-        placeholder="请输入发音人" size="small" />
-      <a v-if="selectMode === 'tts-az-1'"
+      <el-input
+        v-if="['tts-az-1', 'tts-1', 'tts-1-hd'].includes(selectMode)"
+        v-model="ttsvoice"
+        class="ml-3 !w-[140px]"
+        placeholder="请输入发音人"
+        size="small"
+      />
+      <a
+        v-if="selectMode === 'tts-az-1'"
         href="https://learn.microsoft.com/en-us/azure/ai-services/speech-service/language-support?tabs=tts"
-        target="_blank" class="ml-3">更多声音</a>
-      <!-- <el-tooltip effect="dark" content="stream模式" placement="bottom"> -->
-        <el-checkbox v-model="commonSettings.stream" class="ml-3 !h-auto">stream模式</el-checkbox>
-      <!-- </el-tooltip> -->
+        target="_blank"
+        class="ml-3"
+        >更多声音</a
+      >
+      <el-checkbox v-model="commonSettings.stream" class="ml-3 !h-auto">stream模式</el-checkbox>
     </div>
-    <Chatgpt ref="contentRef" :model="selectMode" :ttsvoice="ttsvoice" :fuckMode="fuckMode" :context="currentContext"
-      @showHistory="historyDrawer = true" @addNewSession="addNewSession" @clear="clearCurrentChat"
-      @saveHistory="saveHistory" />
+    <Chatgpt
+      ref="contentRef"
+      :model="selectMode"
+      :ttsvoice="ttsvoice"
+      :context="currentContext"
+      @showHistory="historyDrawer = true"
+      @addNewSession="addNewSession"
+      @clear="clearCurrentChat"
+      @saveHistory="saveHistory"
+    />
     <!-- 历史记录 drawer -->
-    <History v-model:drawer="historyDrawer" :sessionId="sessionId" @navToHistory="navToHistory"
-      @reload="initLastInfo" />
+    <History v-model:drawer="historyDrawer" :sessionId="sessionId" @navToHistory="navToHistory" @reload="initLastInfo" />
   </div>
 </template>
 
@@ -48,14 +61,26 @@ onMounted(() => {
   })
 })
 
-const defaultModels = ref(['o1-preview', 'o1-mini', 'gpt-4o-mini', 'gpt-4o', 'gpt-4o-2024-08-06', 'gpt-4-0125-preview', 'gpt-4-turbo-2024-04-09', 'claude-3-5-sonnet-20240620', 'dall-e-3', 'tts-az-1'])
-const options = useStorage('modelList', defaultModels, localStorage, { mergeDefaults: (storageValue, defaults) => Array.from(new Set([...storageValue, ...defaults])) })
+const defaultModels = ref([
+  'o1-preview',
+  'o1-mini',
+  'gpt-4o-mini',
+  'gpt-4o',
+  'gpt-4o-2024-08-06',
+  'gpt-4-0125-preview',
+  'gpt-4-turbo-2024-04-09',
+  'claude-3-5-sonnet-20240620',
+  'dall-e-3',
+  'tts-az-1'
+])
+const options = useStorage('modelList', defaultModels, localStorage, {
+  mergeDefaults: (storageValue, defaults) => Array.from(new Set([...storageValue, ...defaults]))
+})
 
 const selectMode = useStorage('mode', 'gpt-4o')
 const inputRef = ref()
 const isAdding = ref(false)
 const optionName = ref('')
-const fuckMode = useStorage('fuckMode', false) // 国粹模式
 const contentRef = ref<any>(null)
 const historyDrawer = ref<boolean>(false) // 历史记录弹窗
 const sessionId = ref('') //  当前会话Id
@@ -67,7 +92,8 @@ const settings = ref({
   quality: 'standard',
   dalleSize: '1024x1024',
   dalleStyle: 'vivid',
-  stream: true
+  stream: true,
+  prompt: ''
 })
 const commonSettings = useStorage('COMMON_SETTINGS', settings, localStorage, { mergeDefaults: true })
 

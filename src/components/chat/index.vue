@@ -12,7 +12,7 @@
     <template class="flex mb-[8px]">
       <div class="flex">
         <el-tooltip effect="dark" content="上传图片" placement="top">
-          <el-button v-if="showPicUpload && picList.length < 7" text @click="uploadPic">
+          <el-button v-if="picList.length < 7" text @click="uploadPic">
             <el-icon size="20" color="#333"><ep-Picture /></el-icon>
           </el-button>
         </el-tooltip>
@@ -55,6 +55,11 @@
           <div class="pt-1 text-[13px] text-[#333] font-500">携带历史消息数</div>
           <el-slider v-model="commonSettings.limitContext" :max="30" size="small" />
         </el-popover>
+        <el-tooltip effect="dark" content="角色扮演" placement="top">
+          <el-button style="margin-left: 0" text  @click="promptVisible = true">
+            <img src="@/assets/icons/mask.png" alt="" class="w-[20px]" />
+          </el-button>
+        </el-tooltip>
       </div>
 
       <div class="flex flex-1 justify-end">
@@ -80,9 +85,7 @@
         </el-tooltip>
       </div>
     </template>
-    <el-button v-if="false" @click="startRecord">录制</el-button>
-    <!-- ['gpt-4o', 'gpt-3.5-turbo'].includes(props.model) -->
-    <div v-else class="custom-textarea">
+    <div class="custom-textarea">
       <div v-if="picList.length" class="pt-4 pb-3 mx-3 border-b border-solid border-[#f7f7f7] flex flex-wrap gap-3">
         <div v-for="(url, index) in picList" :key="url" class="relative w-[50px]">
           <el-image :src="url" fit="cover" :preview-src-list="picList" :initial-index="index" hide-on-click-modal
@@ -100,10 +103,10 @@
     </div>
   </div>
   <setting v-model:show="dialogVisible" @confirm="handleConfirm" />
+  <commonPrompt v-model:show="promptVisible" />
 </template>
 <script lang="ts" setup>
 import OpenAI from 'openai'
-import Recorder from 'js-audio-recorder'
 import empty from './empty.vue'
 import USER_AVATAR from '@/assets/icons/user.png'
 import ASSISTANT_AVATAR from '@/assets/icons/ChatGPT.png'
@@ -124,10 +127,6 @@ const props = defineProps({
     type: String,
     default: 'gpt-3.5-turbo'
   },
-  fuckMode: {
-    type: Boolean,
-    default: false
-  },
   context: {
     type: Array as any,
     default: () => []
@@ -145,6 +144,7 @@ const prompt = ref<string>('')
 const inputRef = ref()
 const loading = ref(false) // 回复loading
 const dialogVisible = ref(false)
+const promptVisible = ref(false)
 const API_KEY = useStorage('GPT_API_KEY', '')
 const API_URL = useStorage('GPT_API_URL', '')
 const settings = ref({
@@ -153,13 +153,14 @@ const settings = ref({
   quality: 'standard',
   dalleSize: '1024x1024',
   dalleStyle: 'vivid',
-  stream: false
+  stream: false,
+  prompt: ''
 })
 const commonSettings = useStorage('COMMON_SETTINGS', settings, localStorage, { mergeDefaults: true })
 
 let openai: any = {}
 const initOpenAI = () => {
-  const baseURL = API_URL.value === 'https://models.inference.ai.azure.com' ? API_URL.value : API_URL.value + '/v1'
+  const baseURL = `${API_URL.value}${API_URL.value === 'https://models.inference.ai.azure.com' ? '' : '/v1'}`;
   openai = new OpenAI({ baseURL, apiKey: API_KEY.value, dangerouslyAllowBrowser: true })
 }
 
@@ -177,32 +178,6 @@ const handleConfirm = (data: any) => {
   initOpenAI()
 }
 
-const picModel = [
-  'gpt-4-vision-preview',
-  'gpt-4-turbo-2024-04-09',
-  'gpt-4-turbo',
-  'gpt-4o',
-  'gpt-4o-mini',
-  'gpt-4o-2024-08-06',
-  'gpt-4-all',
-  'claude-3-opus-20240229',
-  'claude-3-5-sonnet-20240620',
-  'o1-preview',
-  'o1-mini',
-]
-watch(
-  () => props.model,
-  (val) => {
-    if (
-      !picModel.includes(val)
-    ) {
-      picList.value = []
-    }
-  }
-)
-const showPicUpload = computed(() =>
-  picModel.includes(props.model)
-)
 const picList = ref<string[]>([])
 const uploadPic = () => {
   const inputFile = document.getElementById('inputFile')
@@ -327,7 +302,7 @@ function formatPromptMessages(chatContext: any) {
     const isAudio = Object.prototype.toString.call(chatContext[i].content) === '[object Object]' && chatContext[i].content.type === 'audio'
     // 预判断下一项是否满足条件，同时确保不会越界
     const hasNext = i + 1 < chatContext.length
-    const isArrayAndWrongModelForNext = hasNext && Array.isArray(chatContext[i].content) && !showPicUpload.value
+    const isArrayAndWrongModelForNext = hasNext && Array.isArray(chatContext[i].content)
 
     if (isAudio) {
       // 如果当前项是音频，跳过当前项和前一项
@@ -371,7 +346,7 @@ async function handleInputEnter() {
 }
 
 function prepareContent() {
-  if (showPicUpload.value && picList.value.length > 0) {
+  if (picList.value.length > 0) {
     const urls = picList.value.map((item: string) => ({
       type: 'image_url',
       image_url: {
@@ -400,8 +375,8 @@ function addTemporaryAssistantMessage() {
 function prepareCustomPrompt() {
   const limitContext = unref(commonSettings).limitContext + 1
   const customPrompt = formatPromptMessages([...chatContext.value.slice(-limitContext)])
-  if (props.model === 'gpt-3.5-turbo') {
-    customPrompt.unshift({ role: 'system', content: props.fuckMode ? prompts.fuckMode : prompts.strongerMode })
+  if (unref(commonSettings).prompt) {
+    customPrompt.unshift({ role: 'system', content: unref(commonSettings).prompt })
   }
   return customPrompt
 }
@@ -446,7 +421,6 @@ async function handleChatModelResponse(customPrompt: any, temporaryMessageId: nu
     temperature: unref(commonSettings).temperature,
     stream: unref(commonSettings).stream
   })
-  console.log(unref(commonSettings).stream, 'unref(commonSettings).stream')
   if (unref(commonSettings).stream) {
     for await (const chunk of completion) {
       const content = chunk.choices[0]?.delta?.content
@@ -460,95 +434,6 @@ async function handleChatModelResponse(customPrompt: any, temporaryMessageId: nu
     const content = completion.choices[0]?.message?.content
     updateMessageAndContext(temporaryMessageId - 1, content)
   }
-}
-
-let recorder = new Recorder()
-const isRecording = ref(false)
-function startRecord() {
-  if (!isRecording.value) {
-    recorder.start().then(
-      () => {
-        isRecording.value = true
-      },
-      (error) => {
-        // 出错了
-        console.log(`${error.name} : ${error.message}`)
-      }
-    )
-  } else {
-    isRecording.value = false
-    let wavBlob = recorder.getWAVBlob()
-    let renameFile = new File([wavBlob], 'user.wav', { type: 'audio/wav' })
-    const audioUrl = URL.createObjectURL(renameFile)
-    const data = { type: 'audio', audioUrl }
-    handleWhisper(data, renameFile)
-  }
-}
-async function handleWhisper(content: any, file: any) {
-  // updateUserChat(content)
-  const transcription = await openai.audio.transcriptions.create({
-    file,
-    model: 'whisper-1'
-  })
-  updateUserChat(transcription.text)
-  const temporaryMessageId = addTemporaryAssistantMessage()
-  const customPrompt = prepareCustomPrompt()
-  await handleChatModelResponse(customPrompt, temporaryMessageId)
-  const newtemporaryMessageId = addTemporaryAssistantMessage()
-  const text = chatContext.value[chatContext.value.length - 1].content
-  playStream(text)
-  // const mp3 = openai.audio.speech.create({
-  //   model: 'tts-1',
-  //   voice: 'alloy',
-  //   input: text
-  // })
-  // const response = new Response(mp3.body)
-  // const audioBlob = await response.blob()
-  // const audioUrl = URL.createObjectURL(audioBlob)
-  // const audio = new Audio(audioUrl)
-  // audio.play()
-  // const data = { type: 'audio', audioUrl }
-  // updateMessageAndContext(newtemporaryMessageId - 1, data)
-}
-const audioContext = new (window.AudioContext || window.webkitAudioContext)()
-
-async function playStream(text) {
-  // Fetch the stream
-  const openai = new OpenAI({
-    baseURL: 'https://oai.itsfurry.com' + '/v1',
-    apiKey: 'sk-vwn8sRusxMd2ZiRNAa9eEbA4Be8b400e9257936e96F61063',
-    dangerouslyAllowBrowser: true
-  })
-  const response = await openai.audio.speech.create({
-    model: 'tts-1',
-    voice: 'alloy',
-    input: text
-  })
-  const reader = response.body.getReader()
-  const stream = new ReadableStream({
-    start(controller) {
-      function push() {
-        reader.read().then(({ done, value }) => {
-          if (done) {
-            controller.close()
-            return
-          }
-          console.log(value, 'value')
-          controller.enqueue(value)
-          push()
-        })
-      }
-
-      push()
-    }
-  })
-  const audioBuffer = await new Response(stream).arrayBuffer()
-  const decodedAudio = await audioContext.decodeAudioData(audioBuffer)
-  const source = audioContext.createBufferSource()
-  console.log(source, 'source')
-  source.buffer = decodedAudio
-  source.connect(audioContext.destination)
-  source.start(0)
 }
 const emptyConfirm = (data: string) => {
   prompt.value = data
