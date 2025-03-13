@@ -4,8 +4,12 @@
       <empty @confirm="emptyConfirm" />
     </template>
     <template v-else>
-      <Message v-for="(message, index) in chatMessages" :key="message.id" :message="message"
-        :loading="index + 1 === chatMessages.length && loading" />
+      <Message
+        v-for="(message, index) in chatMessages"
+        :key="message.id"
+        :message="message"
+        :loading="index + 1 === chatMessages.length && loading"
+      />
     </template>
   </div>
   <div class="operate_wrap">
@@ -37,15 +41,18 @@
             <el-radio value="1024x1792">1024x1792 </el-radio>
           </el-radio-group>
         </el-popover>
-        <el-popover placement="top" popper-style="padding: 0 6px;" trigger="click">
-          <template #reference>
-            <el-button text style="margin-left: 0">
-              <img src="@/assets/icons/temperature.png" class="w-[20px]" />
-            </el-button>
-          </template>
-          <div class="pt-1 text-[13px] text-[#333] font-500">随机性,越大随机性越强</div>
-          <el-slider v-model="commonSettings.temperature" :max="1" :step="0.1" size="small" />
-        </el-popover>
+        <el-tooltip effect="dark" content="创造性" placement="top">
+          <el-popover placement="top" popper-style="padding: 0 6px;" trigger="click">
+            <template #reference>
+              <el-button text style="margin-left: 0">
+                <img src="@/assets/icons/temperature.png" class="w-[20px]" />
+              </el-button>
+            </template>
+            <div class="pt-1 text-[13px] text-[#333] font-500">随机性,越大随机性越强</div>
+            <el-slider v-model="commonSettings.temperature" :max="1" :step="0.1" size="small" />
+          </el-popover>
+        </el-tooltip>
+
         <el-popover placement="top" popper-style="padding: 0 6px;" trigger="click">
           <template #reference>
             <el-button text style="margin-left: 0">
@@ -56,7 +63,7 @@
           <el-slider v-model="commonSettings.limitContext" :max="30" size="small" />
         </el-popover>
         <el-tooltip effect="dark" content="角色扮演" placement="top">
-          <el-button style="margin-left: 0" text  @click="promptVisible = true">
+          <el-button style="margin-left: 0" text @click="promptVisible = true">
             <img src="@/assets/icons/mask.png" alt="" class="w-[20px]" />
           </el-button>
         </el-tooltip>
@@ -88,17 +95,33 @@
     <div class="custom-textarea">
       <div v-if="picList.length" class="pt-4 pb-3 mx-3 border-b border-solid border-[#f7f7f7] flex flex-wrap gap-3">
         <div v-for="(url, index) in picList" :key="url" class="relative w-[50px]">
-          <el-image :src="url" fit="cover" :preview-src-list="picList" :initial-index="index" hide-on-click-modal
-            style="width: 50px; height: 50px; border-radius: 6px; display: block" />
-          <el-icon size="16"
+          <el-image
+            :src="url"
+            fit="cover"
+            :preview-src-list="picList"
+            :initial-index="index"
+            hide-on-click-modal
+            style="width: 50px; height: 50px; border-radius: 6px; display: block"
+          />
+          <el-icon
+            size="16"
             class="!absolute top-[-5px] right-[-5px] rounded-[50%] p-[2px] bg-[rgba(0,0,0,.25)] cursor-pointer"
-            @click="handleDeletePic(index)"><ep-CloseBold /></el-icon>
+            @click="handleDeletePic(index)"
+            ><ep-CloseBold
+          /></el-icon>
         </div>
       </div>
-      <el-input v-model="prompt" type="textarea" ref="inputRef" :rows="4"
-        placeholder="请输入您的问题,Ctrl+Enter发送,高贵的Mac用户当然可以Command+Enter发送" @keydown.ctrl.enter="handleInputEnter"
-        @keydown.meta.enter="handleInputEnter" @compositionstart="composing = true"
-        @compositionend="composing = false"></el-input>
+      <el-input
+        v-model="prompt"
+        type="textarea"
+        ref="inputRef"
+        :rows="4"
+        placeholder="请输入您的问题,Ctrl+Enter发送,高贵的Mac用户当然可以Command+Enter发送"
+        @keydown.ctrl.enter="handleInputEnter"
+        @keydown.meta.enter="handleInputEnter"
+        @compositionstart="composing = true"
+        @compositionend="composing = false"
+      ></el-input>
       <el-icon size="22" color="#666" @click="handleInputEnter" class="enter-icon"><ep-promotion /></el-icon>
     </div>
   </div>
@@ -160,7 +183,7 @@ const commonSettings = useStorage('COMMON_SETTINGS', settings, localStorage, { m
 
 let openai: any = {}
 const initOpenAI = () => {
-  const baseURL = `${API_URL.value}${API_URL.value === 'https://models.inference.ai.azure.com' ? '' : '/v1'}`;
+  const baseURL = `${API_URL.value}${API_URL.value === 'https://models.inference.ai.azure.com' ? '' : '/v1'}`
   openai = new OpenAI({ baseURL, apiKey: API_KEY.value, dangerouslyAllowBrowser: true })
 }
 

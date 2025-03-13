@@ -1,6 +1,6 @@
 <template>
   <div class="empty">
-    <img src="@/assets/icons/robot.svg" class="w-[60px] h-[60px]" />
+    <img src="@/assets/icons/robot.svg" />
     <div class="text-[18px] text-[#333] font-[600] my-[20px]">今天我能为你做什么？</div>
     <div v-for="item in list" :key="item" class="question-item" @click="$emit('confirm', item)">{{ item }}→</div>
   </div>
@@ -18,24 +18,48 @@ const list = ref([
 </script>
 <style lang="less" scoped>
 .empty {
-  position: absolute;
-  left: 30px;
-  right: 30px;
-  top: 50%;
-  transform: translateY(-50%);
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  padding: 22px;
+  text-align: center;
+
+  img {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 12px;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .question-item {
+    width: 100%;
+    text-align: left;
+    padding: 12px;
+    font-size: 14px;
+    background-color: rgba(0, 0, 0, 0.03);
+    color: #424242;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    cursor: pointer;
+
+    &:hover {
+      color: #666666;
+      box-shadow: var(--shadow-md);
+    }
+  }
 }
-.question-item {
-  width: 100%;
-  text-align: left;
-  padding: 12px;
-  font-size: 14px;
-  background-color: rgba(0, 0, 0, 0.03);
-  color: #424242;
-  border-radius: 12px;
-  margin-bottom: 12px;
-  cursor: pointer;
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
 }
 </style>

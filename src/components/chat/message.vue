@@ -4,6 +4,8 @@
       <img :src="realMessage.avatar" />
     </div>
     <div class="content" :class="{ 'content-assistant': isAssistant }">
+      <!-- 添加气泡箭头 -->
+      <div class="arrow" :class="{ 'arrow-left': isAssistant, 'arrow-right': isUser }"></div>
       <div v-if="realMessage.content?.type == 'audio'">
         <audio controls>
           <source :src="realMessage.content.audioUrl" type="audio/mpeg" />
@@ -73,15 +75,17 @@ const isAssistant = computed(() => props.message.role === 'model' || props.messa
 
 <style lang="less" scoped>
 .avatar-left {
-  margin-left: 10px;
+  margin-left: 12px;
 }
 
 .avatar-right {
-  margin-right: 10px;
+  margin-right: 12px;
 }
 
 .content-assistant {
   background-color: #d9e8f5 !important;
+  // color: #000000 !important;
+  // background-color: #E9E9EB !important;
 }
 
 .message {
@@ -112,31 +116,39 @@ const isAssistant = computed(() => props.message.role === 'model' || props.messa
 
 .content {
   font-size: 13px;
-  font-family: PingFangSC-Regular;
+  font-family: PingFangSC;
   color: #333333;
   background-color: #ffffff;
+  // background-color: #39DD62;
   padding: 8px 12px;
   border-radius: 10px;
   box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1);
   max-width: 85%;
   word-wrap: break-word;
-  overflow-x: auto;
-}
-
-.content.is-self {
-  background-color: #efefef;
-}
-
-.content.is-self:before {
-  content: '';
-  display: inline-block;
+  overflow-x: visible;
+  
+  // 添加气泡箭头样式
   position: relative;
-  bottom: -1px;
+}
+
+.arrow {
   width: 0;
   height: 0;
   border-style: solid;
-  border-width: 0 10px 10px 0;
-  border-color: transparent #efefef transparent transparent;
-  margin-right: 10px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.arrow-left {
+  border-width: 8px 8px 8px 0;
+  border-color: transparent #d9e8f5 transparent transparent; // AI气泡颜色
+  left: -8px;
+}
+
+.arrow-right {
+  border-width: 8px 0 8px 8px;
+  border-color: transparent transparent transparent #ffffff; // 用户气泡颜色
+  right: -8px;
 }
 </style>
