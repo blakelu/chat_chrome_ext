@@ -1,49 +1,50 @@
 {
-  "name": "closeAI",
-  "description": "A Chrome extension demo.",
+  "name": "CloseAI Chat",
+  "description": "AI chat assistant with support for multiple models, image generation, and voice features",
   "version": "1.0.0",
+  "manifest_version": 3,
   "icons": {
     "16": "assets/icons/ChatGPT.png",
     "48": "assets/icons/ChatGPT.png",
     "128": "assets/icons/ChatGPT.png"
   },
   "action": {
+    "default_title": "CloseAI Chat",
     "default_popup": "../popup.html",
-    "default_title": "closeAI"
-  },
-  "content_scripts": [{
-    "matches": [ "<all_urls>" ],
-    "js": ["content-scripts/content.ts"],
-    "run_at": "document_start"
-  }],
-  "host_permissions": [ "*://*/*" ],
-  "permissions": ["sidePanel", "audioCapture"],
-  "background": {
-    "service_worker": "background.ts"
-  },
-  "web_accessible_resources": [{
-    "matches": ["<all_urls>"],
-    "resources": ["assets/*"]
-  }],
-  "side_panel": {
-    "default_path": "popup.html",
-    "openPanelOnActionClick": true
-  },
-  "commands": {
-    "openSidePanel": {
-      "suggested_key": {
-        "default": "Ctrl+Shift+I",
-        "mac": "MacCtrl+Shift+I"
-      },
-      "description": "Open side panel"
-    },
-    "newChat": {
-      "suggested_key": {
-        "default": "Ctrl+I",
-        "mac": "MacCtrl+I"
-      },
-      "description": "New chat"
+    "default_icon": {
+      "16": "assets/icons/ChatGPT.png",
+      "48": "assets/icons/ChatGPT.png",
+      "128": "assets/icons/ChatGPT.png"
     }
   },
-  "manifest_version": 3
+  "permissions": ["storage", "sidePanel", "activeTab"],
+  "side_panel": {
+    "default_path": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+I",
+        "mac": "Command+Shift+I"
+      },
+      "description": "Open CloseAI Chat"
+    },
+    "open_side_panel": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+K",
+        "mac": "Command+Shift+K"
+      },
+      "description": "Open CloseAI Chat in side panel"
+    }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["*.png", "*.svg", "*.jpg", "*.gif"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }

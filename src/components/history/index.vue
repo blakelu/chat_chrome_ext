@@ -1,107 +1,330 @@
-import { before } from 'lodash'; import { remove } from 'lodash'; import { emitChangeFn } from 'element-plus';
 <template>
-  <div class="my_drawer">
-    <el-drawer v-model="drawer" title="历史会话记录" direction="btt">
-      <div class="list_content">
-        <div v-for="(item, index) in historyInfoList" :key="index" class="item_wrap" @click="navToHistory(item)">
-          <div class="item_wrap_row">
-            <div class="title">{{ item.title }}</div>
-            <div class="time">{{ item.timeStr }}</div>
-          </div>
-          <div class="item_wrap_row">
-            <div class="desc">{{ item.desc }}</div>
-            <div>
-              <el-button text type="danger" @click.stop="removeItem(index, item)">
-                <el-icon><ep-delete /></el-icon>
-              </el-button>
+  <div class="history-drawer">
+    <el-drawer v-model="drawer" title="历史会话记录" direction="btt" :size="isMobile ? '90%' : '50%'">
+      <template #header>
+        <div class="drawer-header">
+          <h3>历史会话记录</h3>
+          <el-button v-if="historyInfoList.length > 0" size="small" type="danger" @click="clearAllHistory">
+            清空历史
+          </el-button>
+        </div>
+      </template>
+      <div class="history-content">
+        <TransitionGroup name="history-item" tag="div" class="history-list">
+          <div 
+            v-for="(item, index) in historyInfoList" 
+            :key="index" 
+            class="history-item"
+            :class="{ 'current': item.sessionId === sessionId }"
+            @click="navToHistory(item)">
+            <div class="item-content">
+              <div class="item-header">
+                <div class="item-title">{{ truncateText(item.title, 40) }}</div>
+                <div class="item-model">{{ item.mode }}</div>
+              </div>
+              <div class="item-body">
+                <div class="item-desc">{{ truncateText(item.desc, 80) }}</div>
+              </div>
+              <div class="item-footer">
+                <div class="item-time">{{ formatTime(item.timeStr) }}</div>
+                <el-button 
+                  text 
+                  type="danger" 
+                  size="small"
+                  class="delete-btn" 
+                  @click.stop="confirmDelete(index, item)">
+                  <!-- <el-icon><ep-delete /></el-icon> -->
+                </el-button>
+              </div>
             </div>
           </div>
+        </TransitionGroup>
+        <div v-if="historyInfoList.length === 0" class="empty-history">
+          <el-empty description="暂无历史记录" :image-size="120">
+            <template #image>
+              <img src="@/assets/icons/robot.svg" class="empty-icon" />
+            </template>
+            <el-button type="primary" @click="createNewChat">开始新对话</el-button>
+          </el-empty>
         </div>
-        <el-empty v-if="historyInfoList.length === 0" description="无更多历史记录" />
       </div>
     </el-drawer>
   </div>
 </template>
-<script lang="ts" setup>
+
+<script setup lang="ts">
 import { useVModel } from '@vueuse/core'
+import dayjs from 'dayjs'
+import 'dayjs/locale/zh-cn'
+import relativeTime from 'dayjs/plugin/relativeTime'
+
+dayjs.extend(relativeTime)
+dayjs.locale('zh-cn')
+
 const props = defineProps({
   drawer: Boolean,
   sessionId: String
 })
+
 const drawer = useVModel(props, 'drawer')
-// const list = ref([])
-const historyInfoList = ref([]) // [{uuid:'随机的唯一id', mode: '选中的模型', timeStr: '上一次时间', title: '历史记录标题', 'desc': '取context最后一条', context: '对话内容'}]
+const historyInfoList = ref([]) 
+const isMobile = ref(window.innerWidth < 768)
+
+// Responsive handling
+onMounted(() => {
+  window.addEventListener('resize', handleResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+})
+
+const handleResize = () => {
+  isMobile.value = window.innerWidth < 768
+}
+
 watch(drawer, (val) => {
   if (val) {
-    historyInfoList.value = JSON.parse(localStorage.historyInfo || '[]')
+    loadHistoryData()
   }
 })
+
+const loadHistoryData = () => {
+  historyInfoList.value = JSON.parse(localStorage.historyInfo || '[]')
+}
+
+// Format time to relative or absolute based on how recent
+const formatTime = (timeStr) => {
+  const date = dayjs(timeStr)
+  const now = dayjs()
+  
+  // If the date is from today, show relative time (e.g. "3 hours ago")
+  if (date.isAfter(now.subtract(24, 'hour'))) {
+    return date.fromNow()
+  }
+  
+  // If within the last week, show day and time
+  if (date.isAfter(now.subtract(7, 'day'))) {
+    return date.format('ddd HH:mm')
+  }
+  
+  // Otherwise show full date
+  return date.format('YYYY-MM-DD HH:mm')
+}
+
+// Truncate long text with ellipsis
+const truncateText = (text, maxLength) => {
+  if (!text) return ''
+  return text.length > maxLength ? text.substring(0, maxLength) + '...' : text
+}
+
 const emit = defineEmits(['navToHistory', 'reload'])
+
 const navToHistory = (item) => {
-  console.log('navToHistory', item)
   emit('navToHistory', item)
   drawer.value = false
 }
+
+const confirmDelete = async (index, item) => {
+  try {
+    await ElMessageBox.confirm('确定要删除这条历史记录吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    removeItem(index, item)
+  } catch (e) {
+    // User canceled deletion
+  }
+}
+
 const removeItem = (index, item) => {
   historyInfoList.value.splice(index, 1)
   localStorage.historyInfo = JSON.stringify(historyInfoList.value)
   emit('reload')
 }
+
+const clearAllHistory = async () => {
+  try {
+    await ElMessageBox.confirm('确定要清空所有历史记录吗？此操作无法撤销', '警告', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+      confirmButtonClass: 'el-button--danger'
+    })
+    
+    localStorage.historyInfo = JSON.stringify([])
+    historyInfoList.value = []
+    emit('reload')
+  } catch (e) {
+    // User canceled
+  }
+}
+
+const createNewChat = () => {
+  drawer.value = false
+  emit('navToHistory', { isNew: true })
+}
 </script>
+
 <style lang="less" scoped>
-.my_drawer {
-  color: #333;
-  --el-dialog-padding-primary: 15px;
-  :deep(.el-drawer) {
-    height: 50% !important;
-    .el-drawer__header {
-      margin-bottom: 0px;
+.history-drawer {
+  :deep(.el-drawer__header) {
+    margin-bottom: 0;
+    padding: 0;
+    
+    .el-drawer__close {
+      color: #64748b;
     }
   }
-  .list_content {
+  
+  :deep(.el-drawer__body) {
+    padding: 0;
+    overflow: hidden;
   }
-  .item_wrap {
-    font-size: 14px;
+  
+  .drawer-header {
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e2e8f0;
+    
+    h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #0f172a;
+      margin: 0;
+    }
+  }
+  
+  .history-content {
+    height: calc(100% - 20px);
     padding: 10px;
-    position: relative;
+    overflow-y: auto;
+  }
+  
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .history-item {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    transition: all 0.3s ease;
     cursor: pointer;
+    border: 1px solid #f1f5f9;
+    
     &:hover {
-      background: #f8f8f8;
-      border-radius: 10px;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      border-color: #bae6fd;
     }
-    & + .item_wrap {
-      &:before {
-        content: '';
-        left: 5px;
-        right: 5px;
-        top: 0;
-        height: 1px;
-        background: #f8f8f8;
-        position: absolute;
-      }
+    
+    &.current {
+      border-left: 4px solid #3b82f6;
+      background-color: #f0f9ff;
     }
-    .title {
-      font-weight: bold;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    
+    .item-content {
+      padding: 14px 16px;
     }
-    .time {
-      color: #888;
-      font-size: 12px;
-      flex-shrink: 0;
-    }
-    .desc {
-      color: #888;
-      -webkit-line-clamp: 2; // 设置两行文字溢出
-      display: -webkit-box; /** 对象作为伸缩盒子模型显示 **/
-      -webkit-box-orient: vertical; /** 设置或检索伸缩盒对象的子元素的排列方式 **/
-      overflow: hidden; /** 隐藏超出的内容 **/
-    }
-    .item_wrap_row {
+    
+    .item-header {
       display: flex;
       justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+      
+      .item-title {
+        font-weight: 600;
+        color: #1e293b;
+        font-size: 15px;
+        line-height: 1.4;
+      }
+      
+      .item-model {
+        font-size: 12px;
+        color: #64748b;
+        background-color: #f1f5f9;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-weight: 500;
+      }
+    }
+    
+    .item-body {
+      margin-bottom: 10px;
+      
+      .item-desc {
+        color: #64748b;
+        font-size: 13px;
+        line-height: 1.5;
+        max-height: 3em;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+      }
+    }
+    
+    .item-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      
+      .item-time {
+        font-size: 12px;
+        color: #94a3b8;
+      }
+      
+      .delete-btn {
+        opacity: 0.7;
+        transition: all 0.2s ease;
+        padding: 4px 8px;
+        border-radius: 6px;
+        
+        &:hover {
+          opacity: 1;
+          background-color: #fee2e2;
+          color: #ef4444;
+        }
+      }
     }
   }
+  
+  .empty-history {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    
+    .empty-icon {
+      width: 80px;
+      height: 80px;
+      opacity: 0.7;
+    }
+  }
+}
+
+/* Transition animations for history items */
+.history-item-enter-active,
+.history-item-leave-active {
+  transition: all 0.3s ease;
+}
+
+.history-item-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.history-item-leave-to {
+  opacity: 0;
+  transform: translateX(-100%);
 }
 </style>

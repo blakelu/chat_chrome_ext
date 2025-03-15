@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>欢迎使用 CloseAI Chat</title>
+  <link rel="stylesheet" href="welcome.css">
+  <link rel="icon" href="/icons/icon48.png" type="image/png">
+</head>
+<body>
+  <div class="welcome-container">
+    <header class="welcome-header">
+      <img src="/icons/icon128.png" alt="CloseAI Logo" class="logo">
+      <h1>欢迎使用 CloseAI Chat</h1>
+      <p class="subtitle">功能强大的 AI 助手，为您的浏览体验增添智能支持</p>
+    </header>
+
+    <main class="welcome-content">
+      <section class="features">
+        <h2>主要功能</h2>
+        
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-icon">🤖</div>
+            <h3>多模型支持</h3>
+            <p>支持多种 AI 模型，包括 GPT-4、Claude、DALL-E 等</p>
+          </div>
+          
+          <div class="feature-card">
+            <div class="feature-icon">🖼️</div>
+            <h3>图像生成</h3>
+            <p>使用 DALL-E 3 生成高质量图像</p>
+          </div>
+          
+          <div class="feature-card">
+            <div class="feature-icon">🎙️</div>
+            <h3>语音功能</h3>
+            <p>支持语音输入和文本转语音功能</p>
+          </div>
+          
+          <div class="feature-card">
+            <div class="feature-icon">📝</div>
+            <h3>角色提示词</h3>
+            <p>预设多种角色提示词模板</p>
+          </div>
+          
+          <div class="feature-card">
+            <div class="feature-icon">🔄</div>
+            <h3>历史记录</h3>
+            <p>自动保存会话历史，轻松查找回顾</p>
+          </div>
+          
+          <div class="feature-card">
+            <div class="feature-icon">⌨️</div>
+            <h3>快捷键支持</h3>
+            <p>便捷的键盘快捷键提升使用效率</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="getting-started">
+        <h2>快速开始</h2>
+        
+        <div class="steps">
+          <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h3>设置 API 密钥</h3>
+              <p>点击扩展图标，在设置中添加您的 API 密钥</p>
+            </div>
+          </div>
+          
+          <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h3>选择模型</h3>
+              <p>从下拉菜单中选择您想使用的 AI 模型</p>
+            </div>
+          </div>
+          
+          <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h3>开始对话</h3>
+              <p>输入您的问题并按下 Ctrl+Enter 发送</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="keyboard-shortcuts">
+        <h2>键盘快捷键</h2>
+        
+        <div class="shortcuts-table">
+          <div class="shortcut-row">
+            <div class="shortcut-key">
+              <span class="key">Ctrl</span>
+              <span class="key">Shift</span>
+              <span class="key">I</span>
+            </div>
+            <div class="shortcut-desc">打开 CloseAI Chat</div>
+          </div>
+          
+          <div class="shortcut-row">
+            <div class="shortcut-key">
+              <span class="key">Ctrl</span>
+              <span class="key">Shift</span>
+              <span class="key">K</span>
+            </div>
+            <div class="shortcut-desc">在侧边栏打开 CloseAI Chat</div>
+          </div>
+          
+          <div class="shortcut-row">
+            <div class="shortcut-key">
+              <span class="key">Ctrl</span>
+              <span class="key">Enter</span>
+            </div>
+            <div class="shortcut-desc">发送消息</div>
+          </div>
+          
+          <div class="shortcut-row">
+            <div class="shortcut-key">
+              <span class="key">Tab</span>
+            </div>
+            <div class="shortcut-desc">自动补全</div>
+          </div>
+        </div>
+        
+        <p class="shortcuts-note">Mac 用户请使用 Command 键代替 Ctrl 键</p>
+      </section>
+    </main>
+
+    <footer class="welcome-footer">
+      <div class="actions">
+        <button id="openExtensionBtn" class="primary-btn">开始使用</button>
+        <button id="showTutorialBtn" class="secondary-btn">查看教程</button>
+      </div>
+      
+      <p class="copyright">© 2024 CloseAI Team. 保留所有权利。</p>
+    </footer>
+  </div>
+
+  <script>
+    document.getElementById('openExtensionBtn').addEventListener('click', () => {
+      if (chrome.action && chrome.action.openPopup) {
+        chrome.action.openPopup();
+      } else {
+        window.close();
+      }
+    });
+    
+    document.getElementById('showTutorialBtn').addEventListener('click', () => {
+      chrome.storage.local.set({ 'FIRST_VISIT': true }, () => {
+        if (chrome.action && chrome.action.openPopup) {
+          chrome.action.openPopup();
+        } else {
+          window.close();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

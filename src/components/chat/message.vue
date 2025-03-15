@@ -4,26 +4,20 @@
       <img :src="realMessage.avatar" />
     </div>
     <div class="content" :class="{ 'content-assistant': isAssistant }">
-      <!-- 添加气泡箭头 -->
-      <div class="arrow" :class="{ 'arrow-left': isAssistant, 'arrow-right': isUser }"></div>
-      <div v-if="realMessage.content?.type == 'audio'">
+      <div v-if="realMessage.content?.type == 'audio'" class="audio-content">
         <audio controls>
           <source :src="realMessage.content.audioUrl" type="audio/mpeg" />
         </audio>
-        <a :href="realMessage.content.audioUrl" target="_blank" download="audio.mp3" class="block mt-2 pl-2 font-[500] text-[#2761ff]"
-          >下载音频(暂不支持历史记录)</a
-        >
+        <a :href="realMessage.content.audioUrl" target="_blank" download="audio.mp3" class="download-link">下载音频(暂不支持历史记录)</a>
       </div>
-      <div v-else v-html="md.render(realMessage.content)"></div>
-      <el-icon v-if="isAssistant && loading" style="margin-top: 4px" class="is-loading" color="#333">
-        <ep-loading />
-      </el-icon>
+      <div v-else v-html="md.render(realMessage.content)" class="markdown-content"></div>
+      <el-icon v-if="isAssistant && loading" class="loading-icon" color="#333"><ep-Loading /></el-icon>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import md from '@/composables/markdown'
+import md from '@/composables/markdown.ts'
 
 const props = defineProps({
   message: {
@@ -75,26 +69,29 @@ const isAssistant = computed(() => props.message.role === 'model' || props.messa
 
 <style lang="less" scoped>
 .avatar-left {
-  margin-left: 12px;
+  margin-left: 6px;
 }
 
 .avatar-right {
-  margin-right: 12px;
+  margin-right: 6px;
 }
 
 .content-assistant {
-  background-color: #d9e8f5 !important;
-  // color: #000000 !important;
-  // background-color: #E9E9EB !important;
+  background-color: transparent !important;
+  color: #1a1a1a !important;
 }
 
 .message {
   &:not(:last-child) {
-    margin-bottom: 14px;
+    margin-bottom: 16px;
   }
   display: flex;
-  align-items: center;
-  // margin-bottom: 14px;
+  align-items: flex-start;
+  transition: transform 0.2s;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
 }
 
 .message.is-self {
@@ -102,33 +99,82 @@ const isAssistant = computed(() => props.message.role === 'model' || props.messa
 }
 
 .avatar {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
-}
+  // box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  // border: 2px solid #fff;
 
-.avatar img {
-  width: 100%;
-  height: 100%;
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 }
 
 .content {
-  font-size: 13px;
-  font-family: PingFangSC;
+  font-size: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   color: #333333;
-  background-color: #ffffff;
-  // background-color: #39DD62;
-  padding: 8px 12px;
-  border-radius: 10px;
-  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1);
+  background-color: #f7f8f9;
+  padding: 4px 8px;
+  border-radius: 8px;
   max-width: 85%;
   word-wrap: break-word;
   overflow-x: visible;
-  
-  // 添加气泡箭头样式
   position: relative;
+
+  .audio-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    audio {
+      width: 100%;
+      border-radius: 8px;
+    }
+
+    .download-link {
+      font-size: 13px;
+      color: #3b82f6;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .markdown-content {
+    :deep(p) {
+      margin: 0.5em 0;
+    }
+
+    :deep(pre) {
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+
+    :deep(code) {
+      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      font-size: 0.9em;
+    }
+
+    :deep(img) {
+      border-radius: 8px;
+      max-width: 100%;
+    }
+  }
+
+  .loading-icon {
+    margin-top: 6px;
+    font-size: 16px;
+    animation: rotate 1.5s infinite;
+  }
 }
 
 .arrow {
@@ -136,19 +182,27 @@ const isAssistant = computed(() => props.message.role === 'model' || props.messa
   height: 0;
   border-style: solid;
   position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 14px;
 }
 
 .arrow-left {
   border-width: 8px 8px 8px 0;
-  border-color: transparent #d9e8f5 transparent transparent; // AI气泡颜色
+  border-color: transparent #ecf5fe transparent transparent;
   left: -8px;
 }
 
 .arrow-right {
   border-width: 8px 0 8px 8px;
-  border-color: transparent transparent transparent #ffffff; // 用户气泡颜色
+  border-color: transparent transparent transparent #ffffff;
   right: -8px;
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 </style>

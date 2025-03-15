@@ -1,47 +1,153 @@
 <template>
   <div class="chat">
-    <div class="mode-select">
-      <label>选择模型：</label>
-      <el-select v-model="selectMode" placeholder="选择模型" size="small" style="width: 160px" @change="onChangeMode">
-        <el-option v-for="item in options" :key="item" :label="item" :value="item" />
-        <template #footer>
-          <el-button v-if="!isAdding" text bg size="small" @click="addModel"> Add a model </el-button>
-          <template v-else>
-            <el-input ref="inputRef" v-model="optionName" class="mb-2" placeholder="input model name" size="small" />
-            <el-button type="primary" size="small" @click="onConfirm"> confirm </el-button>
-            <el-button size="small" @click="clear">cancel</el-button>
-          </template>
-        </template>
-      </el-select>
-
-      <el-input
-        v-if="['tts-az-1', 'tts-1', 'tts-1-hd'].includes(selectMode)"
-        v-model="ttsvoice"
-        class="ml-3 !w-[140px]"
-        placeholder="请输入发音人"
-        size="small"
+    <div class="chat-container">
+      <!-- <div class="model-control-panel">
+        <div class="action-buttons">
+          <el-button-group>
+            <el-tooltip content="历史记录" placement="bottom">
+              <el-button @click="historyDrawer = true" size="small">
+                <el-icon><document /></el-icon>
+              </el-button>
+            </el-tooltip>
+            <el-tooltip content="新建对话" placement="bottom">
+              <el-button @click="addNewSession" size="small">
+                <el-icon><plus /></el-icon>
+              </el-button>
+            </el-tooltip>
+            <el-tooltip content="键盘快捷键" placement="bottom">
+              <el-button @click="keyboardHelpVisible = true" size="small">
+                <el-icon><keyboard /></el-icon>
+              </el-button>
+            </el-tooltip>
+          </el-button-group>
+        </div>
+      </div> -->
+      
+      <Chatgpt
+        ref="contentRef"
+        :model="selectMode"
+        :ttsvoice="ttsvoice"
+        :context="currentContext"
+        :modelOptions="options"
+        :isAdding="isAdding"
+        :optionName="optionName"
+        :commonSettings="commonSettings"
+        @showHistory="historyDrawer = true"
+        @addNewSession="addNewSession"
+        @clear="clearCurrentChat"
+        @saveHistory="saveHistory"
+        @addModel="addModel"
+        @clearModelAdd="clear"
+        @confirmModelAdd="onConfirm"
+        @changeModel="onChangeMode"
+        @updateSelectMode="selectMode = $event"
+        @openSettings="settingsDrawer = true"
+        @updateTtsVoice="ttsvoice = $event"
       />
-      <a
-        v-if="selectMode === 'tts-az-1'"
-        href="https://learn.microsoft.com/en-us/azure/ai-services/speech-service/language-support?tabs=tts"
-        target="_blank"
-        class="ml-3"
-        >更多声音</a
-      >
-      <el-checkbox v-model="commonSettings.stream" class="ml-3 !h-auto">stream模式</el-checkbox>
     </div>
-    <Chatgpt
-      ref="contentRef"
-      :model="selectMode"
-      :ttsvoice="ttsvoice"
-      :context="currentContext"
-      @showHistory="historyDrawer = true"
-      @addNewSession="addNewSession"
-      @clear="clearCurrentChat"
-      @saveHistory="saveHistory"
-    />
+    
     <!-- 历史记录 drawer -->
-    <History v-model:drawer="historyDrawer" :sessionId="sessionId" @navToHistory="navToHistory" @reload="initLastInfo" />
+    <History 
+      v-model:drawer="historyDrawer" 
+      :sessionId="sessionId" 
+      @navToHistory="navToHistory" 
+      @reload="initLastInfo" 
+    />
+    
+    <!-- 设置面板 -->
+    <el-drawer
+      v-model="settingsDrawer"
+      title="会话设置"
+      direction="rtl"
+      size="320px"
+    >
+      <div class="settings-panel">
+        <div class="settings-section">
+          <div class="section-title">基础设置</div>
+          
+          <div class="setting-item">
+            <span class="setting-label">流式输出</span>
+            <el-switch v-model="commonSettings.stream" />
+          </div>
+          
+          <div class="setting-item">
+            <span class="setting-label">温度</span>
+            <div class="setting-control">
+              <el-slider 
+                v-model="commonSettings.temperature" 
+                :min="0" 
+                :max="2" 
+                :step="0.1" 
+                show-input
+              />
+            </div>
+          </div>
+          
+          <div class="setting-item">
+            <span class="setting-label">上下文限制</span>
+            <div class="setting-control">
+              <el-input-number 
+                v-model="commonSettings.limitContext" 
+                :min="1" 
+                :max="20" 
+                size="small" 
+              />
+            </div>
+          </div>
+
+          <div class="setting-item" v-if="selectMode.includes('dall-e')">
+            <span class="setting-label">图像尺寸</span>
+            <div class="setting-control">
+              <el-select v-model="commonSettings.dalleSize" size="small">
+                <el-option label="1024x1024" value="1024x1024" />
+                <el-option label="1024x1792" value="1024x1792" />
+                <el-option label="1792x1024" value="1792x1024" />
+              </el-select>
+            </div>
+          </div>
+
+          <div class="setting-item" v-if="selectMode.includes('dall-e')">
+            <span class="setting-label">图像风格</span>
+            <div class="setting-control">
+              <el-radio-group v-model="commonSettings.dalleStyle" size="small">
+                <el-radio-button label="vivid">生动</el-radio-button>
+                <el-radio-button label="natural">自然</el-radio-button>
+              </el-radio-group>
+            </div>
+          </div>
+        </div>
+        
+        <div class="settings-section">
+          <div class="section-title">系统提示词</div>
+          <el-input
+            v-model="commonSettings.prompt"
+            type="textarea"
+            :rows="4"
+            placeholder="可以设定AI的角色和行为规则..."
+          />
+        </div>
+      </div>
+    </el-drawer>
+    
+    <!-- Keyboard shortcut info modal -->
+    <el-dialog
+      v-model="keyboardHelpVisible"
+      title="键盘快捷键"
+      width="360px"
+      class="keyboard-help-dialog"
+    >
+      <div class="keyboard-shortcuts-list">
+        <div class="shortcut-item" v-for="shortcut in shortcuts" :key="shortcut.keys.join('-')">
+          <div class="shortcut-description">{{ shortcut.description }}</div>
+          <KeyboardShortcut :keys="shortcut.keys" />
+        </div>
+      </div>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="keyboardHelpVisible = false">关闭</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -50,31 +156,23 @@ import { v4 as uuidv4 } from 'uuid'
 import dayjs from 'dayjs'
 import Chatgpt from './chat/index.vue'
 import History from './history/index.vue'
+import KeyboardShortcut from './common/KeyboardShortcut.vue'
+import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts.ts'
+import { Plus, Setting, Document, Microphone } from '@element-plus/icons-vue'
 
+// Check for Chrome extension API
 onMounted(() => {
-  if (!chrome) return
-  chrome?.runtime?.sendMessage('sidePanelOpened')
-  chrome?.runtime?.onMessage.addListener((message) => {
-    if (message === 'closeSidePanel') {
-      window.close()
-    }
-  })
+  if (typeof chrome !== 'undefined' && chrome.runtime) {
+    chrome.runtime.sendMessage('sidePanelOpened')
+    chrome.runtime.onMessage.addListener((message) => {
+      if (message === 'closeSidePanel') {
+        window.close()
+      }
+    })
+  }
 })
 
-const defaultModels = ref([
-  'o1-preview',
-  'o1-mini',
-  'gpt-4o-mini',
-  'gpt-4o',
-  'gpt-4o-2024-08-06',
-  'gpt-4-turbo-2024-04-09',
-  'claude-3-5-sonnet-20240620',
-  'dall-e-3',
-  'tts-az-1'
-])
-const options = useStorage('modelList', defaultModels, localStorage, {
-  mergeDefaults: (storageValue, defaults) => Array.from(new Set([...storageValue, ...defaults]))
-})
+const options = useStorage('modelList')
 
 const selectMode = useStorage('mode', 'gpt-4o')
 const inputRef = ref()
@@ -82,6 +180,7 @@ const isAdding = ref(false)
 const optionName = ref('')
 const contentRef = ref<any>(null)
 const historyDrawer = ref<boolean>(false) // 历史记录弹窗
+const settingsDrawer = ref<boolean>(false) // 设置面板
 const sessionId = ref('') //  当前会话Id
 const currentContext = ref<any>([]) // 当前会话上下文
 const ttsvoice = ref('zh-CN-henan-YundengNeural')
@@ -95,6 +194,64 @@ const settings = ref({
   prompt: ''
 })
 const commonSettings = useStorage('COMMON_SETTINGS', settings, localStorage, { mergeDefaults: true })
+const keyboardHelpVisible = ref(false)
+
+// Define keyboard shortcuts
+const shortcuts = [
+  { keys: ['Ctrl', 'Shift', 'I'], description: '打开侧边栏' },
+  { keys: ['Ctrl', '/'], description: '显示快捷键帮助' },
+  { keys: ['Ctrl', 'N'], description: '新建对话' },
+  { keys: ['Ctrl', 'Enter'], description: '发送消息' },
+  { keys: ['Ctrl', 'H'], description: '显示历史记录' },
+  { keys: ['Ctrl', ','], description: '打开设置' },
+  { keys: ['Esc'], description: '关闭弹窗' },
+  { keys: ['Tab'], description: '自动补全' }
+]
+
+// Register keyboard shortcuts
+useKeyboardShortcuts([
+  {
+    key: '/',
+    ctrlKey: true,
+    handler: () => {
+      keyboardHelpVisible.value = true
+    },
+    description: '显示快捷键帮助'
+  },
+  {
+    key: 'n',
+    ctrlKey: true,
+    handler: () => {
+      addNewSession()
+    },
+    description: '新建对话'
+  },
+  {
+    key: 'h',
+    ctrlKey: true,
+    handler: () => {
+      historyDrawer.value = true
+    },
+    description: '显示历史记录'
+  },
+  {
+    key: ',',
+    ctrlKey: true,
+    handler: () => {
+      settingsDrawer.value = true
+    },
+    description: '打开设置'
+  },
+  {
+    key: 'Escape',
+    handler: () => {
+      keyboardHelpVisible.value = false
+      historyDrawer.value = false
+      settingsDrawer.value = false
+    },
+    description: '关闭弹窗'
+  }
+])
 
 const addModel = () => {
   isAdding.value = true
@@ -102,9 +259,15 @@ const addModel = () => {
     inputRef.value?.focus()
   })
 }
+
 const onConfirm = () => {
   if (optionName.value) {
     options.value.push(optionName.value)
+    ElMessage({
+      message: `已添加模型: ${optionName.value}`,
+      type: 'success',
+      offset: 60
+    })
     clear()
   }
 }
@@ -121,15 +284,18 @@ const initLastInfo = () => {
   if (lastIndex > -1) {
     const { mode, context: con, sessionId: uuid } = historyInfo[lastIndex]
     sessionId.value = uuid
-    selectMode.value = mode
+    // selectMode.value = mode
     currentContext.value = con
   } else {
     sessionId.value = uuidv4()
-    selectMode.value = 'gpt-4o'
+    // selectMode.value = 'gpt-4o'
     currentContext.value = []
   }
 }
+
+// Initialize last session on component mount
 initLastInfo()
+
 // 模式切换
 const onChangeMode = () => {
   const historyInfo = JSON.parse(localStorage.historyInfo || '[]')
@@ -141,27 +307,41 @@ const onChangeMode = () => {
     currentContext.value = []
   }
 }
+
 const addNewSession = () => {
   if (contentRef.value) {
     currentContext.value = []
     sessionId.value = uuidv4()
     contentRef.value.clearChat()
+    
+    ElMessage({
+      message: '已创建新对话',
+      type: 'success',
+      offset: 60
+    })
   }
 }
+
 // 清除当前聊天内容
 const clearCurrentChat = () => {
   currentContext.value = []
 }
+
 // 切换历史记录
 const navToHistory = (item: any) => {
+  if (item.isNew) {
+    addNewSession()
+    return
+  }
+  
   const { mode, context: con, sessionId: uuid } = item
   sessionId.value = uuid
-  selectMode.value = mode
+  // selectMode.value = mode
   currentContext.value = con
 }
+
 // 保存历史记录
 const saveHistory = (context: { role: string; content: string }[]) => {
-  console.log('save history', context)
   // if (context.length === 0) return
   const historyInfo = JSON.parse(localStorage.historyInfo || '[]')
   const historyIndex = historyInfo.findIndex((item: any) => item.sessionId === sessionId.value)
@@ -170,7 +350,7 @@ const saveHistory = (context: { role: string; content: string }[]) => {
   })
   const item = {
     sessionId: sessionId.value,
-    mode: selectMode.value,
+    // mode: selectMode.value,
     timeStr: dayjs().format('YYYY-MM-DD HH:mm:ss'),
     title: context?.[0]?.content ?? '',
     desc: context.length > 1 ? context[context.length - 1].content : '',
@@ -192,35 +372,109 @@ const saveHistory = (context: { role: string; content: string }[]) => {
   flex-direction: column;
   height: 100%;
   min-height: 260px;
-  // background: linear-gradient(0deg, #abbaab, #ffffff);
-  background-color: #f3f9f9;
+  background-color: #f7f8f9;
   box-sizing: border-box;
-
-  .mode-select {
+  
+  .chat-container {
+    flex: 1;
     display: flex;
-    align-items: center;
-    background: linear-gradient(246deg, #b7f8d9, #43bff0);
-    padding: 12px 16px;
-    white-space: nowrap;
-
-    label {
-      margin-right: 6px;
-      font-weight: 500;
-      color: #fff;
-      flex-shrink: 0;
-      font-size: 14px;
+    flex-direction: column;
+    overflow: hidden;
+    margin: 4px;
+    padding: 10px 8px;
+    border-radius: 12px;
+    background-color: var(--app-bg-color);
+  }
+  
+  .model-control-panel {
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--app-border-color);
+    display: flex;
+    justify-content: flex-end;
+    
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+    }
+  }
+  
+  .settings-panel {
+    padding: 16px;
+    
+    .settings-section {
+      margin-bottom: 24px;
+      
+      .section-title {
+        font-size: 16px;
+        font-weight: 500;
+        margin-bottom: 16px;
+        color: var(--el-text-color-primary);
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--app-border-color);
+      }
+      
+      .setting-item {
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        
+        .setting-label {
+          width: 80px;
+          flex-shrink: 0;
+          font-size: 14px;
+          color: var(--el-text-color-regular);
+        }
+        
+        .setting-control {
+          flex-grow: 1;
+        }
+      }
+    }
+  }
+  
+  .keyboard-shortcuts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    
+    .shortcut-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--app-border-color);
+      
+      &:last-child {
+        border-bottom: none;
+      }
+      
+      .shortcut-description {
+        font-size: 14px;
+        color: var(--app-text-color);
+      }
     }
   }
 }
 
-.bottom_wrap {
-  position: fixed;
-  bottom: 100px;
-  right: 20px;
-  white-space: nowrap;
-
-  button {
-    padding: 8px;
+.keyboard-help-dialog {
+  :deep(.el-dialog__header) {
+    padding: 16px 20px;
+    margin-right: 0;
+    border-bottom: 1px solid var(--app-border-color);
+  }
+  
+  :deep(.el-dialog__headerbtn) {
+    top: 16px;
+  }
+  
+  :deep(.el-dialog__body) {
+    padding: 20px;
+  }
+  
+  :deep(.el-dialog__footer) {
+    padding: 12px 20px;
+    border-top: 1px solid var(--app-border-color);
   }
 }
 </style>

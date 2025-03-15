@@ -1,30 +1,332 @@
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  /* Base theme variables - light mode by default */
+  --app-bg-color: #ffffff;
+  --app-text-color: #1e293b;
+  --app-text-secondary: #64748b;
+  --app-border-color: #e2e8f0;
+  --app-accent-color: #3b82f6;
+  --app-accent-hover: #2563eb;
+  --app-header-gradient-start: #3b82f6;
+  --app-header-gradient-end: #10b981;
+  --app-card-bg: #ffffff;
+  --app-card-shadow: rgba(0, 0, 0, 0.05);
+  --app-message-user: #ffffff;
+  --app-message-assistant: #ecf5fe;
+  --app-danger: #ef4444;
+  --app-success: #10b981;
+  --app-warning: #f59e0b;
+  --app-info: #0ea5e9;
+  --app-nav-bg: #f1f5f9;
+  --app-selection-bg: #e0f2fe;
+  
+  /* Font settings */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+
+  /* Transitions for theme switching */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+  --app-bg-color: #111827;
+  --app-text-color: #f1f5f9;
+  --app-text-secondary: #94a3b8;
+  --app-border-color: #1e293b;
+  --app-accent-color: #60a5fa;
+  --app-accent-hover: #93c5fd;
+  --app-header-gradient-start: #1e40af;
+  --app-header-gradient-end: #0d9488;
+  --app-card-bg: #1f2937;
+  --app-card-shadow: rgba(0, 0, 0, 0.2);
+  --app-message-user: #1f2937;
+  --app-message-assistant: #0c4a6e;
+  --app-danger: #ef4444;
+  --app-success: #10b981;
+  --app-warning: #f59e0b;
+  --app-info: #0ea5e9;
+  --app-nav-bg: #0f172a;
+  --app-selection-bg: #1e3a8a;
+  
+  /* Element Plus overrides for dark theme */
+  --el-color-primary: var(--app-accent-color);
+  --el-border-color: var(--app-border-color);
+  --el-text-color-primary: var(--app-text-color);
+  --el-text-color-regular: var(--app-text-secondary);
+  --el-bg-color: var(--app-card-bg);
+  --el-bg-color-overlay: var(--app-card-bg);
+  --el-fill-color-blank: var(--app-bg-color);
+  --el-border-radius-base: 12px;
+  
+  /* CodeMirror styles for dark theme */
+  --cm-background: #1f2937;
+  --cm-foreground: #e2e8f0;
+}
+
+/* Medium font size (default) */
+:root {
+  --app-font-size-small: 0.875rem;
+  --app-font-size-base: 1rem;
+  --app-font-size-large: 1.125rem;
+  --app-font-size-xl: 1.25rem;
+  --app-font-size-2xl: 1.5rem;
+  --app-line-height: 1.5;
+  --app-spacing-base: 8px;
+  --app-border-radius-sm: 4px;
+  --app-border-radius-md: 8px;
+  --app-border-radius-lg: 12px;
+  --app-border-radius-xl: 16px;
+  --app-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --app-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --app-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* Small font size */
+[data-font-size="small"] {
+  --app-font-size-small: 0.75rem;
+  --app-font-size-base: 0.875rem;
+  --app-font-size-large: 1rem;
+  --app-font-size-xl: 1.125rem;
+  --app-font-size-2xl: 1.25rem;
+  --app-spacing-base: 6px;
+}
+
+/* Large font size */
+[data-font-size="large"] {
+  --app-font-size-small: 1rem;
+  --app-font-size-base: 1.125rem;
+  --app-font-size-large: 1.25rem;
+  --app-font-size-xl: 1.5rem;
+  --app-font-size-2xl: 1.75rem;
+  --app-spacing-base: 10px;
+}
+
+/* High contrast mode */
+[data-high-contrast="true"] {
+  --app-accent-color: #0030b1;
+  --app-accent-hover: #001a6c;
+  --app-text-color: #000000;
+  --app-text-secondary: #202020;
+  --app-message-user: #ffffff;
+  --app-message-assistant: #d6ebff;
+  --app-border-color: #000000;
+  --app-card-shadow: rgba(0, 0, 0, 0.3);
+  --app-selection-bg: #ffcc00;
+  
+  /* Improved text contrast */
+  --app-danger: #d00000;
+  --app-success: #006600;
+  --app-warning: #cc5500;
+  --app-info: #0066cc;
+}
+
+/* Dark high contrast */
+[data-theme="dark"][data-high-contrast="true"] {
+  --app-bg-color: #000000;
+  --app-text-color: #ffffff;
+  --app-text-secondary: #eeeeee;
+  --app-border-color: #ffffff;
+  --app-accent-color: #60a5fa;
+  --app-accent-hover: #93c5fd;
+  --app-card-bg: #161616;
+  --app-message-user: #333333;
+  --app-message-assistant: #004080;
+  --app-selection-bg: #ffcc00;
 }
 
 html,
 body {
   margin: 0;
-  /* min-width: 520px; */
   height: 100%;
+  background-color: var(--app-bg-color);
+  color: var(--app-text-color);
 }
 
 #app {
   height: 100%;
 }
 
+/* Selection styles */
+::selection {
+  background-color: var(--app-selection-bg);
+  color: var(--app-text-color);
+}
+
+
+/* Animation classes */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.slide-up-enter-from,
+.slide-up-leave-to {
+  transform: translateY(20px);
+  opacity: 0;
+}
+
+.slide-right-enter-active,
+.slide-right-leave-active {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.slide-right-enter-from,
+.slide-right-leave-to {
+  transform: translateX(-20px);
+  opacity: 0;
+}
+
+/* Toast animations */
+.toast-enter-active,
+.toast-leave-active {
+  transition: transform 0.35s ease, opacity 0.35s ease;
+}
+.toast-enter-from,
+.toast-leave-to {
+  transform: translateY(15px);
+  opacity: 0;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+[data-reduced-motion="true"] *,
+[data-reduced-motion="true"] *::before,
+[data-reduced-motion="true"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Responsive breakpoints */
+.responsive-container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--app-spacing-base);
+  padding-right: var(--app-spacing-base);
+}
+
+@media (min-width: 640px) {
+  .responsive-container {
+    max-width: 640px;
+  }
+}
+
+@media (min-width: 768px) {
+  .responsive-container {
+    max-width: 768px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-container {
+    max-width: 1024px;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  /* background-color: var(--app-text-secondary); */
+  background-color: #F7f8f9;
+  border-radius: 20px;
+}
+
+/* ::-webkit-scrollbar-thumb:hover {
+  background-color: var(--app-accent-color);
+} */
+
+/* Element Plus theme overrides */
+.el-button {
+  border-radius: var(--app-border-radius-md);
+}
+
+.el-input__wrapper,
+.el-textarea__inner {
+  border-radius: var(--app-border-radius-md) !important;
+}
+
+/* Add tailwind */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Element Plus theme overrides */
+:root {
+  --el-color-primary: var(--app-accent-color);
+  --el-color-primary-light-3: var(--app-accent-hover);
+  --el-color-success: var(--app-success);
+  --el-color-warning: var(--app-warning);
+  --el-color-danger: var(--app-danger);
+  --el-color-info: var(--app-info);
+  --el-border-color: var(--app-border-color);
+  --el-text-color-primary: var(--app-text-color);
+  --el-text-color-regular: var(--app-text-secondary);
+  --el-bg-color: var(--app-card-bg);
+  --el-bg-color-overlay: var(--app-card-bg);
+  --el-popper-border-radius: var(--app-border-radius-md);
+  --el-border-radius-base: var(--app-border-radius-md);
+}
+
+/* Utility classes */
+.app-card {
+  background-color: var(--app-card-bg);
+  border-radius: var(--app-border-radius-lg);
+  box-shadow: var(--app-shadow-sm);
+  padding: calc(var(--app-spacing-base) * 2);
+  border: 1px solid var(--app-border-color);
+}
+
+.app-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--app-border-radius-md);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.app-btn-primary {
+  background-color: var(--app-accent-color);
+  color: white;
+}
+
+.app-btn-primary:hover {
+  background-color: var(--app-accent-hover);
+  transform: translateY(-1px);
+}
