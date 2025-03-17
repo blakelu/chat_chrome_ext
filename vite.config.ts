@@ -133,11 +133,6 @@ export default defineConfig(({ mode }) => {
                 return 'vendor'
               }
             }
-          },
-          manualChunks: {
-            'element-plus': ['element-plus'],
-            'openai': ['openai'],
-            'markdown': ['markdown-it']
           }
         }
       }

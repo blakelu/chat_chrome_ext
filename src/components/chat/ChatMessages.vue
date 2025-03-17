@@ -9,20 +9,21 @@
       <slot name="empty"></slot>
     </template>
     <template v-else>
-      <TransitionGroup 
+      <!-- <TransitionGroup 
         name="message-transition"
         tag="div"
         class="messages-list"
-      >
+      > -->
         <Message
           v-for="(message, index) in messages"
           :key="message.id"
           :message="message"
+          :all-messages="messages"
           :loading="index + 1 === messages.length && loading"
           :data-animate-delay="index"
           @retry="$emit('retry', message)"
         />
-      </TransitionGroup>
+      <!-- </TransitionGroup> -->
     </template>
     
     <Transition name="fade">

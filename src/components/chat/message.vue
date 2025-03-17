@@ -3,21 +3,34 @@
     <div class="avatar" :class="{ 'avatar-left': isUser, 'avatar-right': isAssistant }">
       <img :src="realMessage.avatar" />
     </div>
-    <div class="content" :class="{ 'content-assistant': isAssistant }">
-      <div v-if="realMessage.content?.type == 'audio'" class="audio-content">
-        <audio controls>
-          <source :src="realMessage.content.audioUrl" type="audio/mpeg" />
-        </audio>
-        <a :href="realMessage.content.audioUrl" target="_blank" download="audio.mp3" class="download-link">下载音频(暂不支持历史记录)</a>
+    <div class="flex flex-col max-w-[85%]">
+      <div class="content" :class="{ 'content-assistant': isAssistant }">
+        <div v-if="realMessage.content?.type == 'audio'" class="audio-content">
+          <audio controls>
+            <source :src="realMessage.content.audioUrl" type="audio/mpeg" />
+          </audio>
+          <a :href="realMessage.content.audioUrl" target="_blank" download="audio.mp3" class="download-link">下载音频(暂不支持历史记录)</a>
+        </div>
+        <div v-else v-html="md.render(realMessage.content)" class="markdown-content"></div>
+        <el-icon v-if="isAssistant && loading" class="loading-icon" color="#333"><ep-Loading /></el-icon>
       </div>
-      <div v-else v-html="md.render(realMessage.content)" class="markdown-content"></div>
-      <el-icon v-if="isAssistant && loading" class="loading-icon" color="#333"><ep-Loading /></el-icon>
+      <div class="actions" v-if="isAssistant">
+        <el-button class="tool-btn" text @click="handleCopy">
+          <el-icon size="16"><ep-copyDocument /></el-icon>
+        </el-button>
+        <el-button class="tool-btn" text @click="handleShare">
+          <el-icon size="16"><ep-share /></el-icon>
+        </el-button>
+      </div>
     </div>
   </div>
+  <share-modal v-if="showShareModal" :messages="messagesForShare" @close="showShareModal = false" />
 </template>
 
 <script lang="ts" setup>
 import md from '@/composables/markdown.ts'
+import { ref, computed, watch } from 'vue'
+import ShareModal from './ShareModal.vue'
 
 const props = defineProps({
   message: {
@@ -27,9 +40,15 @@ const props = defineProps({
   loading: {
     type: Boolean,
     default: true
+  },
+  allMessages: {
+    type: Array,
+    default: () => []
   }
 })
+
 const realMessage = ref<any>({})
+const showShareModal = ref(false)
 
 const formatMessage = async (val: any) => {
   const { content } = val
@@ -65,6 +84,20 @@ watch(
 const isUser = computed(() => props.message.role === 'user')
 
 const isAssistant = computed(() => props.message.role === 'model' || props.message.role === 'assistant')
+
+const handleCopy = () => {
+  navigator.clipboard.writeText(realMessage.value.content)
+  ElMessage.success('已复制')
+}
+
+const messagesForShare = computed(() => {
+  const currentIndex = props.allMessages.findIndex((msg) => msg.id === props.message.id)
+  return currentIndex >= 0 ? props.allMessages.slice(0, currentIndex + 1) : [props.message]
+})
+
+const handleShare = () => {
+  showShareModal.value = true
+}
 </script>
 
 <style lang="less" scoped>
@@ -77,6 +110,7 @@ const isAssistant = computed(() => props.message.role === 'model' || props.messa
 }
 
 .content-assistant {
+  padding-bottom: 0 !important;
   background-color: transparent !important;
   color: #1a1a1a !important;
 }
@@ -121,7 +155,7 @@ const isAssistant = computed(() => props.message.role === 'model' || props.messa
   background-color: #f7f8f9;
   padding: 4px 8px;
   border-radius: 8px;
-  max-width: 85%;
+  // max-width: 85%;
   word-wrap: break-word;
   overflow-x: visible;
   position: relative;
@@ -151,7 +185,7 @@ const isAssistant = computed(() => props.message.role === 'model' || props.messa
 
   .markdown-content {
     :deep(p) {
-      margin: 0.5em 0;
+      padding: 0.5em 0;
     }
 
     :deep(pre) {
@@ -174,6 +208,27 @@ const isAssistant = computed(() => props.message.role === 'model' || props.messa
     margin-top: 6px;
     font-size: 16px;
     animation: rotate 1.5s infinite;
+  }
+}
+
+.actions {
+  display: flex;
+  transition: opacity 0.2s;
+  .el-button + .el-button {
+    margin-left: 0;
+  }
+  .tool-btn {
+    color: #999999;
+    padding: 0 8px;
+    border-radius: 6px;
+    transition:
+      background-color 0.2s,
+      transform 0.2s;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.04);
+      transform: translateY(-1px);
+    }
   }
 }
 

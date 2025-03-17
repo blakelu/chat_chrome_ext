@@ -211,14 +211,6 @@ onMounted(() => {
       background-color: rgba(0, 0, 0, 0.04);
       transform: translateY(-1px);
     }
-
-    &.new-chat {
-      color: #3b82f6;
-
-      &:hover {
-        color: #2563eb;
-      }
-    }
   }
 }
 

@@ -1,5 +1,10 @@
 <template>
   <div class="custom-textarea">
+    <!-- 添加选中文本显示区域 -->
+    <div v-if="selectedText" class="selected-text">
+      <div class="text-content">{{ selectedText }}</div>
+      <el-icon size="20" class="close-icon" @click="clearSelectedText"><ep-close-bold /></el-icon>
+    </div>
     <div v-if="picList.length" class="image-preview-container">
       <div v-for="(url, index) in picList" :key="url" class="image-preview">
         <el-image
@@ -11,11 +16,7 @@
           class="preview-image"
           alt="上传的图片"
         />
-        <el-icon
-          size="16"
-          class="delete-icon"
-          @click="handleDeletePic(index)"
-        ><ep-close-bold /></el-icon>
+        <el-icon size="16" class="delete-icon" @click="handleDeletePic(index)"><ep-close-bold /></el-icon>
       </div>
     </div>
     <div class="input-container">
@@ -36,7 +37,7 @@
         @blur="focused = false"
         aria-label="聊天输入框"
       ></el-input>
-      <div class=input-actions>
+      <div class="input-actions">
         <el-icon size="26" @click="$emit('send')" class="enter-icon"><ep-promotion /></el-icon>
       </div>
       <!-- <div class="input-actions">
@@ -63,9 +64,9 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, watch } from 'vue';
-import VoiceInput from '@/components/common/VoiceInput.vue';
-import KeyboardShortcut from '@/components/common/KeyboardShortcut.vue';
+import { ref, computed, watch } from 'vue'
+import VoiceInput from '@/components/common/VoiceInput.vue'
+import KeyboardShortcut from '@/components/common/KeyboardShortcut.vue'
 
 const props = defineProps({
   modelValue: {
@@ -83,8 +84,13 @@ const props = defineProps({
   isMobile: {
     type: Boolean,
     default: false
+  },
+  // 新增选中文本的属性
+  selectedText: {
+    type: String,
+    default: ''
   }
-});
+})
 
 const emit = defineEmits([
   'update:modelValue',
@@ -93,34 +99,40 @@ const emit = defineEmits([
   'auto-complete',
   'load-previous',
   'escape',
-  'composition-start', 
+  'composition-start',
   'composition-end',
   'voice-result',
   'voice-error',
-  'delete-pic'
-]);
+  'delete-pic',
+  'update:selectedText' // 新增事件
+])
 
-const inputRef = ref(null);
-const focused = ref(false);
-const voiceRecording = ref(false);
+const inputRef: any = ref(null)
+const focused = ref(false)
+const voiceRecording = ref(false)
 
 const inputValue = computed({
   get: () => props.modelValue,
   set: (val) => emit('update:modelValue', val)
-});
+})
 
 const inputPlaceholder = computed(() => {
-  if (props.isMobile) return '输入问题...';
-  return '请输入您的问题，Ctrl+Enter发送，Tab自动补全';
-});
+  if (props.isMobile) return '输入问题...'
+  return '请输入您的问题，Ctrl+Enter发送，Tab自动补全'
+})
 
 const handleDeletePic = (index) => {
-  emit('delete-pic', index);
-};
+  emit('delete-pic', index)
+}
+
+const clearSelectedText = () => {
+  emit('update:selectedText', '')
+}
+
 // Expose public methods
 defineExpose({
-  focus: () => inputRef.value?.focus()
-});
+  focus: () => inputRef.value?.focus(),
+})
 </script>
 
 <style lang="less" scoped>
@@ -130,15 +142,47 @@ defineExpose({
   background-color: #fff;
   position: relative;
   transition: box-shadow 0.2s;
-  
+
   &:focus-within {
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+  }
+
+  // 添加选中文本的样式
+  .selected-text {
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 14px;
+    color: #999999;
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+
+    .text-content {
+      flex-grow: 1;
+      max-height: 100px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      padding-right: 8px;
+      border-left: 3px solid #3b82f6;
+      padding-left: 8px;
+    }
+    .close-icon {
+      color: #999999;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 50%;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.1);
+      }
+    }
   }
 
   .input-container {
     position: relative;
   }
-  
+
   .input-actions {
     position: absolute;
     right: 12px;
@@ -147,40 +191,40 @@ defineExpose({
     align-items: center;
     gap: 10px;
   }
-  
+
   .image-preview-container {
     padding: 12px;
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
   }
-  
+
   .image-preview {
     position: relative;
     width: 60px;
     height: 60px;
-    
+
     .preview-image {
       width: 100%;
       height: 100%;
       border-radius: 8px;
       object-fit: cover;
     }
-    
+
     .delete-icon {
       position: absolute;
       top: -6px;
       right: -6px;
-      background-color: rgba(0,0,0,0.6);
+      background-color: rgba(0, 0, 0, 0.6);
       color: #fff;
       border-radius: 50%;
       padding: 3px;
       cursor: pointer;
       z-index: 2;
       transition: background-color 0.2s;
-      
+
       &:hover {
-        background-color: rgba(220,38,38,0.8);
+        background-color: rgba(220, 38, 38, 0.8);
       }
     }
   }
@@ -211,8 +255,10 @@ defineExpose({
     cursor: pointer;
     padding: 6px;
     border-radius: 50%;
-    transition: transform 0.2s, background-color 0.2s;
-    
+    transition:
+      transform 0.2s,
+      background-color 0.2s;
+
     &:hover {
       transform: translateY(-2px) scale(1.1);
       background-color: #dbeafe;
@@ -239,8 +285,14 @@ defineExpose({
 }
 
 @keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.6; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 </style>
