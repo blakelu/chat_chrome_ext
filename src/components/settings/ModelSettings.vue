@@ -53,7 +53,16 @@ const inputVisible = ref(false)
 const InputRef = ref<InstanceType<typeof ElInput>>()
 const tagsContainer = ref()
 
-const defaultModels = ['o1-preview', 'o1-mini', 'gpt-4o-mini', 'gpt-4o', 'claude-3-5-sonnet-20240620', 'dall-e-3', 'tts-az-1']
+const defaultModels = ref([
+  'gpt-4o-mini',
+  'gpt-4o',
+  'gpt-4o-2024-08-06',
+  'o3-mini',
+  'claude-3-5-sonnet-20240620',
+  'claude-3-7-sonnet-20250219',
+  'dall-e-3',
+  'tts-az-1'
+])
 
 const restoreDisabled = computed(() => {
   if (modelList.value.length !== defaultModels.length) return false

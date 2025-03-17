@@ -12,7 +12,11 @@
         @click="$emit('confirm', item)"
       >
         <span class="question-text">{{ item }}</span>
-        <el-icon class="question-arrow"></el-icon>
+        <el-icon class="question-arrow">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em">
+            <path fill="currentColor" d="M13.172 12l-4.586-4.586a1 1 0 0 1 1.414-1.414l5 5a1 1 0 0 1 0 1.414l-5 5a1 1 0 0 1-1.414-1.414L13.172 12z"/>
+          </svg>
+        </el-icon>
       </div>
     </div>
   </div>
@@ -37,38 +41,46 @@ const list = ref([
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: 32px 24px;
   text-align: center;
   background-color: var(--app-bg-color);
+  color: #1a202c;
 
   .empty-animation {
-    margin-bottom: 16px;
-    background: linear-gradient(135deg, #e0f2fe, #dbeafe);
+    margin-bottom: 24px;
+    background: linear-gradient(145deg, #f0f7ff, #e6f5fd);
     border-radius: 50%;
-    width: 120px;
-    height: 120px;
+    width: 110px;
+    height: 110px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 12px 20px -10px rgba(96, 165, 250, 0.2);
+    box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.1);
+    transition: transform 0.3s ease-out;
+    
+    &:hover {
+      transform: scale(1.05);
+    }
     
     img {
-      width: 70px;
-      height: 70px;
-      animation: float 3s ease-in-out infinite;
+      width: 60px;
+      height: 60px;
+      animation: smooth-float 4s ease-in-out infinite;
+      filter: drop-shadow(0 4px 6px rgba(14, 165, 233, 0.2));
     }
   }
 
   .empty-title {
-    font-size: 20px;
-    font-weight: 600;
-    color: #1e293b;
-    margin-bottom: 24px;
+    font-size: 22px;
+    font-weight: 500;
+    color: #2d3748;
+    margin-bottom: 32px;
+    letter-spacing: -0.01em;
   }
 
   .question-list {
     width: 100%;
-    max-width: 500px;
+    max-width: 520px;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -79,57 +91,68 @@ const list = ref([
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px 16px;
-    font-size: 14px;
-    background-color: #fff;
-    color: #334155;
-    border-radius: 12px;
+    padding: 14px 18px;
+    font-size: 15px;
+    background-color: rgba(0, 0, 0, 0.02);
+    color: #4a5568;
+    border-radius: 10px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    border: 1px solid #f1f5f9;
+    transition: all 0.25s ease;
 
     &:hover {
-      background-color: #f0f9ff;
-      border-color: #bae6fd;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.15);
+      background-color: #f7faff;
+      border-color: #cbd5e1;
+      transform: translateY(-1px);
       
       .question-arrow {
-        transform: translateX(3px);
+        transform: translateX(2px);
         opacity: 1;
+        color: #3b82f6;
+      }
+
+      .question-text {
+        color: #2563eb;
       }
     }
 
     .question-text {
       flex: 1;
       text-align: left;
-      font-weight: 500;
+      font-weight: 400;
+      transition: color 0.25s ease;
     }
 
     .question-arrow {
+      margin-left: 8px;
       font-size: 16px;
-      color: #38bdf8;
+      color: #94a3b8;
       opacity: 0.7;
-      transition: transform 0.3s ease, opacity 0.3s ease;
+      transition: all 0.25s ease;
     }
   }
 }
 
-@keyframes float {
-  0% {
+@keyframes gentle-float {
+  0%, 100% {
     transform: translateY(0px) rotate(0deg);
   }
   25% {
-    transform: translateY(-5px) rotate(2deg);
+    transform: translateY(-4px) rotate(1deg);
   }
   50% {
-    transform: translateY(-10px) rotate(-1deg);
+    transform: translateY(-8px) rotate(-1deg);
   }
   75% {
-    transform: translateY(-5px) rotate(1deg);
+    transform: translateY(-4px) rotate(0.5deg);
   }
-  100% {
-    transform: translateY(0px) rotate(0deg);
+}
+
+@keyframes smooth-float {
+   0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
   }
 }
 </style>

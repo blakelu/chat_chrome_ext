@@ -10,14 +10,14 @@ chrome.action.onClicked.addListener(async (tab) => {
       
       // Set the sidebar default width
       if (chrome.sidePanel.setPanelWidth) {
-        await chrome.sidePanel.setPanelWidth({ width: 420 });
+        await chrome.sidePanel.setPanelWidth({ width: 460 });
       }
     } else {
       // Fallback to opening in a popup
       chrome.windows.create({
         url: chrome.runtime.getURL('index.html'),
         type: 'popup',
-        width: 420,
+        width: 460,
         height: 600
       });
     }
@@ -27,7 +27,7 @@ chrome.action.onClicked.addListener(async (tab) => {
     chrome.windows.create({
       url: chrome.runtime.getURL('index.html'),
       type: 'popup',
-      width: 420,
+      width: 460,
       height: 600
     });
   }

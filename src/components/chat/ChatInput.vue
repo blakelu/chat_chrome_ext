@@ -42,11 +42,6 @@
       </div>
     </div>
   </div>
-  <div v-if="!isMobile" class="keyboard-shortcuts">
-    <KeyboardShortcut keys="Ctrl+Enter" title="发送消息" class="shortcut" />
-    <KeyboardShortcut keys="Tab" title="自动补全" class="shortcut" />
-    <KeyboardShortcut keys="↑" title="重用上一条消息" class="shortcut" />
-  </div>
 </template>
 
 <script lang="ts" setup>
@@ -61,10 +56,6 @@ const props = defineProps({
   picList: {
     type: Array,
     default: () => []
-  },
-  isMobile: {
-    type: Boolean,
-    default: false
   },
   // 新增选中文本的属性
   selectedText: {

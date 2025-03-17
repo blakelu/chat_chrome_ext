@@ -31,7 +31,6 @@
     <ChatInput
       v-model="prompt"
       :picList="picList"
-      :isMobile="isMobile"
       :selectedText="selectedText"
       @update:selectedText="selectedText = $event"
       @delete-pic="handleDeletePic"
@@ -111,7 +110,6 @@ const picList = ref<string[]>([])
 const composing = ref(false)
 const inputHistory = ref<string[]>([])
 const currentHistoryIndex = ref(-1)
-const isMobile = ref(window.innerWidth < 768)
 const selectedText = ref('') // 添加选中文本状态
 
 // Refs
@@ -122,12 +120,12 @@ const messagesRef = ref()
 const API_KEY = useStorage('GPT_API_KEY', '')
 const API_URL = useStorage('GPT_API_URL', '')
 const settings = ref({
-  temperature: 1,
+  temperature: 0.7,
   limitContext: 6,
   quality: 'standard',
   dalleSize: '1024x1024',
   dalleStyle: 'vivid',
-  stream: false,
+  stream: true,
   prompt: ''
 })
 const commonSettings = useStorage('COMMON_SETTINGS', settings, localStorage, { mergeDefaults: true })
@@ -165,17 +163,10 @@ onMounted(async () => {
   // 监听选中文本事件
   setupSelectedTextListener()
 
-  // Mobile detection
-  window.addEventListener('resize', checkMobile)
-
   // Optimize initial scroll position
   nextTick(() => {
     messagesRef.value?.scrollToBottom()
   })
-})
-
-onUnmounted(() => {
-  window.removeEventListener('resize', checkMobile)
 })
 
 // 设置选中文本监听器
@@ -248,10 +239,6 @@ watch(
 )
 
 // Methods
-const checkMobile = throttle(() => {
-  isMobile.value = window.innerWidth < 768
-}, 200)
-
 const handleConfirm = (data: any) => {
   API_URL.value = data.API_URL
   API_KEY.value = data.API_KEY

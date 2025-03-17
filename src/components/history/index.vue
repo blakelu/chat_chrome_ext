@@ -1,6 +1,6 @@
 <template>
   <div class="history-drawer">
-    <el-drawer v-model="drawer" title="历史会话记录" direction="btt" :size="isMobile ? '90%' : '50%'">
+    <el-drawer v-model="drawer" title="历史会话记录" direction="btt" size="90%">
       <template #header>
         <div class="drawer-header">
           <h3>历史会话记录</h3>
@@ -18,7 +18,7 @@
           <div class="item-content">
             <div class="item-header">
               <div class="item-title">{{ truncateText(item.title, 40) }}</div>
-              <div class="item-model">{{ item.mode }}</div>
+              <!-- <div class="item-model">{{ item.mode }}</div> -->
             </div>
             <div class="item-body">
               <div class="item-desc">{{ truncateText(item.desc, 80) }}</div>
@@ -60,20 +60,6 @@ const props = defineProps({
 
 const drawer = useVModel(props, 'drawer')
 const historyInfoList = ref([])
-const isMobile = ref(window.innerWidth < 768)
-
-// Responsive handling
-onMounted(() => {
-  window.addEventListener('resize', handleResize)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('resize', handleResize)
-})
-
-const handleResize = () => {
-  isMobile.value = window.innerWidth < 768
-}
 
 watch(drawer, (val) => {
   if (val) {
@@ -163,7 +149,7 @@ const createNewChat = () => {
 .history-drawer {
   :deep(.el-drawer__header) {
     margin-bottom: 0;
-    padding: 0;
+    padding-bottom: 10px;
 
     .el-drawer__close {
       color: #64748b;
@@ -176,11 +162,10 @@ const createNewChat = () => {
   }
 
   .drawer-header {
-    padding: 16px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #e2e8f0;
+    padding-right: 10px;
 
     h3 {
       font-size: 18px;
@@ -191,7 +176,7 @@ const createNewChat = () => {
   }
 
   .history-content {
-    height: calc(100% - 20px);
+    height: 100%;
     padding: 10px;
     overflow-y: auto;
   }
@@ -210,6 +195,9 @@ const createNewChat = () => {
     transition: all 0.3s ease;
     cursor: pointer;
     border: 1px solid #f1f5f9;
+    &:not(:last-child) {
+      margin-bottom: 10px;
+    }
 
     &:hover {
       transform: translateY(-2px);
