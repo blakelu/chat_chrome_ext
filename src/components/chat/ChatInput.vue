@@ -25,7 +25,7 @@
         type="textarea"
         ref="inputRef"
         :rows="4"
-        :placeholder="inputPlaceholder"
+        placeholder="请输入您的问题"
         @keydown.ctrl.enter="$emit('send')"
         @keydown.meta.enter="$emit('send')"
         @keydown.tab.prevent="$emit('auto-complete')"
@@ -40,20 +40,6 @@
       <div class="input-actions">
         <el-icon size="26" @click="$emit('send')" class="enter-icon"><ep-promotion /></el-icon>
       </div>
-      <!-- <div class="input-actions">
-        <VoiceInput 
-          v-if="hasAudioPermission" 
-          @result="$emit('voice-result', $event)" 
-          @error="$emit('voice-error', $event)"
-          @start="voiceRecording = true"
-          @stop="voiceRecording = false"
-          class="voice-input-btn"
-        />
-        <el-tooltip v-if="!voiceRecording" :content="focused ? 'Ctrl+Enter 发送' : '发送消息'" placement="top">
-          <el-icon size="22" @click="$emit('send')" class="enter-icon"><ep-promotion /></el-icon>
-        </el-tooltip>
-        <div v-else class="recording-badge" role="status" aria-live="polite">录音中...</div>
-      </div> -->
     </div>
   </div>
   <div v-if="!isMobile" class="keyboard-shortcuts">
@@ -65,8 +51,7 @@
 
 <script lang="ts" setup>
 import { ref, computed, watch } from 'vue'
-import VoiceInput from '@/components/common/VoiceInput.vue'
-import KeyboardShortcut from '@/components/common/KeyboardShortcut.vue'
+import KeyboardShortcut from '@/components/ui/KeyboardShortcut.vue'
 
 const props = defineProps({
   modelValue: {
@@ -76,10 +61,6 @@ const props = defineProps({
   picList: {
     type: Array,
     default: () => []
-  },
-  hasAudioPermission: {
-    type: Boolean,
-    default: true
   },
   isMobile: {
     type: Boolean,
@@ -109,19 +90,12 @@ const emit = defineEmits([
 
 const inputRef: any = ref(null)
 const focused = ref(false)
-const voiceRecording = ref(false)
-
 const inputValue = computed({
   get: () => props.modelValue,
   set: (val) => emit('update:modelValue', val)
 })
 
-const inputPlaceholder = computed(() => {
-  if (props.isMobile) return '输入问题...'
-  return '请输入您的问题，Ctrl+Enter发送，Tab自动补全'
-})
-
-const handleDeletePic = (index) => {
+const handleDeletePic = (index: number) => {
   emit('delete-pic', index)
 }
 

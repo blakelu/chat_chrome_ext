@@ -31,7 +31,6 @@
     <ChatInput
       v-model="prompt"
       :picList="picList"
-      :hasAudioPermission="hasAudioPermission"
       :isMobile="isMobile"
       :selectedText="selectedText"
       @update:selectedText="selectedText = $event"
@@ -42,15 +41,12 @@
       @escape="handleEscape"
       @composition-start="composing = true"
       @composition-end="composing = false"
-      @voice-result="handleVoiceResult"
-      @voice-error="handleVoiceError"
       ref="inputRef"
     />
   </div>
 
-  <LoadingOverlay :show="processingVoice" message="正在处理语音输入..." />
-  <setting v-model:show="dialogVisible" @confirm="handleConfirm" />
-  <commonPrompt v-model:show="promptVisible" />
+  <SettingsDrawer v-model:show="dialogVisible" @confirm="handleConfirm" />
+  <RolePrompt v-model:show="promptVisible" />
 
   <ExportDialog :messages="chatMessages" v-model:visible="exportDialogVisible" @copy="handleExportCopy" @download="handleExportDownload" />
 </template>
@@ -62,16 +58,14 @@ import { useStorage } from '@vueuse/core'
 import { throttle } from 'lodash-es'
 import { ElMessage } from 'element-plus'
 
-// Import components
+// Import components with better organization
 import ChatMessages from './ChatMessages.vue'
 import MessageActions from './MessageActions.vue'
 import ChatInput from './ChatInput.vue'
 import ExportDialog from './ExportDialog.vue'
-import Message from './Message.vue'
 import empty from './empty.vue'
-import setting from './setting.vue'
-import commonPrompt from './commonPrompt.vue'
-import LoadingOverlay from '@/components/LoadingOverlay.vue'
+import SettingsDrawer from '../settings/SettingsDrawer.vue'
+import RolePrompt from '../settings/RolePrompt.vue'
 
 // Import assets
 import USER_AVATAR from '@/assets/icons/user.png'
@@ -115,9 +109,6 @@ const promptVisible = ref(false)
 const exportDialogVisible = ref(false)
 const picList = ref<string[]>([])
 const composing = ref(false)
-const voiceRecording = ref(false)
-const processingVoice = ref(false)
-const hasAudioPermission = ref(true)
 const inputHistory = ref<string[]>([])
 const currentHistoryIndex = ref(-1)
 const isMobile = ref(window.innerWidth < 768)
@@ -173,16 +164,6 @@ onMounted(async () => {
 
   // 监听选中文本事件
   setupSelectedTextListener()
-
-  // Check for audio permission
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-    stream.getTracks().forEach((track) => track.stop())
-    hasAudioPermission.value = true
-  } catch (error) {
-    console.error('Audio permission denied:', error)
-    hasAudioPermission.value = false
-  }
 
   // Mobile detection
   window.addEventListener('resize', checkMobile)
@@ -368,46 +349,6 @@ function formatPromptMessages(chatContext: any) {
   return result
 }
 
-// Handle voice input result
-const handleVoiceResult = async (audioBlob) => {
-  try {
-    processingVoice.value = true
-
-    // Create form data for API request
-    const formData = new FormData()
-    formData.append('file', audioBlob, 'recording.wav')
-    formData.append('model', 'whisper-1')
-
-    // Make API request to OpenAI Whisper
-    const response = await openai.audio.transcriptions.create({
-      file: new File([audioBlob], 'recording.wav', { type: 'audio/wav' }),
-      model: 'whisper-1'
-    })
-
-    // Get transcription
-    const transcription = response.text
-
-    if (transcription && transcription.trim()) {
-      // Set the transcription as the prompt
-      prompt.value = transcription
-      ElMessage.success('语音已转换为文字')
-      nextTick(() => {
-        inputRef.value.focus()
-      })
-    } else {
-      ElMessage.warning('未能识别语音内容，请重试')
-    }
-  } catch (error) {
-    console.error('Speech to text error:', error)
-    ElMessage.error('语音识别失败: ' + (error.message || '未知错误'))
-  } finally {
-    processingVoice.value = false
-  }
-}
-
-const handleVoiceError = (error) => {
-  ElMessage.error('麦克风错误: ' + error)
-}
 
 // Handle tab completion
 const handleTabCompletion = async () => {
@@ -480,10 +421,6 @@ const handleMessagesScroll = (scrollData) => {
 }
 
 async function handleInputEnter() {
-  if (voiceRecording.value) {
-    ElMessage.info('请先停止录音')
-    return
-  }
 
   if (!prompt.value || composing.value) return
 

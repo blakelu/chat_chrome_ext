@@ -117,22 +117,10 @@ export default defineConfig(({ mode }) => {
       minify: false,
       rollupOptions: {
         output: {
-          manualChunks(id) {
-            // 判断是否为第三方依赖，将其拆分到 vendor 中
-            if (id.includes('node_modules')) {
-              // 这里代码可以优化一下，但是我懒，我相信你一定可以的！
-              if (id.includes('dayjs')) {
-                return 'dayjs'
-              } else if (id.includes('lodash')) {
-                return 'lodash'
-              } else if (id.includes('highlight')) {
-                return 'highlight'
-              } else if (id.includes('markdown-it')) {
-                return 'markdown-it'
-              } else {
-                return 'vendor'
-              }
-            }
+          manualChunks: {
+            'element-plus': ['element-plus'],
+            'openai': ['openai'],
+            'markdown': ['markdown-it'],
           }
         }
       }

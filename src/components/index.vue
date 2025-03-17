@@ -1,28 +1,6 @@
 <template>
   <div class="chat">
     <div class="chat-container">
-      <!-- <div class="model-control-panel">
-        <div class="action-buttons">
-          <el-button-group>
-            <el-tooltip content="历史记录" placement="bottom">
-              <el-button @click="historyDrawer = true" size="small">
-                <el-icon><document /></el-icon>
-              </el-button>
-            </el-tooltip>
-            <el-tooltip content="新建对话" placement="bottom">
-              <el-button @click="addNewSession" size="small">
-                <el-icon><plus /></el-icon>
-              </el-button>
-            </el-tooltip>
-            <el-tooltip content="键盘快捷键" placement="bottom">
-              <el-button @click="keyboardHelpVisible = true" size="small">
-                <el-icon><keyboard /></el-icon>
-              </el-button>
-            </el-tooltip>
-          </el-button-group>
-        </div>
-      </div> -->
-      
       <Chatgpt
         ref="contentRef"
         :model="selectMode"

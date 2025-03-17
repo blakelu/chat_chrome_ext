@@ -4,41 +4,33 @@
       <template #header>
         <div class="drawer-header">
           <h3>历史会话记录</h3>
-          <el-button v-if="historyInfoList.length > 0" size="small" type="danger" @click="clearAllHistory">
-            清空历史
-          </el-button>
+          <el-button v-if="historyInfoList.length > 0" size="small" type="danger" @click="clearAllHistory"> 清空历史 </el-button>
         </div>
       </template>
       <div class="history-content">
-        <TransitionGroup name="history-item" tag="div" class="history-list">
-          <div 
-            v-for="(item, index) in historyInfoList" 
-            :key="index" 
-            class="history-item"
-            :class="{ 'current': item.sessionId === sessionId }"
-            @click="navToHistory(item)">
-            <div class="item-content">
-              <div class="item-header">
-                <div class="item-title">{{ truncateText(item.title, 40) }}</div>
-                <div class="item-model">{{ item.mode }}</div>
-              </div>
-              <div class="item-body">
-                <div class="item-desc">{{ truncateText(item.desc, 80) }}</div>
-              </div>
-              <div class="item-footer">
-                <div class="item-time">{{ formatTime(item.timeStr) }}</div>
-                <el-button 
-                  text 
-                  type="danger" 
-                  size="small"
-                  class="delete-btn" 
-                  @click.stop="confirmDelete(index, item)">
-                  <!-- <el-icon><ep-delete /></el-icon> -->
-                </el-button>
-              </div>
+        <div
+          v-for="(item, index) in historyInfoList"
+          :key="index"
+          class="history-item"
+          :class="{ current: item.sessionId === sessionId }"
+          @click="navToHistory(item)"
+        >
+          <div class="item-content">
+            <div class="item-header">
+              <div class="item-title">{{ truncateText(item.title, 40) }}</div>
+              <div class="item-model">{{ item.mode }}</div>
+            </div>
+            <div class="item-body">
+              <div class="item-desc">{{ truncateText(item.desc, 80) }}</div>
+            </div>
+            <div class="item-footer">
+              <div class="item-time">{{ formatTime(item.timeStr) }}</div>
+              <el-button text type="danger" size="small" class="delete-btn" @click.stop="confirmDelete(index, item)">
+                <el-icon><ep-delete /></el-icon>
+              </el-button>
             </div>
           </div>
-        </TransitionGroup>
+        </div>
         <div v-if="historyInfoList.length === 0" class="empty-history">
           <el-empty description="暂无历史记录" :image-size="120">
             <template #image>
@@ -67,7 +59,7 @@ const props = defineProps({
 })
 
 const drawer = useVModel(props, 'drawer')
-const historyInfoList = ref([]) 
+const historyInfoList = ref([])
 const isMobile = ref(window.innerWidth < 768)
 
 // Responsive handling
@@ -97,17 +89,17 @@ const loadHistoryData = () => {
 const formatTime = (timeStr) => {
   const date = dayjs(timeStr)
   const now = dayjs()
-  
+
   // If the date is from today, show relative time (e.g. "3 hours ago")
   if (date.isAfter(now.subtract(24, 'hour'))) {
     return date.fromNow()
   }
-  
+
   // If within the last week, show day and time
   if (date.isAfter(now.subtract(7, 'day'))) {
     return date.format('ddd HH:mm')
   }
-  
+
   // Otherwise show full date
   return date.format('YYYY-MM-DD HH:mm')
 }
@@ -152,7 +144,7 @@ const clearAllHistory = async () => {
       type: 'warning',
       confirmButtonClass: 'el-button--danger'
     })
-    
+
     localStorage.historyInfo = JSON.stringify([])
     historyInfoList.value = []
     emit('reload')
@@ -172,24 +164,24 @@ const createNewChat = () => {
   :deep(.el-drawer__header) {
     margin-bottom: 0;
     padding: 0;
-    
+
     .el-drawer__close {
       color: #64748b;
     }
   }
-  
+
   :deep(.el-drawer__body) {
     padding: 0;
     overflow: hidden;
   }
-  
+
   .drawer-header {
     padding: 16px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid #e2e8f0;
-    
+
     h3 {
       font-size: 18px;
       font-weight: 600;
@@ -197,19 +189,19 @@ const createNewChat = () => {
       margin: 0;
     }
   }
-  
+
   .history-content {
     height: calc(100% - 20px);
     padding: 10px;
     overflow-y: auto;
   }
-  
+
   .history-list {
     display: flex;
     flex-direction: column;
     gap: 12px;
   }
-  
+
   .history-item {
     background-color: #ffffff;
     border-radius: 12px;
@@ -218,35 +210,35 @@ const createNewChat = () => {
     transition: all 0.3s ease;
     cursor: pointer;
     border: 1px solid #f1f5f9;
-    
+
     &:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
       border-color: #bae6fd;
     }
-    
+
     &.current {
       border-left: 4px solid #3b82f6;
       background-color: #f0f9ff;
     }
-    
+
     .item-content {
       padding: 14px 16px;
     }
-    
+
     .item-header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
       margin-bottom: 8px;
-      
+
       .item-title {
         font-weight: 600;
         color: #1e293b;
         font-size: 15px;
         line-height: 1.4;
       }
-      
+
       .item-model {
         font-size: 12px;
         color: #64748b;
@@ -256,10 +248,10 @@ const createNewChat = () => {
         font-weight: 500;
       }
     }
-    
+
     .item-body {
       margin-bottom: 10px;
-      
+
       .item-desc {
         color: #64748b;
         font-size: 13px;
@@ -271,23 +263,23 @@ const createNewChat = () => {
         -webkit-line-clamp: 2;
       }
     }
-    
+
     .item-footer {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      
+
       .item-time {
         font-size: 12px;
         color: #94a3b8;
       }
-      
+
       .delete-btn {
         opacity: 0.7;
         transition: all 0.2s ease;
         padding: 4px 8px;
         border-radius: 6px;
-        
+
         &:hover {
           opacity: 1;
           background-color: #fee2e2;
@@ -296,35 +288,19 @@ const createNewChat = () => {
       }
     }
   }
-  
+
   .empty-history {
     height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    
+
     .empty-icon {
       width: 80px;
       height: 80px;
       opacity: 0.7;
     }
   }
-}
-
-/* Transition animations for history items */
-.history-item-enter-active,
-.history-item-leave-active {
-  transition: all 0.3s ease;
-}
-
-.history-item-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.history-item-leave-to {
-  opacity: 0;
-  transform: translateX(-100%);
 }
 </style>

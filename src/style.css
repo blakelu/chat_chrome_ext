@@ -322,7 +322,7 @@ body {
 }
 
 .app-btn-primary {
-  background-color: var(--app-accent-color);
+  /* background-color: var(--app-accent-color); */
   color: white;
 }
 
