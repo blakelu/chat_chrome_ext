@@ -15,10 +15,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
-import { useToast } from '@/plugins/toastPlugin.ts';
 
 const isOnline = ref(true);
-const toast = useToast();
 
 // Check network status and set up listeners
 onMounted(() => {
@@ -43,13 +41,13 @@ onMounted(() => {
 // Handle online event
 function handleOnline() {
   isOnline.value = true;
-  toast.success('网络连接已恢复');
+  ElMessage.success('网络连接已恢复');
 }
 
 // Handle offline event
 function handleOffline() {
   isOnline.value = false;
-  toast.error('网络连接已断开');
+  ElMessage.error('网络连接已断开');
 }
 
 // Check actual connectivity by making a request
@@ -74,20 +72,20 @@ async function checkActualConnectivity() {
     
     if (!isOnline.value) {
       isOnline.value = true;
-      toast.success('网络连接已恢复');
+      ElMessage.success('网络连接已恢复');
     }
   } catch (error) {
     // If we were previously online, show notification
     if (isOnline.value) {
       isOnline.value = false;
-      toast.error('网络连接不稳定');
+      ElMessage.error('网络连接不稳定');
     }
   }
 }
 
 // Manual retry connection
 function retryConnection() {
-  toast.info('正在检查网络连接...');
+  ElMessage.info('正在检查网络连接...');
   checkActualConnectivity();
 }
 </script>

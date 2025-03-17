@@ -46,7 +46,6 @@
 
 <script lang="ts" setup>
 import { ref, computed, watch } from 'vue'
-import KeyboardShortcut from '@/components/ui/KeyboardShortcut.vue'
 
 const props = defineProps({
   modelValue: {
