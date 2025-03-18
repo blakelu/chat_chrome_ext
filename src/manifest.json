@@ -17,7 +17,7 @@
       "128": "assets/icons/ChatGPT.png"
     }
   },
-  "permissions": ["storage", "sidePanel", "activeTab", "scripting", "tabs"],
+  "permissions": ["storage", "sidePanel", "scripting", "tabs"],
   "side_panel": {
     "default_path": "popup.html",
     "openPanelOnActionClick": true

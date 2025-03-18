@@ -1,14 +1,14 @@
 <template>
   <div class="empty">
     <div class="empty-animation">
-      <img src="@/assets/icons/robot.svg" />
+      <img src="@/assets/icons/ROBOT.png" />
     </div>
     <div class="empty-title">今天我能为你做什么？</div>
     <div class="question-list">
-      <div 
-        v-for="item in list" 
-        :key="item" 
-        class="question-item" 
+      <div
+        v-for="item in list"
+        :key="item"
+        class="question-item"
         @click="$emit('confirm', item)"
       >
         <span class="question-text">{{ item }}</span>
@@ -57,11 +57,11 @@ const list = ref([
     justify-content: center;
     box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.1);
     transition: transform 0.3s ease-out;
-    
+
     &:hover {
       transform: scale(1.05);
     }
-    
+
     img {
       width: 60px;
       height: 60px;
@@ -103,7 +103,7 @@ const list = ref([
       background-color: #f7faff;
       border-color: #cbd5e1;
       transform: translateY(-1px);
-      
+
       .question-arrow {
         transform: translateX(2px);
         opacity: 1;
