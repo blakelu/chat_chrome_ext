@@ -66,7 +66,7 @@ declare module 'vue' {
     ExportDialog: typeof import('./src/components/chat/ExportDialog.vue')['default']
     History: typeof import('./src/components/history/index.vue')['default']
     KeyboardShortcut: typeof import('./src/components/common/KeyboardShortcut.vue')['default']
-    Message: typeof import('./src/components/chat/Message.vue')['default']
+    Message: typeof import('./src/components/chat/message.vue')['default']
     MessageActions: typeof import('./src/components/chat/MessageActions.vue')['default']
     ModelSettings: typeof import('./src/components/settings/ModelSettings.vue')['default']
     NetworkStatus: typeof import('./src/components/common/NetworkStatus.vue')['default']

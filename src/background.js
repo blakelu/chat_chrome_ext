@@ -1,5 +1,8 @@
 // Background script for the Chrome extension
-
+chrome.sidePanel
+  .setPanelBehavior({ openPanelOnActionClick: true })
+  .catch((error) => console.error(error))
+  
 // Open side panel when extension icon is clicked
 chrome.action.onClicked.addListener(async (tab) => {
   try {
@@ -50,7 +53,7 @@ chrome.commands.onCommand.addListener(async (command, tab) => {
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === 'install') {
     // First time installation
-    chrome.tabs.create({ url: chrome.runtime.getURL('welcome.html') });
+    // chrome.tabs.create({ url: chrome.runtime.getURL('welcome.html') });
   } else if (details.reason === 'update') {
     // Extension was updated - can show update notes if needed
     const currentVersion = chrome.runtime.getManifest().version;

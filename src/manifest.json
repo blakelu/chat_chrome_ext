@@ -19,7 +19,8 @@
   },
   "permissions": ["storage", "sidePanel", "activeTab", "scripting", "tabs"],
   "side_panel": {
-    "default_path": "popup.html"
+    "default_path": "popup.html",
+    "openPanelOnActionClick": true
   },
   "background": {
     "service_worker": "background.js",
