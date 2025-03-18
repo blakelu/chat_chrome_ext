@@ -26,11 +26,11 @@
               <ShortcutsSettings />
             </div>
           </el-tab-pane> -->
-          <el-tab-pane label="关于" name="about">
+          <!-- <el-tab-pane label="关于" name="about">
             <div class="tab-content about-tab">
               <AboutSection />
             </div>
-          </el-tab-pane>
+          </el-tab-pane> -->
         </el-tabs>
       </div>
     </el-drawer>
