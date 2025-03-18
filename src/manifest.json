@@ -4,17 +4,17 @@
   "version": "1.0.0",
   "manifest_version": 3,
   "icons": {
-    "16": "assets/icons/ChatGPT.png",
-    "48": "assets/icons/ChatGPT.png",
-    "128": "assets/icons/ChatGPT.png"
+    "16": "assets/icons/icon.png",
+    "48": "assets/icons/icon.png",
+    "128": "assets/icons/icon.png"
   },
   "action": {
     "default_title": "CloseAI Chat",
     "default_popup": "../popup.html",
     "default_icon": {
-      "16": "assets/icons/ChatGPT.png",
-      "48": "assets/icons/ChatGPT.png",
-      "128": "assets/icons/ChatGPT.png"
+      "16": "assets/icons/icon.png",
+      "48": "assets/icons/icon.png",
+      "128": "assets/icons/icon.png"
     }
   },
   "permissions": ["storage", "sidePanel", "scripting", "tabs"],
