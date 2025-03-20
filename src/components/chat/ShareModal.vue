@@ -14,26 +14,30 @@
         </div>
         
         <div class="share-body">
-          <div 
-            v-for="(msg, index) in messages" 
-            :key="index"
-            class="share-message"
-            :class="{ 'is-self': msg.role === 'user' }"
-          >
-            <div class="share-avatar" :class="{ 'avatar-left': msg.role === 'user', 'avatar-right': isAssistant(msg) }">
-              <img :src="msg.avatar" />
+          <div v-for="(msg, index) in messages" :key="index">
+            <div v-if="msg.content?.isQuote" class="quote-container">
+              <div v-html="md.render(msg.content.quote || '')" class="quote-content"></div>
             </div>
-            <div class="share-content" :class="{ 'content-assistant': isAssistant(msg) }">
-              <div v-if="msg.content?.type === 'audio'" class="audio-content">
-                [Audio Message]
+            <div 
+              class="share-message"
+              :class="{ 'is-self': msg.role === 'user' }"
+            >
+              <div class="share-avatar" :class="{ 'avatar-left': msg.role === 'user', 'avatar-right': isAssistant(msg) }">
+                <img :src="msg.avatar" />
               </div>
-              <div v-else-if="Array.isArray(msg.content)" class="markdown-content">
-                <div v-for="(item, i) in msg.content.filter(i => i.type === 'image_url')" :key="i">
-                  <img :src="item.image_url?.url" class="share-image" />
+              <div class="share-content" :class="{ 'content-assistant': isAssistant(msg) }">
+                <div v-if="msg.content?.type === 'audio'" class="audio-content">
+                  [Audio Message]
                 </div>
-                <div>{{ msg.content.find(i => i.type === 'text')?.text || '' }}</div>
+                <div v-else-if="Array.isArray(msg.content)" class="markdown-content">
+                  <div v-for="(item, i) in msg.content.filter(i => i.type === 'image_url')" :key="i">
+                    <img :src="item.image_url?.url" class="share-image" />
+                  </div>
+                  <div>{{ msg.content.find(i => i.type === 'text')?.text || '' }}</div>
+                </div>
+                <div v-else-if="msg.content?.isQuote" v-html="md.render(msg.content?.content || '')"></div>
+                <div v-else class="markdown-content" v-html="md.render(msg.content || '')"></div>
               </div>
-              <div v-else class="markdown-content" v-html="md.render(msg.content || '')"></div>
             </div>
           </div>
         </div>
@@ -230,7 +234,7 @@ onMounted(() => {
 }
 
 .share-body {
-  padding: 16px 12px;
+  padding: 8px 12px;
   background-color: #fff;
 }
 
@@ -342,5 +346,22 @@ onMounted(() => {
   justify-content: center;
   gap: 16px;
   margin-top: 16px;
+}
+
+.quote-container {
+  display: flex;
+  flex-direction: row-reverse;
+  padding: 8px 44px 8px 8px;
+  width: 100%;
+  
+  .quote-content {
+    width: 90%;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: #666666;
+    border-radius: 8px;
+    border: 1px solid #f5f6f7;
+    background-color: #fafafa;
+  }
 }
 </style>

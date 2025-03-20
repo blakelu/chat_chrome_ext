@@ -1,4 +1,7 @@
 <template>
+  <div v-if="realMessage.content?.isQuote" class="quote-container">
+    <div v-html="md.render(realMessage.content.quote)" class="quote-content"></div>
+  </div>
   <div class="message" :class="{ 'is-self': isUser }">
     <div class="avatar" :class="{ 'avatar-left': isUser, 'avatar-right': isAssistant }">
       <img :src="realMessage.avatar" />
@@ -11,6 +14,7 @@
           </audio>
           <a :href="realMessage.content.audioUrl" target="_blank" download="audio.mp3" class="download-link">下载音频(暂不支持历史记录)</a>
         </div>
+        <div v-else-if="realMessage.content?.isQuote" v-html="md.render(realMessage.content.content)" class="markdown-content"></div>
         <div v-else v-html="md.render(realMessage.content)" class="markdown-content"></div>
         <el-icon v-if="isAssistant && loading" class="loading-icon" color="#333"><ep-Loading /></el-icon>
       </div>
@@ -101,6 +105,19 @@ const handleShare = () => {
 </script>
 
 <style lang="less" scoped>
+.quote-container {
+  display: flex;
+  flex-direction: row-reverse;
+  padding: 8px 44px 8px 8px;
+  .quote-content {
+    width: 90%;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: #666666;
+    border-radius: 8px;
+    border: 1px solid #f5f6f7;
+  }
+}
 .avatar-left {
   margin-left: 6px;
 }
@@ -201,6 +218,9 @@ const handleShare = () => {
     :deep(img) {
       border-radius: 8px;
       max-width: 100%;
+    }
+    :deep(hr) {
+      margin-bottom: 4px;
     }
   }
 

@@ -32,7 +32,7 @@
       v-model="prompt"
       :picList="picList"
       :selectedText="selectedText"
-      @update:selectedText="selectedText = $event"
+      @update:selectedText="(val) => (selectedText = val)"
       @delete-pic="handleDeletePic"
       @send="handleInputEnter"
       @auto-complete="handleTabCompletion"
@@ -175,10 +175,8 @@ const setupSelectedTextListener = () => {
   if (typeof chrome !== 'undefined' && chrome.runtime) {
     // 注册消息监听器
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      if (message.action === 'textSelected' && message.text) {
-        // 限制选中文本长度以避免过长
-        const maxLength = 1000
-        selectedText.value = message.text.length > maxLength ? message.text.substring(0, maxLength) + '...' : message.text
+      if (message.action === 'textSelected') {
+        selectedText.value = message.text
         inputRef.value.focus()
         // 响应消息确认收到
         sendResponse({ status: 'success' })
@@ -196,20 +194,6 @@ const setupSelectedTextListener = () => {
     } catch (error) {
       console.error('Error sending initial message:', error)
     }
-
-    // 每30秒发送心跳以保持连接活跃
-    const heartbeatInterval = setInterval(() => {
-      try {
-        chrome.runtime.sendMessage('sidePanelHeartbeat').catch((err) => console.error('Heartbeat error:', err))
-      } catch (error) {
-        console.error('Error sending heartbeat:', error)
-      }
-    }, 30000)
-
-    // 清理函数
-    onUnmounted(() => {
-      clearInterval(heartbeatInterval)
-    })
   } else {
     // 如果不在扩展环境中，使用普通的事件监听
     window.addEventListener('message', (event) => {
@@ -314,6 +298,7 @@ function formatPromptMessages(chatContext: any) {
   for (let i = 0; i < chatContext.length; i++) {
     // 判断当前项
     const isAudio = Object.prototype.toString.call(chatContext[i].content) === '[object Object]' && chatContext[i].content.type === 'audio'
+    const isQuote = chatContext[i].content?.isQuote
     // 预判断下一项是否满足条件，同时确保不会越界
     const hasNext = i + 1 < chatContext.length
     const isArrayAndWrongModelForNext = hasNext && Array.isArray(chatContext[i].content)
@@ -328,6 +313,11 @@ function formatPromptMessages(chatContext: any) {
     } else if (isArrayAndWrongModelForNext) {
       // 如果下一项满足数组条件并使用了错误的模型，跳过当前项和下一项
       i++ // 跳过下一项
+    } else if (isQuote) {
+      // 如果是引用项，content 为对象，包含 content 和 quote
+      const { role, content: contentObj } = chatContext[i]
+      result.push({ role, content: `${contentObj.content}\n${contentObj.quote}` })
+
     } else {
       result.push(chatContext[i])
     }
@@ -335,7 +325,6 @@ function formatPromptMessages(chatContext: any) {
 
   return result
 }
-
 
 // Handle tab completion
 const handleTabCompletion = async () => {
@@ -408,7 +397,6 @@ const handleMessagesScroll = (scrollData) => {
 }
 
 async function handleInputEnter() {
-
   if (!prompt.value || composing.value) return
 
   const content = prepareContent()
@@ -459,7 +447,11 @@ function prepareContent() {
     return [{ type: 'text', text: prompt.value }, ...urls]
   }
   if (selectedText.value) {
-    return `${prompt.value}\n\`\`\`${selectedText.value}\`\`\``
+    return {
+      isQuote: true,
+      quote: selectedText.value,
+      content: prompt.value
+    }
   }
   return prompt.value
 }
