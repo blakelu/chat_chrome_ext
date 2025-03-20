@@ -51,11 +51,12 @@
 </template>
 
 <script lang="ts" setup>
-import OpenAI from 'openai'
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useStorage } from '@vueuse/core'
-import { throttle } from 'lodash-es'
 import { ElMessage } from 'element-plus'
+
+// Import composable
+import { useChat } from '@/composables/useChat.ts'
 
 // Import components with better organization
 import ChatMessages from './ChatMessages.vue'
@@ -65,24 +66,6 @@ import ExportDialog from './ExportDialog.vue'
 import empty from './empty.vue'
 import SettingsDrawer from '../settings/SettingsDrawer.vue'
 import RolePrompt from '../settings/RolePrompt.vue'
-
-// Import assets
-import USER_AVATAR from '@/assets/icons/user.png'
-import ASSISTANT_AVATAR from '@/assets/icons/ROBOT.png'
-
-// Define interfaces
-interface Message {
-  id: number
-  role: string
-  avatar: string
-  content: string | any
-  errorMessage?: string
-}
-
-interface SubmitMessage {
-  role: string
-  content: string | any
-}
 
 // Props and emits
 const props = defineProps({
@@ -98,37 +81,34 @@ const props = defineProps({
 
 const emit = defineEmits(['showHistory', 'addNewSession', 'saveHistory', 'clear'])
 
-// State
-const chatMessages = ref<Message[]>([])
-const chatContext = ref<SubmitMessage[]>([])
+// Initialize chat composable
+const {
+  chatMessages,
+  chatContext,
+  loading,
+  selectedText,
+  picList,
+  API_KEY,
+  API_URL,
+  commonSettings,
+  selectMode,
+  initOpenAI,
+  initChat,
+  clearChat,
+  processMessage,
+  retryMessage
+} = useChat()
+
+// Local state that's not in the composable
 const prompt = ref<string>('')
-const loading = ref(false)
 const dialogVisible = ref(false)
 const promptVisible = ref(false)
 const exportDialogVisible = ref(false)
-const picList = ref<string[]>([])
 const composing = ref(false)
 const inputHistory = ref<string[]>([])
 const currentHistoryIndex = ref(-1)
-const selectedText = ref('') // 添加选中文本状态
 
-// Refs
-const inputRef = ref()
-const messagesRef = ref()
-
-// Storage
-const API_KEY = useStorage('GPT_API_KEY', '')
-const API_URL = useStorage('GPT_API_URL', '')
-const settings = ref({
-  temperature: 0.7,
-  limitContext: 6,
-  quality: 'standard',
-  dalleSize: '1024x1024',
-  dalleStyle: 'vivid',
-  stream: true,
-  prompt: ''
-})
-const commonSettings = useStorage('COMMON_SETTINGS', settings, localStorage, { mergeDefaults: true })
+// UI settings storage
 const themeSettings = useStorage(
   'UI_SETTINGS',
   {
@@ -143,21 +123,16 @@ const themeSettings = useStorage(
   { mergeDefaults: true }
 )
 
-const selectMode = useStorage('mode', 'gpt-4o')
-
-// OpenAI client
-let openai: any = {}
-const initOpenAI = () => {
-  const baseURL = `${API_URL.value}${API_URL.value === 'https://models.inference.ai.azure.com' ? '' : '/v1'}`
-  openai = new OpenAI({ baseURL, apiKey: API_KEY.value, dangerouslyAllowBrowser: true })
-}
+// Refs
+const inputRef = ref()
+const messagesRef = ref()
 
 // Lifecycle hooks
 onMounted(async () => {
   if (!API_KEY.value) {
     dialogVisible.value = true
   }
-  initChat()
+  initChat(props.context)
   initOpenAI()
 
   // 监听选中文本事件
@@ -257,73 +232,9 @@ const handleDeletePic = (index: number) => {
   picList.value.splice(index, 1)
 }
 
-const initChat = (val?: any) => {
-  const arr = val || props.context
-  chatContext.value.splice(0, chatContext.value.length, ...arr)
-  chatMessages.value = arr.map((item: any, index: number) => {
-    return {
-      ...item,
-      id: index + 1,
-      avatar: item.role === 'user' ? USER_AVATAR : ASSISTANT_AVATAR
-    }
-  })
-  console.log(chatContext.value, 'chatContext.value', props.context)
-}
-
-const clearChat = () => {
-  chatMessages.value.splice(0, chatMessages.value.length)
-  chatContext.value.splice(0, chatContext.value.length)
+const handleClearChat = () => {
+  clearChat()
   emit('clear')
-}
-
-function createMessage(id: any, role: string, avatar: string, content: string) {
-  return {
-    id,
-    role,
-    avatar,
-    content
-  }
-}
-
-function updateMessageAndContext(id: number, content: any) {
-  chatMessages.value[id].content = content
-  chatContext.value.push({ role: 'assistant', content })
-  inputRef.value.focus()
-}
-
-function formatPromptMessages(chatContext: any) {
-  let result = []
-
-  // 使用 for 循环以便能够提前查看下一个元素
-  for (let i = 0; i < chatContext.length; i++) {
-    // 判断当前项
-    const isAudio = Object.prototype.toString.call(chatContext[i].content) === '[object Object]' && chatContext[i].content.type === 'audio'
-    const isQuote = chatContext[i].content?.isQuote
-    // 预判断下一项是否满足条件，同时确保不会越界
-    const hasNext = i + 1 < chatContext.length
-    const isArrayAndWrongModelForNext = hasNext && Array.isArray(chatContext[i].content)
-
-    if (isAudio) {
-      // 如果当前项是音频，跳过当前项和前一项
-      if (i > 0) {
-        // 如果存在前一项，则从结果中移除
-        result.pop()
-      }
-      // 跳过当前项的添加，即不执行result.push
-    } else if (isArrayAndWrongModelForNext) {
-      // 如果下一项满足数组条件并使用了错误的模型，跳过当前项和下一项
-      i++ // 跳过下一项
-    } else if (isQuote) {
-      // 如果是引用项，content 为对象，包含 content 和 quote
-      const { role, content: contentObj } = chatContext[i]
-      result.push({ role, content: `${contentObj.content}\n${contentObj.quote}` })
-
-    } else {
-      result.push(chatContext[i])
-    }
-  }
-
-  return result
 }
 
 // Handle tab completion
@@ -332,6 +243,9 @@ const handleTabCompletion = async () => {
 
   try {
     ElMessage.info('生成自动补全...')
+
+    // Initialize OpenAI if needed
+    const openai = initOpenAI()
 
     // Get completion from API
     const completion = await openai.completions.create({
@@ -399,135 +313,25 @@ const handleMessagesScroll = (scrollData) => {
 async function handleInputEnter() {
   if (!prompt.value || composing.value) return
 
-  const content = prepareContent()
-  updateUserChat(content)
+  const result = await processMessage(prompt.value, [...picList.value], props.ttsvoice)
 
-  selectedText.value = '' // 清空选中文本
+  // Clear prompt and picture list
+  prompt.value = ''
+  picList.value = []
 
-  const temporaryMessageId = addTemporaryAssistantMessage()
-
-  const customPrompt = prepareCustomPrompt()
-
-  loading.value = true
-
-  try {
-    await handleModelResponse(content, temporaryMessageId, customPrompt)
-
-    // Add to input history
-    if (typeof content === 'string') {
-      if (inputHistory.value.indexOf(content) === -1) {
-        inputHistory.value.unshift(content)
-        if (inputHistory.value.length > 50) {
-          inputHistory.value.pop()
-        }
+  // Add to input history
+  if (result) {
+    if (inputHistory.value.indexOf(prompt.value) === -1) {
+      inputHistory.value.unshift(prompt.value)
+      if (inputHistory.value.length > 50) {
+        inputHistory.value.pop()
       }
     }
 
     currentHistoryIndex.value = -1
-  } catch (error) {
-    const errorMessage = error.message || 'something went wrong'
-    updateMessageAndContext(temporaryMessageId - 1, errorMessage)
-    ElMessage.error('请求失败: ' + errorMessage)
   }
 
-  loading.value = false
   messagesRef.value?.scrollToBottom()
-}
-
-function prepareContent() {
-  if (picList.value.length > 0) {
-    const urls = picList.value.map((item: string) => ({
-      type: 'image_url',
-      image_url: {
-        url: item,
-        detail: 'auto'
-      }
-    }))
-    picList.value = []
-    return [{ type: 'text', text: prompt.value }, ...urls]
-  }
-  if (selectedText.value) {
-    return {
-      isQuote: true,
-      quote: selectedText.value,
-      content: prompt.value
-    }
-  }
-  return prompt.value
-}
-
-function updateUserChat(content: any) {
-  chatMessages.value.push(createMessage(chatMessages.value.length + 1, 'user', USER_AVATAR, content))
-  chatContext.value.push({ role: 'user', content })
-  prompt.value = ''
-  messagesRef.value?.scrollToBottom()
-}
-
-function addTemporaryAssistantMessage() {
-  chatMessages.value.push(createMessage(chatMessages.value.length + 1, 'assistant', ASSISTANT_AVATAR, ''))
-  return chatMessages.value.length
-}
-
-function prepareCustomPrompt() {
-  const limitContext = commonSettings.value.limitContext + 1
-  const customPrompt = formatPromptMessages([...chatContext.value.slice(-limitContext)])
-  if (commonSettings.value.prompt) {
-    customPrompt.unshift({ role: 'system', content: commonSettings.value.prompt })
-  }
-  return customPrompt
-}
-
-async function handleModelResponse(content: any, temporaryMessageId: number, customPrompt: any) {
-  if (selectMode.value === 'dall-e-3') {
-    await handleDallEModelResponse(content, temporaryMessageId)
-  } else if (['tts-1', 'tts-1-hd', 'tts-az-1'].includes(selectMode.value)) {
-    await handleTTSModelResponse(content, temporaryMessageId)
-  } else {
-    await handleChatModelResponse(customPrompt, temporaryMessageId)
-  }
-}
-
-async function handleDallEModelResponse(content: any, temporaryMessageId: number) {
-  const { dalleSize: size, dalleStyle: style, quality } = commonSettings.value
-  const image = await openai.images.generate({ model: selectMode.value, prompt: content, size, style, quality })
-  const url = `![image](${image.data[0].url})`
-  updateMessageAndContext(temporaryMessageId - 1, url)
-}
-
-async function handleTTSModelResponse(content: any, temporaryMessageId: number) {
-  const mp3 = await openai.audio.speech.create({
-    model: selectMode.value,
-    voice: props.ttsvoice,
-    input: content
-  })
-  const response = new Response(mp3.body)
-  const audioBlob = await response.blob()
-  const audioUrl = URL.createObjectURL(audioBlob)
-  const data = { type: 'audio', audioUrl }
-  updateMessageAndContext(temporaryMessageId - 1, data)
-}
-
-async function handleChatModelResponse(customPrompt: any, temporaryMessageId: number) {
-  const completion = await openai.chat.completions.create({
-    model: selectMode.value,
-    messages: customPrompt,
-    temperature: commonSettings.value.temperature,
-    stream: commonSettings.value.stream
-  })
-
-  if (commonSettings.value.stream) {
-    for await (const chunk of completion) {
-      const content = chunk.choices[0]?.delta?.content
-      if (!content) continue
-      if (chunk.choices[0]?.finish_reason === 'stop') break
-      chatMessages.value[temporaryMessageId - 1].content += content
-    }
-    chatContext.value.push({ role: 'assistant', content: chatMessages.value[temporaryMessageId - 1].content })
-    inputRef.value.focus()
-  } else {
-    const content = completion.choices[0]?.message?.content
-    updateMessageAndContext(temporaryMessageId - 1, content)
-  }
 }
 
 const emptyConfirm = (data: string) => {
@@ -557,53 +361,9 @@ const handleExportDownload = (result) => {
   ElMessage.success(`已导出对话为 ${result.format.toUpperCase()} 格式`)
 }
 
-// Add retry function for failed messages
-const retryMessage = (message) => {
-  // Find the failed message in chatMessages
-  const failedMsgIndex = chatMessages.value.findIndex((m) => m.id === message.id)
-  if (failedMsgIndex === -1) return
-
-  // Remove the error message
-  chatMessages.value.splice(failedMsgIndex, 1)
-
-  // Find the context of the message (user's prompt)
-  const userMsgIndex = chatContext.value.findIndex(
-    (ctx) =>
-      ctx.role === 'user' &&
-      (ctx.content === message.content ||
-        (Array.isArray(ctx.content) && ctx.content.some((c) => c.type === 'text' && c.text === message.content)))
-  )
-
-  if (userMsgIndex !== -1) {
-    // Get the user's original prompt
-    const userPrompt = chatContext.value[userMsgIndex]
-
-    // Remove all messages after this one in context
-    chatContext.value.splice(userMsgIndex + 1)
-
-    // Handle this as a new message from the last user input
-    const temporaryMessageId = addTemporaryAssistantMessage()
-    const customPrompt = prepareCustomPrompt()
-
-    loading.value = true
-
-    handleModelResponse(userPrompt.content, temporaryMessageId, customPrompt)
-      .then(() => {
-        loading.value = false
-        messagesRef.value?.scrollToBottom()
-      })
-      .catch((error) => {
-        const errorMessage = error.message || 'something went wrong'
-        updateMessageAndContext(temporaryMessageId - 1, errorMessage)
-        ElMessage.error('重试失败: ' + errorMessage)
-        loading.value = false
-      })
-  }
-}
-
 // Expose methods to parent component
 defineExpose({
-  clearChat,
+  clearChat: handleClearChat,
   initChat
 })
 </script>
@@ -615,10 +375,4 @@ defineExpose({
   background-color: #fff;
 }
 
-:deep(.hljs) {
-  margin: 8px 0;
-  padding: 12px 10px;
-  white-space: pre-wrap;
-  border-radius: 8px;
-}
 </style>

@@ -118,6 +118,13 @@ const handleShare = () => {
     border: 1px solid #f5f6f7;
   }
 }
+
+:deep(.hljs) {
+  margin: 8px 0;
+  padding: 12px 10px;
+  white-space: pre-wrap;
+  border-radius: 8px;
+}
 .avatar-left {
   margin-left: 6px;
 }

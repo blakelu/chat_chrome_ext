@@ -82,7 +82,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
     sendResponse({ status: 'acknowledged' });
   }
-  
   // 处理内容脚本发送的选中文本
   if (message && message.action === 'textSelected' && message.text) {
     // 尝试向侧边栏发送消息的函数
@@ -124,6 +123,29 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     sendToSidePanel();
     sendResponse({ status: 'received' });
   }
+  if (message && message.action === 'showFloatingMenu' && message.data) {
+    const { text, position } = message.data;
+    
+    // Method 1: Broadcast to all extension pages (including injected app)
+    chrome.runtime.sendMessage({
+      action: 'showFloatingMenu',
+      data: { text, position }
+    }).catch(err => {
+      // Ignore errors when receivers don't exist
+    });
+    
+    // Method 2: If this message came from a specific tab, try sending directly to that tab's content script
+    if (sender && sender.tab && sender.tab.id) {
+      chrome.tabs.sendMessage(sender.tab.id, {
+        action: 'showFloatingMenu',
+        data: { text, position }
+      }).catch(err => {
+        // Ignore errors if content script isn't ready
+      });
+    }
+    
+    sendResponse({ status: 'received' });
+  }
   
   // 要启用异步响应，返回true
   return true;
@@ -142,5 +164,23 @@ chrome.windows.onRemoved.addListener((windowId) => {
   if (windowId === activeSidePanelInfo.windowId) {
     activeSidePanelInfo.tabId = null;
     activeSidePanelInfo.windowId = null;
+  }
+});
+
+
+// Handle extension installation
+chrome.runtime.onInstalled.addListener(() => {
+  console.log('Extension installed');
+});
+
+
+// Listen for window close events
+chrome.windows.onRemoved.addListener((windowId) => {
+  if (windowId === floatingMenuWindowId) {
+    floatingMenuWindowId = null;
+  }
+  
+  if (windowId === chatWindowId) {
+    chatWindowId = null;
   }
 });

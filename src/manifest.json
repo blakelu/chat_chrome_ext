@@ -44,7 +44,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["*.png", "*.svg", "*.jpg", "*.gif"],
+      "resources": ["*.png", "*.svg", "*.jpg", "*.gif", "*.css"],
       "matches": ["<all_urls>"]
     }
   ],
@@ -53,6 +53,11 @@
       "matches": ["<all_urls>"],
       "js": ["contentScript.js"],
       "run_at": "document_end"
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["components/injected/injected-content.js"],
+      "run_at": "document_idle"
     }
   ]
 }

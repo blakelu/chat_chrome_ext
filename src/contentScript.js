@@ -2,63 +2,131 @@
  * Content script for the Chrome extension
  * This script runs in the context of web pages and monitors text selection
  */
-;(() => {
-  let lastSelectedText = ''
-  let selectionTimeout = null
-  // 监听文本选择事件
-  document.addEventListener('mouseup', () => {
-    // 延迟处理以避免快速选择引起的频繁触发
-    clearTimeout(selectionTimeout)
-    selectionTimeout = setTimeout(() => {
-      const selectedText = window.getSelection().toString().trim() || ''
-
-      // 只有当选择的文本不为空或者上次选择的文本不为空时才发送消息
-      if (selectedText || (!selectedText && lastSelectedText)) {
-        lastSelectedText = selectedText
-        // 在 Chrome 扩展环境中，通过 runtime 发送消息
-        if (typeof chrome !== 'undefined' && chrome.runtime) {
-          chrome.runtime
-            .sendMessage({
-              action: 'textSelected',
-              text: selectedText
-            })
-            .then(() => {
-              console.log('Selection message sent successfully')
-            })
-            .catch((error) => {
-              console.error('Error sending selection message:', error)
-            })
-        }
+(() => {
+  let lastSelectedText = '';
+  let selectionTimeout = null;
+  let isOptionKeyPressed = false;
+  
+  // Track option key state
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Alt' || e.key === 'Option' || e.keyCode === 18) {
+      isOptionKeyPressed = true;
+      
+      // Show menu if text is already selected
+      const selectedText = window.getSelection().toString().trim();
+      if (selectedText) {
+        notifyTextSelected(selectedText);
       }
-    }, 300)
-  })
-
-  // 监听键盘选择事件（比如 Shift+箭头）
+    }
+  });
+  
   document.addEventListener('keyup', (e) => {
-    // 如果是用于选择文本的键被释放
+    if (e.key === 'Alt' || e.key === 'Option' || e.keyCode === 18) {
+      isOptionKeyPressed = false;
+      
+      // Notify to hide menu when option key is released
+      if (typeof chrome !== 'undefined' && chrome.runtime) {
+        // First try to notify the injected app
+        chrome.runtime.sendMessage({
+          action: 'showFloatingMenu',
+          data: null
+        }).catch(error => {
+          console.error('Error sending hide menu message:', error);
+        });
+      }
+    }
+    
+    // Original keyup handler for text selection via keyboard
     if (e.key === 'Shift' || e.key.startsWith('Arrow') || e.key === 'End' || e.key === 'Home') {
       clearTimeout(selectionTimeout)
       selectionTimeout = setTimeout(() => {
-        const selectedText = window.getSelection().toString().trim() || ''
-
-        if (selectedText || (!selectedText && lastSelectedText)) {
-          lastSelectedText = selectedText
+        const selectedText = window.getSelection().toString().trim();
+        
+        if (selectedText || (!selectedText && lastSelectedText != '')) {
+          lastSelectedText = selectedText;
+          
+          // Notify sidebar as before
           if (typeof chrome !== 'undefined' && chrome.runtime) {
-            chrome.runtime
-              .sendMessage({
-                action: 'textSelected',
-                text: selectedText
-              })
-              .then(() => {
-                console.log('Selection message sent successfully')
-              })
-              .catch((error) => {
-                console.error('Error sending selection message:', error)
-              })
+            chrome.runtime.sendMessage({
+              action: 'textSelected',
+              text: selectedText
+            }).catch(error => {
+              console.error('Error sending selection message:', error);
+            });
+          }
+          
+          // Show menu if option key is pressed
+          if (isOptionKeyPressed) {
+            notifyTextSelected(selectedText);
           }
         }
       }, 300)
     }
-  })
-  console.log('Chat extension content script loaded successfully')
-})()
+  });
+
+  // Monitor text selection
+  document.addEventListener('mouseup', () => {
+    // Delay to avoid quick selection issues
+    clearTimeout(selectionTimeout);
+    selectionTimeout = setTimeout(() => {
+      const selectedText = window.getSelection().toString().trim();
+      
+      if (selectedText || (!selectedText && lastSelectedText != '')) {
+        lastSelectedText = selectedText;
+        
+        // Send to extension sidebar as before
+        if (typeof chrome !== 'undefined' && chrome.runtime) {
+          chrome.runtime.sendMessage({
+            action: 'textSelected',
+            text: selectedText
+          }).catch(error => {
+            console.error('Error sending selection message:', error);
+          });
+        }
+        
+        // Show menu if option key is pressed
+        if (isOptionKeyPressed) {
+          notifyTextSelected(selectedText);
+        }
+      } else if (!selectedText) {
+        // Clear selection if text is empty (user clicked somewhere else)
+        lastSelectedText = '';
+      }
+    }, 300);
+  });
+  
+  // Function to notify about selected text with position
+  function notifyTextSelected(selectedText) {
+    const selection = window.getSelection();
+    if (!selection.rangeCount) return;
+    
+    const range = selection.getRangeAt(0);
+    const rect = range.getBoundingClientRect();
+    console.log(rect, 'rect');
+    // Get absolute position including scroll
+    const position = {
+      left: rect.left,
+      top: rect.top,
+      bottom: rect.bottom,
+      right: rect.right,
+      // Also send viewport coordinates for positioning popup
+      viewportLeft: rect.left,
+      viewportTop: rect.top,
+      viewportBottom: rect.bottom,
+      viewportRight: rect.right
+    };
+    
+    // First try communicating with injected app directly
+    if (typeof chrome !== 'undefined' && chrome.runtime) {
+      chrome.runtime.sendMessage({
+        action: 'showFloatingMenu',
+        data: {
+          text: selectedText,
+          position: position
+        }
+      }).catch(error => {
+        console.error('Error sending selection with position:', error);
+      });
+    }
+  }
+})();
