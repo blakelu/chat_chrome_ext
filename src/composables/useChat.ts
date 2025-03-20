@@ -50,24 +50,13 @@ export function useChat() {
   let openai: any = null
   
   // Initialize OpenAI client
-  const initOpenAI = () => {
+  const initOpenAI = async () => {
     const baseURL = `${API_URL.value}${API_URL.value === 'https://models.inference.ai.azure.com' ? '' : '/v1'}`
     openai = new OpenAI({ 
       baseURL, 
       apiKey: API_KEY.value, 
       dangerouslyAllowBrowser: true 
     })
-    
-    // Update settings in Chrome storage
-    if (typeof chrome !== 'undefined' && chrome.storage) {
-      chrome.storage.local.set({ 
-        mode: selectMode.value,
-        GPT_API_URL: API_URL.value,
-        GPT_API_KEY: API_KEY.value,
-        COMMON_SETTINGS: commonSettings.value
-      })
-    }
-    
     return openai
   }
 

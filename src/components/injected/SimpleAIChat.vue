@@ -4,6 +4,7 @@
     title="closeAI"
     width="500"
     :modal="false"
+    :close-on-click-modal="false"
     draggable
     append-to-body
     @open="handleOpen"
@@ -47,6 +48,7 @@
 import { ref, reactive, onMounted, nextTick, watch } from 'vue'
 import { useChat } from '@/composables/useChat.ts'
 import ChatMessages from '@/components/chat/ChatMessages.vue'
+import { resolve } from 'path'
 
 const props = defineProps({
   isDialogVisible: {
@@ -95,26 +97,29 @@ const {
   retryMessage
 } = useChat()
 
-// Get API settings from Chrome storage and initialize
-onMounted(async () => {
-  if (typeof chrome !== 'undefined' && chrome.storage) {
-    chrome.storage.local.get(['mode', 'GPT_API_KEY', 'GPT_API_URL', 'COMMON_SETTINGS'], (data) => {
-      // Store API settings
-      if (data.GPT_API_KEY) API_KEY.value = data.GPT_API_KEY
-      if (data.GPT_API_URL) API_URL.value = data.GPT_API_URL
-      if (data.mode) selectMode.value = data.mode
+const init = async () => {
+  return new Promise((resolve) => {
+    if (typeof chrome !== 'undefined' && chrome.storage) {
+      chrome.storage.local.get(['mode', 'GPT_API_KEY', 'GPT_API_URL', 'COMMON_SETTINGS'], async (data) => {
+        // Store API settings
+        if (data.GPT_API_KEY) API_KEY.value = data.GPT_API_KEY
+        if (data.GPT_API_URL) API_URL.value = data.GPT_API_URL
+        if (data.mode) selectMode.value = data.mode
 
-      // Copy system prompt if available
-      if (data.COMMON_SETTINGS?.prompt) {
-        commonSettings.value.prompt = data.COMMON_SETTINGS.prompt
-      }
+        // Copy system prompt if available
+        if (data.COMMON_SETTINGS?.prompt) {
+          commonSettings.value.prompt = data.COMMON_SETTINGS.prompt
+        }
 
-      console.log('API settings loaded')
-      initOpenAI()
-    })
-  }
-})
-const handleOpen = () => {
+        console.log('API settings loaded', API_KEY.value, API_URL.value, selectMode.value)
+        await initOpenAI()
+        resolve(true)
+      })
+    }
+  })
+}
+const handleOpen = async () => {
+  await init()
   if (props.selectedText) {
     chatSelectedText.value = props.selectedText
     initialQuery()

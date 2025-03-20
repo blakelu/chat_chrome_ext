@@ -196,11 +196,14 @@ watch(
     initChat(val)
   }
 )
-
+watch(selectMode, (newVal) => {
+  chrome.storage.local.set({ mode: newVal })
+})
 // Methods
 const handleConfirm = (data: any) => {
   API_URL.value = data.API_URL
   API_KEY.value = data.API_KEY
+  chrome.storage.local.set({ GPT_API_KEY: data.API_KEY, GPT_API_URL: data.API_URL })
   initOpenAI()
 }
 
