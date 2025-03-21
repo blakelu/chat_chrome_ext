@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
 import App from './App.vue'
-// import '../../style.css'
+// import '../../injected.css'
 
 window.onload = async () => {
   const el = document.querySelector('body')

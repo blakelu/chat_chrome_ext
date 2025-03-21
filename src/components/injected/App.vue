@@ -83,10 +83,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 .crx-app-container {
   position: fixed;
   top: 0;

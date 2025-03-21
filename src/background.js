@@ -36,19 +36,6 @@ chrome.action.onClicked.addListener(async (tab) => {
   }
 });
 
-// Register keyboard command handling
-chrome.commands.onCommand.addListener(async (command, tab) => {
-  if (command === "open_side_panel") {
-    try {
-      if (chrome.sidePanel) {
-        await chrome.sidePanel.open({ tabId: tab.id });
-      }
-    } catch (error) {
-      console.error('Error handling command:', error);
-    }
-  }
-});
-
 // Monitor extension installation and updates
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === 'install') {

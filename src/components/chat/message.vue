@@ -110,7 +110,7 @@ const handleShare = () => {
   flex-direction: row-reverse;
   padding: 8px 44px 8px 8px;
   .quote-content {
-    width: 90%;
+    max-width: 90%;
     padding: 6px 12px;
     font-size: 13px;
     color: #666666;
@@ -209,7 +209,7 @@ const handleShare = () => {
 
   .markdown-content {
     :deep(p) {
-      padding: 0.5em 0;
+      padding: 6px 0;
     }
 
     :deep(pre) {
@@ -224,7 +224,8 @@ const handleShare = () => {
 
     :deep(img) {
       border-radius: 8px;
-      max-width: 100%;
+      height: 100px;
+      width: auto;
     }
     :deep(hr) {
       margin-bottom: 4px;

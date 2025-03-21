@@ -29,7 +29,7 @@
     />
 
     <ChatInput
-      v-model="prompt"
+      v-model="inputMessage"
       :picList="picList"
       :selectedText="selectedText"
       @update:selectedText="(val) => (selectedText = val)"
@@ -85,6 +85,7 @@ const emit = defineEmits(['showHistory', 'addNewSession', 'saveHistory', 'clear'
 const {
   chatMessages,
   chatContext,
+  inputMessage,
   loading,
   selectedText,
   picList,
@@ -100,7 +101,6 @@ const {
 } = useChat()
 
 // Local state that's not in the composable
-const prompt = ref<string>('')
 const dialogVisible = ref(false)
 const promptVisible = ref(false)
 const exportDialogVisible = ref(false)
@@ -242,7 +242,7 @@ const handleClearChat = () => {
 
 // Handle tab completion
 const handleTabCompletion = async () => {
-  if (!prompt.value.trim()) return
+  if (!inputMessage.value.trim()) return
 
   try {
     ElMessage.info('生成自动补全...')
@@ -253,7 +253,7 @@ const handleTabCompletion = async () => {
     // Get completion from API
     const completion = await openai.completions.create({
       model: 'gpt-3.5-turbo-instruct',
-      prompt: prompt.value.trim() + '\n\nComplete this thought:',
+      prompt: inputMessage.value.trim() + '\n\nComplete this thought:',
       max_tokens: 50,
       temperature: 0.7,
       stop: ['\n', '。', '.', '?', '？', '!', '！']
@@ -261,7 +261,7 @@ const handleTabCompletion = async () => {
 
     // Add completion to prompt
     if (completion.choices && completion.choices[0].text) {
-      prompt.value += completion.choices[0].text
+      inputMessage.value += completion.choices[0].text
     }
   } catch (error) {
     ElMessage.error('自动补全失败')
@@ -275,8 +275,8 @@ const loadPreviousMessage = () => {
 
   // If first press, store current input and initialize
   if (currentHistoryIndex.value === -1) {
-    if (prompt.value.trim()) {
-      inputHistory.value = [prompt.value]
+    if (inputMessage.value.trim()) {
+      inputHistory.value = [inputMessage.value]
     } else {
       inputHistory.value = []
     }
@@ -293,7 +293,7 @@ const loadPreviousMessage = () => {
   }
 
   if (inputHistory.value.length > 0) {
-    prompt.value = inputHistory.value[currentHistoryIndex.value]
+    inputMessage.value = inputHistory.value[currentHistoryIndex.value]
   }
 }
 
@@ -314,18 +314,14 @@ const handleMessagesScroll = (scrollData) => {
 }
 
 async function handleInputEnter() {
-  if (!prompt.value || composing.value) return
+  if (!inputMessage.value || composing.value) return
 
-  const result = await processMessage(prompt.value, [...picList.value], props.ttsvoice)
-
-  // Clear prompt and picture list
-  prompt.value = ''
-  picList.value = []
+  const result = await processMessage(inputMessage.value, [...picList.value], props.ttsvoice)
 
   // Add to input history
   if (result) {
-    if (inputHistory.value.indexOf(prompt.value) === -1) {
-      inputHistory.value.unshift(prompt.value)
+    if (inputHistory.value.indexOf(inputMessage.value) === -1) {
+      inputHistory.value.unshift(inputMessage.value)
       if (inputHistory.value.length > 50) {
         inputHistory.value.pop()
       }
@@ -338,7 +334,7 @@ async function handleInputEnter() {
 }
 
 const emptyConfirm = (data: string) => {
-  prompt.value = data
+  inputMessage.value = data
   handleInputEnter()
 }
 

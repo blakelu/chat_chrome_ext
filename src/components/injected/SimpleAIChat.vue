@@ -48,7 +48,6 @@
 import { ref, reactive, onMounted, nextTick, watch } from 'vue'
 import { useChat } from '@/composables/useChat.ts'
 import ChatMessages from '@/components/chat/ChatMessages.vue'
-import { resolve } from 'path'
 
 const props = defineProps({
   isDialogVisible: {

@@ -6,17 +6,11 @@
         :model="selectMode"
         :ttsvoice="ttsvoice"
         :context="currentContext"
-        :modelOptions="options"
-        :isAdding="isAdding"
-        :optionName="optionName"
         :commonSettings="commonSettings"
         @showHistory="historyDrawer = true"
         @addNewSession="addNewSession"
         @clear="clearCurrentChat"
         @saveHistory="saveHistory"
-        @addModel="addModel"
-        @clearModelAdd="clear"
-        @confirmModelAdd="onConfirm"
         @changeModel="onChangeMode"
         @updateSelectMode="selectMode = $event"
         @openSettings="settingsDrawer = true"
@@ -138,24 +132,8 @@ import KeyboardShortcut from './common/KeyboardShortcut.vue'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts.ts'
 import { Plus, Setting, Document, Microphone } from '@element-plus/icons-vue'
 
-// Check for Chrome extension API
-onMounted(() => {
-  if (typeof chrome !== 'undefined' && chrome.runtime) {
-    chrome.runtime.sendMessage('sidePanelOpened')
-    chrome.runtime.onMessage.addListener((message) => {
-      if (message === 'closeSidePanel') {
-        window.close()
-      }
-    })
-  }
-})
-
-const options = useStorage('modelList')
 
 const selectMode = useStorage('mode', 'gpt-4o')
-const inputRef = ref()
-const isAdding = ref(false)
-const optionName = ref('')
 const contentRef = ref<any>(null)
 const historyDrawer = ref<boolean>(false) // 历史记录弹窗
 const settingsDrawer = ref<boolean>(false) // 设置面板
@@ -230,30 +208,6 @@ useKeyboardShortcuts([
     description: '关闭弹窗'
   }
 ])
-
-const addModel = () => {
-  isAdding.value = true
-  nextTick(() => {
-    inputRef.value?.focus()
-  })
-}
-
-const onConfirm = () => {
-  if (optionName.value) {
-    options.value.push(optionName.value)
-    ElMessage({
-      message: `已添加模型: ${optionName.value}`,
-      type: 'success',
-      offset: 60
-    })
-    clear()
-  }
-}
-
-const clear = () => {
-  optionName.value = ''
-  isAdding.value = false
-}
 
 // 根据timeStr距离当前最近的时间，获取上一次的历史记录
 const initLastInfo = () => {

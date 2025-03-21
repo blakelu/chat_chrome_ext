@@ -355,7 +355,7 @@ onMounted(() => {
   width: 100%;
   
   .quote-content {
-    width: 90%;
+    max-width: 90%;
     padding: 6px 12px;
     font-size: 13px;
     color: #666666;

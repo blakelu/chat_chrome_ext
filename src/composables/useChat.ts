@@ -235,6 +235,7 @@ export function useChat() {
     // Add user message
     addUserMessage(messageContent)
     inputMessage.value = ''
+    picList.value = []
     
     // Add temporary assistant message for streaming response
     const temporaryMessageId = addAssistantMessage()
