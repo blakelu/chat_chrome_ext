@@ -37,7 +37,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["*.png", "*.svg", "*.jpg", "*.gif", "*.css"],
+      "resources": ["*.png", "*.svg", "*.jpg", "*.gif", "*.css", "components/injected/injected-app.js"],
       "matches": ["<all_urls>"]
     }
   ],

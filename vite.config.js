@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import path from 'path'
+import path, { resolve } from 'path'
 import crx from 'vite-plugin-crx-mv3'
 import { fileURLToPath, URL } from 'node:url'
 import { VitePWA } from 'vite-plugin-pwa'
@@ -116,11 +116,16 @@ export default defineConfig(({ mode }) => {
       emptyOutDir: mode == 'production',
       minify: false,
       rollupOptions: {
+        input: {
+          popup: resolve(__dirname, 'popup.html'),
+          background: resolve(__dirname, 'src/background.js'),
+          contentScript: resolve(__dirname, 'src/contentScript.js'),
+          injectedContent: resolve(__dirname, 'src/components/injected/injected-content.js'),
+          injectedApp: resolve(__dirname, 'src/components/injected/injected-app.js')
+        },
         output: {
-          manualChunks: {
-            'element-plus': ['element-plus'],
-            'openai': ['openai'],
-            'markdown': ['markdown-it'],
+          entryFileNames: (chunkInfo) => {
+            return 'assets/[name]-[hash].js';
           }
         }
       }

@@ -29,7 +29,7 @@ const showFloatingMenu = (data) => {
     closeMenu()
     return
   }
-
+  console.log('showFloatingMenu:', data)
   selectedText.value = data.text
   selectionPosition.value = data.position
   showMenu.value = true
@@ -52,33 +52,42 @@ const closeChat = () => {
   isDialogVisible.value = false
 }
 
-// Listen for runtime messages from background/content scripts
-const handleRuntimeMessages = (message, sender, sendResponse) => {
+// Send message back to the extension via content script bridge
+const sendMessageToExtension = (data) => {
+  window.postMessage({
+    source: 'closeai-injected-app',
+    payload: {
+      responseToBackground: true,
+      data
+    }
+  }, '*');
+}
+
+// Listen for custom events from our message bridge
+const handleBridgedMessages = (event) => {
+  const { message, sender } = event.detail;
+  console.log('App received bridged message:', message);
+  
   if (message.action === 'showFloatingMenu') {
     showFloatingMenu(message.data)
-    sendResponse({ success: true })
+    // Send response back through the bridge
+    sendMessageToExtension({ action: 'showFloatingMenuResponse', success: true });
   }
 
   if (message.action === 'openAIChat' && message.data) {
     selectedText.value = message.data.text
     isDialogVisible.value = true
-    sendResponse({ success: true })
+    sendMessageToExtension({ action: 'openAIChatResponse', success: true });
   }
-
-  return true // Enable async response
 }
 
 onMounted(() => {
-  // Listen for chrome runtime messages
-  if (chrome.runtime && chrome.runtime.onMessage) {
-    chrome.runtime.onMessage.addListener(handleRuntimeMessages)
-  }
+  // Listen for bridged messages using custom events
+  document.addEventListener('closeai-runtime-message', handleBridgedMessages);
 })
 
 onUnmounted(() => {
-  if (chrome.runtime && chrome.runtime.onMessage) {
-    chrome.runtime.onMessage.removeListener(handleRuntimeMessages)
-  }
+  document.removeEventListener('closeai-runtime-message', handleBridgedMessages);
 })
 </script>
 

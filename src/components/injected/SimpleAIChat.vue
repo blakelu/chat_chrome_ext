@@ -97,9 +97,20 @@ const {
 } = useChat()
 
 const init = async () => {
-  return new Promise((resolve) => {
-    if (typeof chrome !== 'undefined' && chrome.storage) {
-      chrome.storage.local.get(['mode', 'GPT_API_KEY', 'GPT_API_URL', 'COMMON_SETTINGS'], async (data) => {
+  return new Promise(async (resolve) => {
+    
+    try {
+      // Use the storage bridge instead of chrome.storage directly
+      if (window.closeAIStorageBridge) {
+        const data = await window.closeAIStorageBridge.get([
+          'mode', 
+          'GPT_API_KEY', 
+          'GPT_API_URL', 
+          'COMMON_SETTINGS'
+        ]);
+        
+        console.log('Got storage data:', data);
+        
         // Store API settings
         if (data.GPT_API_KEY) API_KEY.value = data.GPT_API_KEY
         if (data.GPT_API_URL) API_URL.value = data.GPT_API_URL
@@ -113,10 +124,17 @@ const init = async () => {
         console.log('API settings loaded', API_KEY.value, API_URL.value, selectMode.value)
         await initOpenAI()
         resolve(true)
-      })
+      } else {
+        console.error('Storage bridge not found');
+        resolve(false);
+      }
+    } catch (error) {
+      console.error('Error accessing storage:', error);
+      resolve(false);
     }
   })
 }
+
 const handleOpen = async () => {
   await init()
   if (props.selectedText) {
@@ -124,6 +142,7 @@ const handleOpen = async () => {
     initialQuery()
   }
 }
+
 // Initial query based on selected text
 const initialQuery = async () => {
   if (!chatSelectedText.value || initialLoading.value) return
