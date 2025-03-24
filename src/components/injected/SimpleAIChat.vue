@@ -6,7 +6,7 @@
     :modal="false"
     :close-on-click-modal="false"
     draggable
-    append-to-body
+    append-to="#closeAI-app"
     @open="handleOpen"
     @close="handleClose"
   >

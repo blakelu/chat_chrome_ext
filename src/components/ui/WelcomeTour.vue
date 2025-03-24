@@ -78,6 +78,12 @@ const steps: TourStep[] = [
     arrowPosition: 'bottom'
   },
   {
+    title: '高级设置',
+    description: '您可以在扩展的选项页面进行更多高级设置，包括API配置、模型设置和界面设置。',
+    element: '.el-icon',
+    position: 'left',
+  },
+  {
     title: '开始对话吧',
     description: '您已了解所有基本功能，现在可以开始与 AI 助手对话了！',
     element: '.enter-icon',

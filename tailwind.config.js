@@ -1,6 +1,9 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: ['./popup.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
+  // corePlugins: {
+  //   preflight: false,
+  // },
+  content: ['./popup.html', './options.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
   theme: {
     extend: {}
   },

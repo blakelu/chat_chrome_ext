@@ -22,7 +22,7 @@
       @clear-chat="clearChat"
       @show-history="$emit('showHistory')"
       @new-chat="$emit('addNewSession')"
-      @show-settings="dialogVisible = true"
+      @show-settings="openOptionsPage"
       @show-prompt-dialog="promptVisible = true"
       @show-export-dialog="openExportDialog"
       @theme-change="handleThemeChange"
@@ -44,7 +44,6 @@
     />
   </div>
 
-  <SettingsDrawer v-model:show="dialogVisible" @confirm="handleConfirm" />
   <RolePrompt v-model:show="promptVisible" />
 
   <ExportDialog :messages="chatMessages" v-model:visible="exportDialogVisible" @copy="handleExportCopy" @download="handleExportDownload" />
@@ -64,7 +63,6 @@ import MessageActions from './MessageActions.vue'
 import ChatInput from './ChatInput.vue'
 import ExportDialog from './ExportDialog.vue'
 import empty from './empty.vue'
-import SettingsDrawer from '../settings/SettingsDrawer.vue'
 import RolePrompt from '../settings/RolePrompt.vue'
 
 // Props and emits
@@ -101,7 +99,6 @@ const {
 } = useChat()
 
 // Local state that's not in the composable
-const dialogVisible = ref(false)
 const promptVisible = ref(false)
 const exportDialogVisible = ref(false)
 const composing = ref(false)
@@ -130,7 +127,7 @@ const messagesRef = ref()
 // Lifecycle hooks
 onMounted(async () => {
   if (!API_KEY.value) {
-    dialogVisible.value = true
+    openOptionsPage()
   }
   initChat(props.context)
   initOpenAI()
@@ -199,12 +196,23 @@ watch(
 watch(selectMode, (newVal) => {
   chrome.storage.local.set({ mode: newVal })
 })
+
 // Methods
 const handleConfirm = (data: any) => {
   API_URL.value = data.API_URL
   API_KEY.value = data.API_KEY
   chrome.storage.local.set({ GPT_API_KEY: data.API_KEY, GPT_API_URL: data.API_URL })
   initOpenAI()
+}
+
+// Open the extension's options page
+const openOptionsPage = () => {
+  if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.openOptionsPage) {
+    chrome.runtime.openOptionsPage()
+  } else {
+    // Fallback for development environment or when Chrome API is not available
+    ElMessage.info('请在扩展管理页面打开选项设置')
+  }
 }
 
 const uploadPic = () => {
@@ -373,5 +381,4 @@ defineExpose({
   padding: 8px;
   background-color: #fff;
 }
-
 </style>

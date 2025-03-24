@@ -1,6 +1,6 @@
 <template>
     <div class="prompt-drawer">
-      <el-drawer v-model="drawer" title="角色设置" size="50%" direction="btt">
+      <el-drawer v-if="!show" v-model="drawer" title="角色设置" size="50%" direction="btt">
         <template #header>
           <div class="drawer-header">
             <h3>角色提示设置</h3>
@@ -54,10 +54,67 @@
           </el-popover>
         </div>
       </el-drawer>
+      
+      <!-- Direct display for options page -->
+      <div v-if="show" class="prompt-container">
+        <div class="prompt-header">
+          <h3>角色提示设置</h3>
+          <div class="header-actions">
+            <el-button size="small" @click="loadTemplate">加载模板</el-button>
+            <el-button size="small" type="primary" @click="savePrompt" :disabled="!commonSettings.prompt.trim()">
+              保存设置
+            </el-button>
+          </div>
+        </div>
+        
+        <div class="prompt-content">
+          <div class="prompt-info">
+            <el-alert
+              type="info"
+              :closable="false"
+              show-icon
+            >
+              <p>在此处设置AI角色提示词，用于定义AI的人格、能力和行为方式</p>
+            </el-alert>
+          </div>
+          
+          <el-input
+            v-model="commonSettings.prompt"
+            type="textarea"
+            resize="none"
+            placeholder="输入系统提示词，用于定义AI的行为和回答风格..."
+            class="prompt-input"
+          />
+          
+          <el-popover v-model:visible="templateVisible" width="300" trigger="click">
+            <template #reference>
+              <div class="template-btn" v-if="templateVisible"></div>
+            </template>
+            <div class="template-list">
+              <h4 class="template-title">选择预设模板</h4>
+              <el-scrollbar height="320px">
+                <div class="template-items">
+                  <div 
+                    v-for="(value, key) in prompts" 
+                    :key="key" 
+                    class="template-item"
+                    @click="selectTemplate(key, value)"
+                  >
+                    <div class="template-name">{{ getTemplateName(key) }}</div>
+                    <div class="template-desc">{{ getTemplateDesc(key) }}</div>
+                  </div>
+                </div>
+              </el-scrollbar>
+            </div>
+          </el-popover>
+        </div>
+      </div>
     </div>
   </template>
   
   <script setup lang="ts">
+  import { useVModel } from '@vueuse/core'
+  
   const props = defineProps({
     show: {
       type: Boolean,
@@ -177,6 +234,39 @@
       gap: 16px;
     }
     
+    // Styles for options page direct display
+    .prompt-container {
+      padding: 20px;
+      
+      .prompt-header {
+        padding: 16px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #e2e8f0;
+        margin-bottom: 20px;
+        
+        h3 {
+          font-size: 18px;
+          font-weight: 600;
+          color: #0f172a;
+          margin: 0;
+        }
+        
+        .header-actions {
+          display: flex;
+          gap: 8px;
+        }
+      }
+      
+      .prompt-content {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        height: 50vh;
+      }
+    }
+    
     .prompt-info {
       margin-bottom: 10px;
       
@@ -261,4 +351,3 @@
     }
   }
   </style>
-  

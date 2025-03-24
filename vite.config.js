@@ -124,8 +124,16 @@ export default defineConfig(({ mode }) => {
           injectedApp: resolve(__dirname, 'src/components/injected/injected-app.js')
         },
         output: {
+          assetFileNames: 'assets/[name].[ext]',
           entryFileNames: (chunkInfo) => {
             return 'assets/[name]-[hash].js';
+          },
+          // Add this to control where HTML files are output
+          chunkFileNames: 'assets/[name]-[hash].js',
+        },
+        manualChunks(id) {
+          if (id.includes('element-plus/theme-chalk/')) {
+            return 'element-plus';
           }
         }
       }

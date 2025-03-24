@@ -1,5 +1,6 @@
 import { createApp } from 'vue';
 import App from './App.vue';
+import './index.css';
 
 // Storage bridge for accessing Chrome storage from the injected app
 const storageBridge = {
