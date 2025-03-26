@@ -3,7 +3,7 @@
     <!-- 添加选中文本显示区域 -->
     <div v-if="selectedText" class="selected-text">
       <div class="text-content">{{ selectedText }}</div>
-      <el-icon size="20" class="close-icon" @click="clearSelectedText"><ep-close-bold /></el-icon>
+      <el-icon size="24" class="close-icon" @click="clearSelectedText"><ep-close-bold /></el-icon>
     </div>
     <div v-if="picList.length" class="image-preview-container">
       <div v-for="(url, index) in picList" :key="url" class="image-preview">
@@ -38,7 +38,7 @@
         aria-label="聊天输入框"
       ></el-input>
       <div class="input-actions">
-        <el-icon size="26" @click="$emit('send')" class="enter-icon"><ep-promotion /></el-icon>
+        <el-icon size="30" @click="$emit('send')" class="enter-icon"><ep-promotion /></el-icon>
       </div>
     </div>
   </div>
@@ -101,44 +101,63 @@ defineExpose({
 
 <style lang="less" scoped>
 .custom-textarea {
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: visible;
-  background-color: #fff;
+  background-color: rgba(0, 0, 0, 0.02);
   position: relative;
-  transition: box-shadow 0.2s;
+  transition: box-shadow 0.2s cubic-bezier(0.25, 0.1, 0.25, 1.0);
+  box-shadow: 0 1px 12px rgba(0, 0, 0, 0.04);
 
   &:focus-within {
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    box-shadow: 0 0 0 1px rgba(0, 122, 255, 0.2);
   }
 
   // 添加选中文本的样式
   .selected-text {
-    border-radius: 8px;
-    padding: 12px;
+    border-radius: 12px 12px 0 0;
+    padding: 14px 16px;
     font-size: 14px;
-    color: #999999;
+    color: #555;
     position: relative;
     display: flex;
     justify-content: space-between;
+    letter-spacing: -0.01em;
 
     .text-content {
       flex-grow: 1;
       max-height: 100px;
       overflow-y: auto;
       white-space: pre-wrap;
-      padding-right: 8px;
-      border-left: 3px solid #3b82f6;
-      padding-left: 8px;
+      padding-right: 10px;
+      border-left: 3px solid #007AFF;
+      padding-left: 10px;
+      line-height: 1.5;
+      
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
+      
+      &::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.1);
+        border-radius: 6px;
+      }
     }
+    
     .close-icon {
-      color: #999999;
+      color: #888;
       cursor: pointer;
-      padding: 4px;
+      padding: 6px;
       border-radius: 50%;
-      transition: background-color 0.2s;
+      transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1.0);
 
       &:hover {
+        background-color: rgba(0, 0, 0, 0.06);
+        transform: scale(1.1);
+      }
+      
+      &:active {
         background-color: rgba(0, 0, 0, 0.1);
+        transform: scale(1);
       }
     }
   }
@@ -150,23 +169,33 @@ defineExpose({
   .input-actions {
     position: absolute;
     right: 12px;
-    bottom: 10px;
+    bottom: 12px;
     display: flex;
     align-items: center;
     gap: 10px;
   }
 
   .image-preview-container {
-    padding: 12px;
+    padding: 14px;
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 12px;
+    background-color: rgba(0, 0, 0, 0.02);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   }
 
   .image-preview {
     position: relative;
-    width: 60px;
-    height: 60px;
+    width: 68px;
+    height: 68px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s cubic-bezier(0.25, 0.1, 0.25, 1.0);
+    
+    &:hover {
+      transform: scale(1.03);
+    }
 
     .preview-image {
       width: 100%;
@@ -179,38 +208,44 @@ defineExpose({
       position: absolute;
       top: -6px;
       right: -6px;
-      background-color: rgba(0, 0, 0, 0.6);
+      background-color: rgba(0, 0, 0, 0.7);
       color: #fff;
       border-radius: 50%;
-      padding: 3px;
+      padding: 4px;
       cursor: pointer;
       z-index: 2;
-      transition: background-color 0.2s;
+      transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1.0);
 
       &:hover {
-        background-color: rgba(220, 38, 38, 0.8);
+        background-color: rgba(220, 38, 38, 0.9);
+        transform: scale(1.1);
+      }
+      
+      &:active {
+        transform: scale(1);
       }
     }
   }
 
   .el-textarea {
     :deep(.el-textarea__inner) {
-      padding: 12px 16px 12px 16px;
-      padding-right: 90px;
+      padding: 14px 48px 14px 16px;
       resize: none;
-      font-size: 14px;
-      line-height: 1.6;
-      transition: background-color 0.2s;
-      border-radius: 12px;
+      font-size: 15px;
+      line-height: 1.5;
+      letter-spacing: -0.01em;
+      transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1.0);
+      border-radius: 16px !important;
+      border-color: transparent;
 
       &:hover {
-        box-shadow: none;
-        background-color: #f9fafb;
+        box-shadow: 0 0 0 1px rgba(0, 122, 255, 0.2);
+        // background-color: #f9fafb;
       }
 
       &:focus {
-        box-shadow: none;
-        background-color: #f9fafb;
+        box-shadow: 0 0 0 1px rgba(0, 122, 255, 0.2);
+        // background-color: #f9fafb;
       }
     }
   }
@@ -219,23 +254,17 @@ defineExpose({
     cursor: pointer;
     padding: 6px;
     border-radius: 50%;
-    transition:
-      transform 0.2s,
-      background-color 0.2s;
+    transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1.0);
 
     &:hover {
       transform: translateY(-2px) scale(1.1);
-      background-color: #dbeafe;
+      background-color: rgba(0, 122, 255, 0.1);
     }
-  }
-
-  .recording-badge {
-    background-color: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 12px;
-    animation: pulse 2s infinite;
+    
+    &:active {
+      transform: translateY(0) scale(1);
+      background-color: rgba(0, 122, 255, 0.2);
+    }
   }
 }
 

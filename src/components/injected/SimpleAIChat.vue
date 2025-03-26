@@ -98,19 +98,13 @@ const {
 
 const init = async () => {
   return new Promise(async (resolve) => {
-    
     try {
       // Use the storage bridge instead of chrome.storage directly
       if (window.closeAIStorageBridge) {
-        const data = await window.closeAIStorageBridge.get([
-          'mode', 
-          'GPT_API_KEY', 
-          'GPT_API_URL', 
-          'COMMON_SETTINGS'
-        ]);
-        
-        console.log('Got storage data:', data);
-        
+        const data = await window.closeAIStorageBridge.get(['mode', 'GPT_API_KEY', 'GPT_API_URL', 'COMMON_SETTINGS'])
+
+        console.log('Got storage data:', data)
+
         // Store API settings
         if (data.GPT_API_KEY) API_KEY.value = data.GPT_API_KEY
         if (data.GPT_API_URL) API_URL.value = data.GPT_API_URL
@@ -125,12 +119,12 @@ const init = async () => {
         await initOpenAI()
         resolve(true)
       } else {
-        console.error('Storage bridge not found');
-        resolve(false);
+        console.error('Storage bridge not found')
+        resolve(false)
       }
     } catch (error) {
-      console.error('Error accessing storage:', error);
-      resolve(false);
+      console.error('Error accessing storage:', error)
+      resolve(false)
     }
   })
 }
@@ -211,82 +205,81 @@ watch(
   background-color: #fff;
   border-radius: 12px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
+  .chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background-color: #f8fafd;
+    border-bottom: 1px solid #e2e8f0;
+  }
 
-.chat-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
-  background-color: #f8fafd;
-  border-bottom: 1px solid #e2e8f0;
-}
+  .chat-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a202c;
+  }
 
-.chat-header h3 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #1a202c;
-}
+  .header-actions {
+    display: flex;
+    align-items: center;
+  }
 
-.header-actions {
-  display: flex;
-  align-items: center;
-}
+  .close-btn {
+    padding: 6px;
+    font-size: 16px;
+    color: #64748b;
+    transition: color 0.2s;
+  }
 
-.close-btn {
-  padding: 6px;
-  font-size: 16px;
-  color: #64748b;
-  transition: color 0.2s;
-}
+  .close-btn:hover {
+    color: #f43f5e;
+  }
 
-.close-btn:hover {
-  color: #f43f5e;
-}
+  .chat-body {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
 
-.chat-body {
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-}
+  .user-message {
+    display: flex;
+    gap: 10px;
+    max-width: 100%;
+    margin-bottom: 16px;
+  }
 
-.user-message {
-  display: flex;
-  gap: 10px;
-  max-width: 100%;
-  margin-bottom: 16px;
-}
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
 
-.user-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  overflow: hidden;
-  flex-shrink: 0;
-}
+  .user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 
-.user-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+  .message-content {
+    padding: 10px 14px;
+    border-radius: 14px;
+    font-size: 14px;
+    line-height: 1.5;
+    word-break: break-word;
+    max-width: calc(100% - 50px);
+    background-color: #f0f7ff;
+    color: #334155;
+  }
 
-.message-content {
-  padding: 10px 14px;
-  border-radius: 14px;
-  font-size: 14px;
-  line-height: 1.5;
-  word-break: break-word;
-  max-width: calc(100% - 50px);
-  background-color: #f0f7ff;
-  color: #334155;
-}
-
-.chat-input {
-  padding: 12px 16px;
-  background-color: #fff;
-  border-top: 1px solid #e2e8f0;
+  .chat-input {
+    padding: 12px 16px;
+    background-color: #fff;
+    border-top: 1px solid #e2e8f0;
+  }
 }
 </style>

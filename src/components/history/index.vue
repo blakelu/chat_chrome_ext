@@ -34,7 +34,7 @@
         <div v-if="historyInfoList.length === 0" class="empty-history">
           <el-empty description="暂无历史记录" :image-size="120">
             <template #image>
-              <img src="@/assets/icons/robot.svg" class="empty-icon" />
+              <img src="/icons/ROBOT.png" class="empty-icon" />
             </template>
             <el-button type="primary" @click="createNewChat">开始新对话</el-button>
           </el-empty>

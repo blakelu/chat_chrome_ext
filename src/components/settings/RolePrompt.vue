@@ -125,7 +125,7 @@
   
   const drawer = useVModel(props, 'show', emit)
   const settings = ref({
-    temperature: 1,
+    temperature: 0.7,
     limitContext: 6,
     quality: 'standard',
     dalleSize: '1024x1024',

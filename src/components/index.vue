@@ -6,7 +6,6 @@
         :model="selectMode"
         :ttsvoice="ttsvoice"
         :context="currentContext"
-        :commonSettings="commonSettings"
         @showHistory="historyDrawer = true"
         @addNewSession="addNewSession"
         @clear="clearCurrentChat"
@@ -26,7 +25,7 @@
       @reload="initLastInfo" 
     />
     
-    <!-- 设置面板 -->
+    <!-- 设置面板
     <el-drawer
       v-model="settingsDrawer"
       title="会话设置"
@@ -99,7 +98,7 @@
           />
         </div>
       </div>
-    </el-drawer>
+    </el-drawer> -->
     
     <!-- Keyboard shortcut info modal -->
     <el-dialog
@@ -140,16 +139,6 @@ const settingsDrawer = ref<boolean>(false) // 设置面板
 const sessionId = ref('') //  当前会话Id
 const currentContext = ref<any>([]) // 当前会话上下文
 const ttsvoice = ref('zh-CN-henan-YundengNeural')
-const settings = ref({
-  temperature: 1,
-  limitContext: 6,
-  quality: 'standard',
-  dalleSize: '1024x1024',
-  dalleStyle: 'vivid',
-  stream: true,
-  prompt: ''
-})
-const commonSettings = useStorage('COMMON_SETTINGS', settings, localStorage, { mergeDefaults: true })
 const keyboardHelpVisible = ref(false)
 
 // Define keyboard shortcuts

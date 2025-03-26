@@ -1,8 +1,8 @@
 <template>
-  <div v-if="realMessage.content?.isQuote" class="quote-container">
+  <div v-if="realMessage.content?.isQuote" class="closeAI-quote-container">
     <div v-html="md.render(realMessage.content.quote)" class="quote-content"></div>
   </div>
-  <div class="message" :class="{ 'is-self': isUser }">
+  <div class="closeAI-message" :class="{ 'is-self': isUser }">
     <div class="avatar" :class="{ 'avatar-left': isUser, 'avatar-right': isAssistant }">
       <img :src="realMessage.avatar" />
     </div>
@@ -105,10 +105,11 @@ const handleShare = () => {
 </script>
 
 <style lang="less" scoped>
-.quote-container {
+.closeAI-quote-container {
   display: flex;
   flex-direction: row-reverse;
   padding: 8px 44px 8px 8px;
+
   .quote-content {
     max-width: 90%;
     padding: 6px 12px;
@@ -116,175 +117,185 @@ const handleShare = () => {
     color: #666666;
     border-radius: 8px;
     border: 1px solid #f5f6f7;
+    background-color: #fafafa;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
   }
 }
 
-:deep(.hljs) {
-  margin: 8px 0;
-  padding: 12px 10px;
-  white-space: pre-wrap;
-  border-radius: 8px;
-}
-.avatar-left {
-  margin-left: 6px;
-}
-
-.avatar-right {
-  margin-right: 6px;
-}
-
-.content-assistant {
-  padding-bottom: 0 !important;
-  background-color: transparent !important;
-  color: #1a1a1a !important;
-}
-
-.message {
+.closeAI-message {
   &:not(:last-child) {
     margin-bottom: 16px;
   }
   display: flex;
   align-items: flex-start;
-  transition: transform 0.2s;
+  transition: transform 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
 
   &:hover {
     transform: translateY(-1px);
+
+    .actions {
+      opacity: 1;
+    }
   }
-}
-
-.message.is-self {
-  flex-direction: row-reverse;
-}
-
-.avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  overflow: hidden;
-  flex-shrink: 0;
-  // box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  // border: 2px solid #fff;
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  :deep(.hljs) {
+    margin: 8px 0;
+    padding: 12px 10px;
+    white-space: pre-wrap;
+    border-radius: 8px;
   }
-}
 
-.content {
-  font-size: 14px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  color: #333333;
-  background-color: #f7f8f9;
-  padding: 4px 8px;
-  border-radius: 8px;
-  // max-width: 85%;
-  word-wrap: break-word;
-  overflow-x: visible;
-  position: relative;
+  .avatar-left {
+    margin-left: 8px;
+  }
 
-  .audio-content {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+  .avatar-right {
+    margin-right: 8px;
+  }
 
-    audio {
+  .content-assistant {
+    padding-bottom: 0 !important;
+    background-color: transparent !important;
+    color: #1a1a1a !important;
+  }
+  .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+
+    img {
       width: 100%;
-      border-radius: 8px;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .content {
+    font-size: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    line-height: 1.5;
+    letter-spacing: -0.01em;
+    color: #333333;
+    background-color: #f7f8f9;
+    padding: 4px 10px;
+    border-radius: 8px;
+    word-wrap: break-word;
+    overflow-x: visible;
+    position: relative;
+
+    .audio-content {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      audio {
+        width: 100%;
+        border-radius: 8px;
+        margin-top: 4px;
+      }
+
+      .download-link {
+        font-size: 13px;
+        color: #007aff;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 0;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
     }
 
-    .download-link {
-      font-size: 13px;
-      color: #3b82f6;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
+    .markdown-content {
+      :deep(p) {
+        padding: 6px 0;
+        line-height: 1.5;
+      }
+
+      :deep(pre) {
+        border-radius: 8px;
+        margin: 10px 0;
+        overflow: hidden;
+      }
+
+      :deep(code) {
+        font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+        font-size: 0.9em;
+      }
+
+      :deep(img) {
+        border-radius: 8px;
+        height: 100px;
+        width: auto;
+      }
+      :deep(hr) {
+        margin-bottom: 4px;
+      }
+    }
+
+    .loading-icon {
+      margin-top: 6px;
+      font-size: 16px;
+      animation: rotate 2s linear infinite;
+    }
+  }
+
+  .actions {
+    display: flex;
+    transition: opacity 0.2s;
+    .el-button + .el-button {
+      margin-left: 0;
+    }
+    .tool-btn {
+      color: #999999;
+      padding: 0 8px;
+      border-radius: 6px;
+      transition:
+        background-color 0.2s,
+        transform 0.2s;
 
       &:hover {
-        text-decoration: underline;
+        background-color: rgba(0, 0, 0, 0.04);
+        transform: translateY(-1px);
       }
     }
   }
 
-  .markdown-content {
-    :deep(p) {
-      padding: 6px 0;
-    }
-
-    :deep(pre) {
-      border-radius: 8px;
-      margin: 10px 0;
-    }
-
-    :deep(code) {
-      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-      font-size: 0.9em;
-    }
-
-    :deep(img) {
-      border-radius: 8px;
-      height: 100px;
-      width: auto;
-    }
-    :deep(hr) {
-      margin-bottom: 4px;
-    }
+  .arrow {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    position: absolute;
+    top: 14px;
   }
 
-  .loading-icon {
-    margin-top: 6px;
-    font-size: 16px;
-    animation: rotate 1.5s infinite;
+  .arrow-left {
+    border-width: 8px 8px 8px 0;
+    border-color: transparent #ecf5fe transparent transparent;
+    left: -8px;
+  }
+
+  .arrow-right {
+    border-width: 8px 0 8px 8px;
+    border-color: transparent transparent transparent #ffffff;
+    right: -8px;
   }
 }
 
-.actions {
-  display: flex;
-  transition: opacity 0.2s;
-  .el-button + .el-button {
-    margin-left: 0;
-  }
-  .tool-btn {
-    color: #999999;
-    padding: 0 8px;
-    border-radius: 6px;
-    transition:
-      background-color 0.2s,
-      transform 0.2s;
-
-    &:hover {
-      background-color: rgba(0, 0, 0, 0.04);
-      transform: translateY(-1px);
-    }
-  }
+.closeAI-message.is-self {
+  flex-direction: row-reverse;
 }
 
-.arrow {
-  width: 0;
-  height: 0;
-  border-style: solid;
-  position: absolute;
-  top: 14px;
-}
-
-.arrow-left {
-  border-width: 8px 8px 8px 0;
-  border-color: transparent #ecf5fe transparent transparent;
-  left: -8px;
-}
-
-.arrow-right {
-  border-width: 8px 0 8px 8px;
-  border-color: transparent transparent transparent #ffffff;
-  right: -8px;
-}
-
+// 改为一直同速度旋转
 @keyframes rotate {
-  0% {
+  from {
     transform: rotate(0deg);
   }
-  100% {
+
+  to {
     transform: rotate(360deg);
   }
 }

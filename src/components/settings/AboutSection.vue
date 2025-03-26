@@ -1,6 +1,6 @@
 <template>
   <div class="about-section">
-    <img src="@/assets/icons/ROBOT.png" alt="Logo" class="app-logo">
+    <img src="/icons/ROBOT.png" alt="Logo" class="app-logo">
     <h2>CloseAI</h2>
     <p class="version">v1.0.0</p>
     

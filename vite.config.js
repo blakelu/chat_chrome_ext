@@ -3,7 +3,6 @@ import vue from '@vitejs/plugin-vue'
 import path, { resolve } from 'path'
 import crx from 'vite-plugin-crx-mv3'
 import { fileURLToPath, URL } from 'node:url'
-import { VitePWA } from 'vite-plugin-pwa'
 // 按需引入
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
@@ -39,62 +38,7 @@ export const commonConfig = {
     // Icons图标自动下载
     Icons({
       autoInstall: true
-    }),
-    // VitePWA({
-    //   registerType: 'autoUpdate',
-    //   includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
-    //   manifest: {
-    //     name: 'CloseAI Chat',
-    //     short_name: 'CloseAI',
-    //     description: 'AI assistant Chrome extension with multiple models support',
-    //     theme_color: '#3b82f6',
-    //     icons: [
-    //       {
-    //         src: 'pwa-192x192.png',
-    //         sizes: '192x192',
-    //         type: 'image/png'
-    //       },
-    //       {
-    //         src: 'pwa-512x512.png',
-    //         sizes: '512x512',
-    //         type: 'image/png',
-    //         purpose: 'any maskable'
-    //       }
-    //     ]
-    //   },
-    //   workbox: {
-    //     runtimeCaching: [
-    //       {
-    //         urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-    //         handler: 'CacheFirst',
-    //         options: {
-    //           cacheName: 'google-fonts-cache',
-    //           expiration: {
-    //             maxEntries: 10,
-    //             maxAgeSeconds: 60 * 60 * 24 * 365 // <== 365 days
-    //           },
-    //           cacheableResponse: {
-    //             statuses: [0, 200]
-    //           }
-    //         }
-    //       },
-    //       {
-    //         urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-    //         handler: 'CacheFirst',
-    //         options: {
-    //           cacheName: 'gstatic-fonts-cache',
-    //           expiration: {
-    //             maxEntries: 10,
-    //             maxAgeSeconds: 60 * 60 * 24 * 365 // <== 365 days
-    //           },
-    //           cacheableResponse: {
-    //             statuses: [0, 200]
-    //           }
-    //         }
-    //       }
-    //     ]
-    //   }
-    // })
+    })
   ]
 }
 
@@ -116,24 +60,31 @@ export default defineConfig(({ mode }) => {
       emptyOutDir: mode == 'production',
       minify: false,
       rollupOptions: {
-        input: {
-          popup: resolve(__dirname, 'popup.html'),
-          background: resolve(__dirname, 'src/background.js'),
-          contentScript: resolve(__dirname, 'src/contentScript.js'),
-          injectedContent: resolve(__dirname, 'src/components/injected/injected-content.js'),
-          injectedApp: resolve(__dirname, 'src/components/injected/injected-app.js')
-        },
+        // input: {
+        //   popup: resolve(__dirname, 'popup.html'),
+        //   background: resolve(__dirname, 'src/background.js'),
+        //   contentScript: resolve(__dirname, 'src/contentScript.js'),
+        //   injectedContent: resolve(__dirname, 'src/components/injected/injected-content.js'),
+        //   injectedApp: resolve(__dirname, 'src/components/injected/injected-app.js')
+        // },
         output: {
-          assetFileNames: 'assets/[name].[ext]',
-          entryFileNames: (chunkInfo) => {
-            return 'assets/[name]-[hash].js';
-          },
-          // Add this to control where HTML files are output
+          // assetFileNames: 'assets/[name].[ext]',
+          // entryFileNames: (chunkInfo) => {
+          //   return 'assets/[name]-[hash].js'
+          // },
           chunkFileNames: 'assets/[name]-[hash].js',
-        },
-        manualChunks(id) {
-          if (id.includes('element-plus/theme-chalk/')) {
-            return 'element-plus';
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('element-plus')) {
+                return 'element-plus'
+              }
+              if (id.includes('openai')) {
+                return 'openai'
+              }
+              if (id.includes('markdown-it')) {
+                return 'markdown'
+              }
+            }
           }
         }
       }

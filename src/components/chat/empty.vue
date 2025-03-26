@@ -1,7 +1,7 @@
 <template>
   <div class="empty">
     <div class="empty-animation">
-      <img src="@/assets/icons/ROBOT.png" />
+      <img src="/icons/ROBOT.png" />
     </div>
     <div class="empty-title">今天我能为你做什么？</div>
     <div class="question-list">
@@ -43,20 +43,20 @@ const list = ref([
   justify-content: center;
   padding: 32px 24px;
   text-align: center;
-  background-color: var(--app-bg-color);
+  background-color: var(--app-bg-color, #f7f8f9);
   color: #1a202c;
 
   .empty-animation {
-    margin-bottom: 24px;
-    background: linear-gradient(145deg, #f0f7ff, #e6f5fd);
+    margin-bottom: 28px;
+    background: linear-gradient(145deg, #f1f7ff, #e6f5fd);
     border-radius: 50%;
     width: 110px;
     height: 110px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.1);
-    transition: transform 0.3s ease-out;
+    box-shadow: 0 10px 25px -5px rgba(0, 122, 255, 0.12);
+    transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1.0);
 
     &:hover {
       transform: scale(1.05);
@@ -65,17 +65,17 @@ const list = ref([
     img {
       width: 60px;
       height: 60px;
-      animation: smooth-float 4s ease-in-out infinite;
-      filter: drop-shadow(0 4px 6px rgba(14, 165, 233, 0.2));
+      animation: smooth-float 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      filter: drop-shadow(0 4px 6px rgba(0, 122, 255, 0.2));
     }
   }
 
   .empty-title {
-    font-size: 22px;
+    font-size: 24px;
     font-weight: 500;
     color: #2d3748;
-    margin-bottom: 32px;
-    letter-spacing: -0.01em;
+    margin-bottom: 36px;
+    letter-spacing: -0.02em;
   }
 
   .question-list {

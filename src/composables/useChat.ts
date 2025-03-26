@@ -4,8 +4,9 @@ import { useStorage } from '@vueuse/core'
 import { ElMessage } from 'element-plus'
 
 // Import assets
-import USER_AVATAR from '@/assets/icons/user.png'
-import ASSISTANT_AVATAR from '@/assets/icons/ROBOT.png'
+import USER_AVATAR from '/icons/user.png'
+import ASSISTANT_AVATAR from '/icons/ROBOT.png'
+
 
 export function useChat() {
   // Interfaces

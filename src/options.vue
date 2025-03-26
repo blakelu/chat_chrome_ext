@@ -2,7 +2,7 @@
   <div class="options-container">
     <header class="options-header">
       <div class="logo-container">
-        <img src="@/assets/icons/ROBOT.png" alt="Logo" class="app-logo" />
+        <img src="/icons/ROBOT.png" alt="Logo" class="app-logo" />
         <h1>CloseAI 设置</h1>
       </div>
     </header>

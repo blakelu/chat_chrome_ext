@@ -1,6 +1,6 @@
 <template>
   <div 
-    class="messages" 
+    class="closeAI-messages" 
     ref="messagesRef" 
     @scroll="handleScroll"
     :data-smooth-scroll="themeSettings.smoothScrolling"
@@ -107,45 +107,61 @@ defineExpose({
 </script>
 
 <style lang="less" scoped>
-.messages {
+.closeAI-messages {
   position: relative;
   flex: 1 1 0%;
   overflow-y: auto;
-  background-color: var(--app-bg-color);
+  background-color: #ffffff;
   scroll-behavior: smooth;
+  padding: 16px 12px;
+  
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
 
   :deep(img) {
     width: 100%;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   }
 }
 
 // Message transition animations
 .message-transition-enter-active, 
 .message-transition-leave-active {
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1.0);
 }
 
 .message-transition-enter-from {
   opacity: 0;
-  transform: translateY(20px);
+  transform: translateY(16px);
 }
 
 .message-transition-leave-to {
   opacity: 0;
-  transform: translateX(-20px);
+  transform: translateX(-16px);
 }
 
 // Fade scale animation for buttons
 .fade-scale-enter-active,
 .fade-scale-leave-active {
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1.0);
 }
 
 .fade-scale-enter-from,
 .fade-scale-leave-to {
-  transform: scale(0.9);
+  transform: scale(0.95);
   opacity: 0;
 }
 </style>

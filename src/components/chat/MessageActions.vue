@@ -17,13 +17,13 @@
 
       <el-tooltip effect="dark" content="上传图片" placement="top">
         <el-button v-if="picCount < 7" class="tool-btn" text @click="$emit('upload-image')">
-          <img src="@/assets/icons/upload.png" class="w-[20px]" alt="上传图片" />
+          <img src="/icons/upload.png" class="w-[20px]" alt="上传图片" />
         </el-button>
       </el-tooltip>
       <!-- <el-popover placement="top" popper-style="padding: 8px 12px;" trigger="click">
         <template #reference>
           <el-button v-if="model === 'dall-e-3'" class="tool-btn" text>
-            <img src="@/assets/icons/picSetting.png" class="w-[20px]" alt="绘图设置" />
+            <img src="/icons/picSetting.png" class="w-[20px]" alt="绘图设置" />
           </el-button>
         </template>
         <div class="setting-title">绘图设置</div>
@@ -45,7 +45,7 @@
         <el-popover placement="top" popper-style="padding: 8px 12px;" trigger="click">
           <template #reference>
             <el-button class="tool-btn" text>
-              <img src="@/assets/icons/temperature.png" class="w-[20px]" alt="创造性设置" />
+              <img src="/icons/temperature.png" class="w-[20px]" alt="创造性设置" />
             </el-button>
           </template>
           <div class="setting-title">随机性,越大随机性越强</div>
@@ -56,7 +56,7 @@
       <el-popover placement="top" popper-style="padding: 8px 12px;" trigger="click">
         <template #reference>
           <el-button class="tool-btn" text>
-            <img src="@/assets/icons/limit.png" alt="历史消息设置" class="w-[20px]" />
+            <img src="/icons/limit.png" alt="历史消息设置" class="w-[20px]" />
           </el-button>
         </template>
         <div class="setting-title">携带历史消息数</div>
@@ -64,7 +64,7 @@
       </el-popover>
       <el-tooltip effect="dark" content="角色扮演" placement="top">
         <el-button class="tool-btn" text @click="$emit('show-prompt-dialog')">
-          <img src="@/assets/icons/mask.png" alt="角色扮演" class="w-[20px]" />
+          <img src="/icons/mask.png" alt="角色扮演" class="w-[20px]" />
         </el-button>
       </el-tooltip> -->
 
@@ -100,7 +100,7 @@
       <el-tooltip effect="dark" content="新对话" placement="top">
         <el-button class="tool-btn new-chat" text @click="$emit('new-chat')">
           <!-- <el-icon size="20"><ep-circle-plus-filled /></el-icon> -->
-           <img src="@/assets/icons/newChat.png" class="w-[20px]" alt="新对话" />
+           <img src="/icons/newChat.png" class="w-[20px]" alt="新对话" />
         </el-button>
       </el-tooltip>
     </div>
@@ -170,7 +170,13 @@ onMounted(() => {
 .toolbar {
   display: flex;
   justify-content: space-between;
-  padding-bottom: 10px;
+  padding-bottom: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 12px;
+  margin-bottom: 4px;
+  
   .el-button + .el-button {
     margin-left: 0;
   }
@@ -179,54 +185,100 @@ onMounted(() => {
   .tools-right {
     display: flex;
     align-items: center;
-    gap: 2px;
+    gap: 4px;
     .el-dropdown {
       line-height: 1.2;
     }
   }
+  
   .choose-model {
     display: flex;
     align-items: center;
-    padding: 4px 6px;
-    border-radius: 6px;
-    background-color: rgba(0, 0, 0, 0.04);
+    padding: 6px 10px;
+    border-radius: 10px;
+    background-color: rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    margin-right: 4px;
+    transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1.0);
+    
     &:hover {
-      background-color: rgba(0, 0, 0, 0.08);
+      background-color: rgba(0, 0, 0, 0.04);
+      transform: translateY(-1px);
     }
+    
     .model-name {
-      font-size: 12px;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
       max-width: 120px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      color: #333;
     }
   }
 
   .tool-btn {
-    padding: 6px;
-    border-radius: 6px;
-    transition:
-      background-color 0.2s,
-      transform 0.2s;
+    padding: 8px;
+    border-radius: 10px;
+    transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1.0);
 
     &:hover {
-      background-color: rgba(0, 0, 0, 0.04);
+      background-color: rgba(0, 0, 0, 0.05);
       transform: translateY(-1px);
+    }
+    
+    &:active {
+      transform: translateY(0);
+      background-color: rgba(0, 0, 0, 0.08);
+    }
+    
+    &.new-chat {
+      background-color: rgba(0, 122, 255, 0.08);
+      
+      &:hover {
+        background-color: rgba(0, 122, 255, 0.12);
+      }
     }
   }
 }
 
 .setting-title {
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   font-size: 14px;
-  color: var(--app-text-color);
+  font-weight: 500;
+  color: #333;
+  letter-spacing: -0.01em;
 }
 
 .setting-group {
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+  
+  :deep(.el-radio) {
+    margin-right: 12px;
+    
+    .el-radio__label {
+      font-size: 13px;
+    }
+  }
 }
 
 .setting-slider {
   width: 200px;
+  
+  :deep(.el-slider__runway) {
+    height: 4px;
+  }
+  
+  :deep(.el-slider__bar) {
+    height: 4px;
+    background-color: #007AFF;
+  }
+  
+  :deep(.el-slider__button) {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #007AFF;
+  }
 }
 </style>
