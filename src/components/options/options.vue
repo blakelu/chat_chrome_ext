@@ -2,7 +2,7 @@
   <div class="options-container">
     <header class="options-header">
       <div class="logo-container">
-        <img src="/icons/ROBOT.png" alt="Logo" class="app-logo" />
+        <img src="@/assets/icons/ROBOT.png" alt="Logo" class="app-logo" />
         <h1>CloseAI 设置</h1>
       </div>
     </header>
@@ -56,12 +56,12 @@ import { useStorage } from '@vueuse/core'
 import { ElMessage } from 'element-plus'
 // Import composable
 import { useChat } from '@/composables/useChat.ts'
-import ApiSettings from './components/settings/ApiSettings.vue'
-import ModelSettings from './components/settings/ModelSettings.vue'
-import UiSettings from './components/settings/UiSettings.vue'
-import ShortcutsSettings from './components/settings/ShortcutsSettings.vue'
-import RolePrompt from './components/settings/RolePrompt.vue'
-import AboutSection from './components/settings/AboutSection.vue'
+import ApiSettings from '@/components/settings/ApiSettings.vue'
+import ModelSettings from '@/components/settings/ModelSettings.vue'
+import UiSettings from '@/components/settings/UiSettings.vue'
+import ShortcutsSettings from '@/components/settings/ShortcutsSettings.vue'
+import RolePrompt from '@/components/settings/RolePrompt.vue'
+import AboutSection from '@/components/settings/AboutSection.vue'
 
 const activeTab = ref('api')
 

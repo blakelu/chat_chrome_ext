@@ -17,7 +17,7 @@
       "128": "assets/icons/icon.png"
     }
   },
-  "permissions": ["storage", "sidePanel", "scripting", "tabs"],
+  "permissions": ["storage", "sidePanel"],
   "side_panel": {
     "default_path": "popup.html",
     "openPanelOnActionClick": true
@@ -38,7 +38,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["*.png", "*.svg", "*.jpg", "*.gif", "*.css", "components/injected/injected-app.js"],
+      "resources": ["*.png", "*.svg", "*.jpg", "*.gif", "*.css"],
       "matches": ["<all_urls>"]
     }
   ],

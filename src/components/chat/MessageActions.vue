@@ -17,7 +17,7 @@
 
       <el-tooltip effect="dark" content="上传图片" placement="top">
         <el-button v-if="picCount < 7" class="tool-btn" text @click="$emit('upload-image')">
-          <img src="/icons/upload.png" class="w-[20px]" alt="上传图片" />
+          <img src="@/assets/icons/upload.png" class="w-[20px]" alt="上传图片" />
         </el-button>
       </el-tooltip>
       <!-- <el-popover placement="top" popper-style="padding: 8px 12px;" trigger="click">
@@ -81,7 +81,6 @@
     </div>
 
     <div class="tools-right">
-      <!-- <ThemeToggle class="tool-btn" @change="$emit('theme-change', $event)" /> -->
       <el-tooltip effect="dark" content="设置" placement="top">
         <el-button class="tool-btn" text @click="$emit('show-settings')">
           <el-icon size="20"><ep-setting /></el-icon>
@@ -100,7 +99,7 @@
       <el-tooltip effect="dark" content="新对话" placement="top">
         <el-button class="tool-btn new-chat" text @click="$emit('new-chat')">
           <!-- <el-icon size="20"><ep-circle-plus-filled /></el-icon> -->
-           <img src="/icons/newChat.png" class="w-[20px]" alt="新对话" />
+           <img src="@/assets/icons/newChat.png" class="w-[20px]" alt="新对话" />
         </el-button>
       </el-tooltip>
     </div>

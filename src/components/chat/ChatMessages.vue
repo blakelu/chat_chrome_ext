@@ -34,7 +34,7 @@
 import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { throttle } from 'lodash-es';
 import Message from './Message.vue';
-import NetworkStatus from '@/components/ui/NetworkStatus.vue';
+import NetworkStatus from '@/components/common/NetworkStatus.vue';
 
 const props = defineProps({
   messages: {

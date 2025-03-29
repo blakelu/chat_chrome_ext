@@ -57,6 +57,7 @@ export default defineConfig(({ mode }) => {
       include: ['markdown-it', '@element-plus/icons-vue', 'dayjs']
     },
     build: {
+      assetsInlineLimit: 8192,
       emptyOutDir: mode == 'production',
       minify: false,
       rollupOptions: {

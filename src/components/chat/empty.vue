@@ -1,7 +1,7 @@
 <template>
   <div class="empty">
     <div class="empty-animation">
-      <img src="/icons/ROBOT.png" />
+      <img src="@/assets/icons/ROBOT.png" />
     </div>
     <div class="empty-title">今天我能为你做什么？</div>
     <div class="question-list">
