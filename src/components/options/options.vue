@@ -1,52 +1,26 @@
 <template>
   <div class="options-container">
-    <header class="options-header">
+    <div class="tabs">
       <div class="logo-container">
         <img src="@/assets/icons/ROBOT.png" alt="Logo" class="app-logo" />
-        <h1>CloseAI 设置</h1>
+        <h1>CloseAI</h1>
       </div>
-    </header>
-
-    <main class="options-content">
-      <el-tabs v-model="activeTab" class="settings-tabs">
-        <el-tab-pane label="API设置" name="api">
-          <div class="tab-content">
-            <ApiSettings @confirm="onApiConfirm" />
-          </div>
-        </el-tab-pane>
-        <el-tab-pane label="模型设置" name="model">
-          <div class="tab-content">
-            <ModelSettings />
-          </div>
-        </el-tab-pane>
-        <el-tab-pane label="界面设置" name="ui">
-          <div class="tab-content">
-            <UiSettings :themeSettings="themeSettings" @updateTheme="setTheme" />
-          </div>
-        </el-tab-pane>
-        <el-tab-pane label="快捷键" name="shortcuts">
-          <div class="tab-content">
-            <ShortcutsSettings />
-          </div>
-        </el-tab-pane>
-        <el-tab-pane label="角色设置" name="role">
-          <div class="tab-content">
-            <RolePrompt :show="true" />
-          </div>
-        </el-tab-pane>
-        <el-tab-pane label="关于" name="about">
-          <div class="tab-content about-tab">
-            <AboutSection />
-          </div>
-        </el-tab-pane>
-      </el-tabs>
-    </main>
-
-    <footer class="options-footer">
-      <div class="footer-content">
-        <span>© {{ new Date().getFullYear() }} CloseAI Team</span>
+      <div class="tabs-list">
+        <div
+          v-for="item in tabs"
+          :key="item.label"
+          class="tab-item"
+          :class="{ 'tab-active': activeTab === item.name }"
+          @click="activeTab = item.name"
+        >
+          {{ item.label }}
+        </div>
       </div>
-    </footer>
+    </div>
+    <div class="options-content">
+      <div class="font-bold text-[24px] text-[#333]">{{ activeTitle }}</div>
+      <component :is="activeComponent" />
+    </div>
   </div>
 </template>
 
@@ -63,8 +37,21 @@ import ShortcutsSettings from '@/components/settings/ShortcutsSettings.vue'
 import RolePrompt from '@/components/settings/RolePrompt.vue'
 import AboutSection from '@/components/settings/AboutSection.vue'
 
-const activeTab = ref('api')
-
+const activeTab = ref('ApiSettings')
+const tabs = [
+  { label: 'API配置', name: 'ApiSettings', component: ApiSettings },
+  { label: '模型配置', name: 'ModelSettings', component: ModelSettings },
+  { label: '界面设置', name: 'UiSettings', component: UiSettings },
+  { label: '快捷键', name: 'ShortcutsSettings', component: ShortcutsSettings },
+  { label: '角色设置', name: 'RolePrompt', component: RolePrompt },
+  { label: '关于', name: 'AboutSection', component: AboutSection }
+]
+const activeTitle = computed(() => {
+  return tabs.find((tab) => tab.name === unref(activeTab))?.label
+})
+const activeComponent = computed(() => {
+  return tabs.find((tab) => tab.name === unref(activeTab))?.component
+})
 // UI theme settings
 const themeSettings = useStorage(
   'UI_SETTINGS',
@@ -108,21 +95,21 @@ const onApiConfirm = (data: any) => {
 <style lang="less" scoped>
 .options-container {
   display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  background-color: var(--app-bg-color, #f8fafc);
+  height: 100vh;
+  overflow-y: hidden;
+  padding: 0 100px;
+  background-color: #ffffff;
 }
-
-.options-header {
-  padding: 16px 24px;
-  background-color: #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  z-index: 10;
+.tabs {
+  width: 310px;
+  border-right: 1px solid #e2e8f0;
+  padding: 0 16px;
 
   .logo-container {
     display: flex;
     align-items: center;
     gap: 12px;
+    padding: 24px 0;
 
     .app-logo {
       width: 36px;
@@ -137,54 +124,28 @@ const onApiConfirm = (data: any) => {
       margin: 0;
     }
   }
+  .tab-item {
+    width: 260px;
+    padding: 8px 12px;
+    margin: 6px 0;
+    border-radius: 12px;
+    font-size: 16px;
+    color: #333333;
+    cursor: pointer;
+    &:hover {
+      background-color: #f0f0f0;
+    }
+  }
+  .tab-active {
+    background-color: rgba(0, 122, 255, 0.2);
+    color: #1b64ef;
+    font-weight: 600;
+  }
 }
-
 .options-content {
   flex: 1;
   padding: 24px;
-  max-width: 1200px;
-  margin: 0 auto;
   width: 100%;
-
-  .settings-tabs {
-    height: 100%;
-
-    :deep(.el-tabs__header) {
-      margin-bottom: 24px;
-
-      .el-tabs__item {
-        font-size: 16px;
-        padding: 0 24px;
-      }
-    }
-
-    :deep(.el-tabs__content) {
-      background-color: #fff;
-      border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-      overflow: hidden;
-    }
-
-    .tab-content {
-      min-height: 50vh;
-    }
-
-    .about-tab {
-      display: flex;
-      justify-content: center;
-    }
-  }
-}
-
-.options-footer {
-  padding: 16px 24px;
-  background-color: #fff;
-  border-top: 1px solid #e2e8f0;
-
-  .footer-content {
-    text-align: center;
-    color: #64748b;
-    font-size: 14px;
-  }
+  overflow-y: auto;
 }
 </style>

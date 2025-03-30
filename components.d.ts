@@ -10,6 +10,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     AboutSection: typeof import('./src/components/settings/AboutSection.vue')['default']
     ApiSettings: typeof import('./src/components/settings/ApiSettings.vue')['default']
+    ApiSettings_old: typeof import('./src/components/settings/ApiSettings_old.vue')['default']
     App: typeof import('./src/components/injected/App.vue')['default']
     Chat: typeof import('./src/components/chat/index.vue')['default']
     ChatInput: typeof import('./src/components/chat/ChatInput.vue')['default']
@@ -69,6 +70,7 @@ declare module 'vue' {
     ModelSettings: typeof import('./src/components/settings/ModelSettings.vue')['default']
     NetworkStatus: typeof import('./src/components/common/NetworkStatus.vue')['default']
     Options: typeof import('./src/components/options/options.vue')['default']
+    Options_bak: typeof import('./src/components/options/options_bak.vue')['default']
     RolePrompt: typeof import('./src/components/settings/RolePrompt.vue')['default']
     SettingsDrawer: typeof import('./src/components/settings/SettingsDrawer.vue')['default']
     SettingsPanel: typeof import('./src/components/settings/SettingsPanel.vue')['default']

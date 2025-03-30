@@ -1,67 +1,63 @@
 <template>
   <div class="api-settings">
     <div ref="apiListRef" class="api-list">
-      <!-- <TransitionGroup name="api-card" tag="div"> -->
-        <div v-for="(item, index) in apiList" :key="index" class="api-card" :class="{ 'is-active': item.selected }">
-          <div class="card-header">
-            <div class="selection-indicator" @click="handleClick(item, index)">
-              <div class="radio-btn">
-                <div class="radio-inner" v-if="item.selected"></div>
-              </div>
-              <span>{{ item.remark || `API配置 ${index + 1}` }}</span>
+      <div v-for="(item, index) in apiList" :key="index" class="api-card" :class="{ 'is-active': item.selected }">
+        <div class="card-header">
+          <div class="selection-indicator" @click="handleClick(item, index)">
+            <div class="radio-btn">
+              <div class="radio-inner" v-if="item.selected"></div>
             </div>
-
-            <div class="card-actions">
-              <el-tooltip content="删除" placement="top" v-if="apiList.length > 1">
-                <el-button class="action-btn delete-btn" @click="handleDelete(item, index)">
-                  <el-icon><ep-delete /></el-icon>
-                </el-button>
-              </el-tooltip>
-
-              <el-tooltip content="拖动排序" placement="top">
-                <div class="drag-handle">
-                  <el-icon><ep-rank /></el-icon>
-                </div>
-              </el-tooltip>
-            </div>
+            <span>{{ item.remark || `API配置 ${index + 1}` }}</span>
           </div>
 
-          <div class="card-body">
-            <div class="form-group">
-              <label>API URL</label>
-              <el-input v-model="item.API_URL" size="small" placeholder="例如: https://api.openai.com" clearable>
-                <template #prefix>
-                  <el-icon><ep-link /></el-icon>
-                </template>
-              </el-input>
-            </div>
+          <div class="card-actions">
+            <el-tooltip content="删除" placement="top" v-if="apiList.length > 1">
+              <el-button class="action-btn delete-btn" @click="handleDelete(item, index)">
+                <el-icon><ep-delete /></el-icon>
+              </el-button>
+            </el-tooltip>
 
-            <div class="form-group">
-              <label>API Key</label>
-              <el-input v-model="item.API_KEY" size="small" placeholder="输入您的API Key" show-password clearable>
-                <template #prefix>
-                  <el-icon><ep-key /></el-icon>
-                </template>
-              </el-input>
-            </div>
-
-            <div class="form-group">
-              <label>备注名称</label>
-              <el-input v-model="item.remark" size="small" placeholder="为此配置添加备注名称" clearable>
-                <template #prefix>
-                  <el-icon><ep-notebook /></el-icon>
-                </template>
-              </el-input>
-            </div>
+            <el-tooltip content="拖动排序" placement="top">
+              <div class="drag-handle">
+                <el-icon><ep-rank /></el-icon>
+              </div>
+            </el-tooltip>
           </div>
         </div>
-      <!-- </TransitionGroup> -->
-
+      </div>
       <div class="add-card-wrapper">
         <el-button type="dashed" class="add-card-btn" @click="handleAdd">
           <el-icon></el-icon>
           添加新配置
         </el-button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="form-group">
+        <label>API URL</label>
+        <el-input v-model="apiList[currentIndex].API_URL" size="small" placeholder="例如: https://api.openai.com" clearable>
+          <template #prefix>
+            <el-icon><ep-link /></el-icon>
+          </template>
+        </el-input>
+      </div>
+
+      <div class="form-group">
+        <label>API Key</label>
+        <el-input v-model="apiList[currentIndex].API_KEY" size="small" placeholder="输入您的API Key" show-password clearable>
+          <template #prefix>
+            <el-icon><ep-key /></el-icon>
+          </template>
+        </el-input>
+      </div>
+
+      <div class="form-group">
+        <label>备注名称</label>
+        <el-input v-model="apiList[currentIndex].remark" size="small" placeholder="为此配置添加备注名称" clearable>
+          <template #prefix>
+            <el-icon><ep-notebook /></el-icon>
+          </template>
+        </el-input>
       </div>
     </div>
   </div>
@@ -75,7 +71,8 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 
 const emit = defineEmits(['confirm'])
 const apiListRef = ref()
-const apiList = useStorage('apiList', [] as any)
+const apiList: any = useStorage('apiList', [] as any)
+const currentIndex = ref(0)
 
 // Initialize with default if empty
 onMounted(() => {
@@ -86,6 +83,8 @@ onMounted(() => {
       remark: 'OpenAI API',
       selected: true
     })
+  } else {
+    currentIndex.value = apiList.value.findIndex((item: any) => item.selected)
   }
 })
 
@@ -119,17 +118,18 @@ const handleClick = (item: any, index: number) => {
     item.selected = false
   })
   item.selected = true
+  currentIndex.value = index
   emit('confirm', {
     API_URL: item.API_URL,
     API_KEY: item.API_KEY
   })
 
-  ElMessage({
-    message: item.remark ? `已选择: ${item.remark}` : '已选择API配置',
-    type: 'success',
-    offset: 60,
-    duration: 2000
-  })
+  // ElMessage({
+  //   message: item.remark ? `已选择: ${item.remark}` : '已选择API配置',
+  //   type: 'success',
+  //   offset: 60,
+  //   duration: 2000
+  // })
 }
 
 const handleDelete = async (item: any, index: number) => {
@@ -163,19 +163,16 @@ const handleDelete = async (item: any, index: number) => {
 
 <style lang="less" scoped>
 .api-settings {
-  padding: 0 6px 16px;
-  height: 100%;
+  padding-top: 10px;
   display: flex;
-  flex-direction: column;
+  gap: 24px;
 
   .api-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 6px;
     scroll-behavior: smooth;
   }
 
   .api-card {
+    width: 200px;
     background-color: #fff;
     border-radius: 6px;
     margin-bottom: 12px;
@@ -296,47 +293,46 @@ const handleDelete = async (item: any, index: number) => {
         }
       }
     }
+  }
+  .card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
 
-    .card-body {
-      padding: 10px 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #475569;
+      margin-left: 2px;
     }
 
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
+    :deep(.el-input__wrapper) {
+      box-shadow: 0 0 0 1px #e0e4ec;
+      border-radius: 5px;
+      transition: all 0.2s ease;
 
-      label {
-        font-size: 13px;
-        font-weight: 500;
-        color: #475569;
-        margin-left: 2px;
+      &:hover {
+        box-shadow: 0 0 0 1px #c0c8d8;
       }
 
-      :deep(.el-input__wrapper) {
-        box-shadow: 0 0 0 1px #e0e4ec;
-        border-radius: 5px;
-        transition: all 0.2s ease;
+      &:focus-within {
+        box-shadow: 0 0 0 1px #4f8df5;
+      }
 
-        &:hover {
-          box-shadow: 0 0 0 1px #c0c8d8;
-        }
-
-        &:focus-within {
-          box-shadow: 0 0 0 1px #4f8df5;
-        }
-
-        .el-input__prefix-inner {
-          color: #64748b;
-        }
+      .el-input__prefix-inner {
+        color: #64748b;
       }
     }
   }
-
   .add-card-wrapper {
+    width: 200px;
     padding: 4px 0 12px;
 
     .add-card-btn {
