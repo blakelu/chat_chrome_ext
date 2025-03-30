@@ -266,7 +266,7 @@ onMounted(() => {
 
 .share-content {
   font-size: 14px;
-  line-height: 1.4;
+  line-height: 1.5;
   letter-spacing: -0.01em;
   color: #333333;
   background-color: #f1f3f5;

@@ -17,7 +17,7 @@
 
       <el-tooltip effect="dark" content="上传图片" placement="top">
         <el-button v-if="picCount < 7" class="tool-btn" text @click="$emit('upload-image')">
-          <img src="@/assets/icons/upload.png" class="w-[20px]" alt="上传图片" />
+          <img src="@/assets/icons/upload.png" class="w-[16px]" alt="上传图片" />
         </el-button>
       </el-tooltip>
       <!-- <el-popover placement="top" popper-style="padding: 8px 12px;" trigger="click">
@@ -83,23 +83,23 @@
     <div class="tools-right">
       <el-tooltip effect="dark" content="设置" placement="top">
         <el-button class="tool-btn" text @click="$emit('show-settings')">
-          <el-icon size="20"><ep-setting /></el-icon>
+          <img src="@/assets/icons/setting.svg" class="w-[16px]" alt="设置" />
         </el-button>
       </el-tooltip>
       <el-tooltip effect="dark" content="清空对话" placement="top">
         <el-button class="tool-btn" text @click="$emit('clear-chat')">
-          <el-icon size="20"><ep-delete/> </el-icon>
+          <img src="@/assets/icons/clear.svg" class="w-[16px]" alt="清空对话" />
         </el-button>
       </el-tooltip>
       <el-tooltip effect="dark" content="历史记录" placement="top">
         <el-button class="tool-btn" text @click="$emit('show-history')">
-          <el-icon size="20"><ep-clock /></el-icon>
+          <img src="@/assets/icons/history.svg" class="w-[16px]" alt="历史记录" />
         </el-button>
       </el-tooltip>
       <el-tooltip effect="dark" content="新对话" placement="top">
         <el-button class="tool-btn new-chat" text @click="$emit('new-chat')">
           <!-- <el-icon size="20"><ep-circle-plus-filled /></el-icon> -->
-           <img src="@/assets/icons/newChat.png" class="w-[20px]" alt="新对话" />
+           <img src="@/assets/icons/newChat.png" class="w-[16px]" alt="新对话" />
         </el-button>
       </el-tooltip>
     </div>
@@ -107,8 +107,6 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
-import ThemeToggle from '@/components/common/ThemeToggle.vue'
 
 const props = defineProps({
   settings: {
@@ -169,7 +167,7 @@ onMounted(() => {
 .toolbar {
   display: flex;
   justify-content: space-between;
-  padding-bottom: 12px;
+  padding-bottom: 4px;
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -233,8 +231,6 @@ onMounted(() => {
     }
     
     &.new-chat {
-      background-color: rgba(0, 122, 255, 0.08);
-      
       &:hover {
         background-color: rgba(0, 122, 255, 0.12);
       }

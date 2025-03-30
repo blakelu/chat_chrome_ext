@@ -54,6 +54,7 @@ const list = ref([
     height: 110px;
     display: flex;
     align-items: center;
+    flex-shrink: 0;
     justify-content: center;
     box-shadow: 0 10px 25px -5px rgba(0, 122, 255, 0.12);
     transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1.0);

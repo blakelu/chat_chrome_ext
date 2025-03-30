@@ -378,7 +378,7 @@ defineExpose({
 <style lang="less" scoped>
 .operate_wrap {
   width: 100%;
-  padding: 12px;
+  padding: 8px;
   background-color: #fff;
   border-top: 1px solid rgba(0, 0, 0, 0.03);
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.03);

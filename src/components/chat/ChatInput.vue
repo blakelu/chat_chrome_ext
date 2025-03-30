@@ -38,7 +38,7 @@
         aria-label="聊天输入框"
       ></el-input>
       <div class="input-actions">
-        <el-icon size="30" @click="$emit('send')" class="enter-icon"><ep-promotion /></el-icon>
+        <img src="@/assets/icons/send.svg" class="enter-icon" @click="$emit('send')" />
       </div>
     </div>
   </div>
@@ -95,7 +95,7 @@ const clearSelectedText = () => {
 
 // Expose public methods
 defineExpose({
-  focus: () => inputRef.value?.focus(),
+  focus: () => inputRef.value?.focus()
 })
 </script>
 
@@ -105,17 +105,17 @@ defineExpose({
   overflow: visible;
   background-color: rgba(0, 0, 0, 0.02);
   position: relative;
-  transition: box-shadow 0.2s cubic-bezier(0.25, 0.1, 0.25, 1.0);
+  transition: box-shadow 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
   box-shadow: 0 1px 12px rgba(0, 0, 0, 0.04);
 
   &:focus-within {
-    box-shadow: 0 0 0 1px rgba(0, 122, 255, 0.2);
+    box-shadow: 0 0 0 1px rgba(0, 122, 255, 0.3);
   }
 
   // 添加选中文本的样式
   .selected-text {
     border-radius: 12px 12px 0 0;
-    padding: 14px 16px;
+    padding: 10px 12px;
     font-size: 14px;
     color: #555;
     position: relative;
@@ -125,36 +125,38 @@ defineExpose({
 
     .text-content {
       flex-grow: 1;
-      max-height: 100px;
-      overflow-y: auto;
       white-space: pre-wrap;
       padding-right: 10px;
-      border-left: 3px solid #007AFF;
+      border-left: 3px solid #007aff;
       padding-left: 10px;
-      line-height: 1.5;
-      
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3; /* 限制显示3行 */
+      overflow: hidden;
+      text-overflow: ellipsis;
+
       &::-webkit-scrollbar {
         width: 6px;
       }
-      
+
       &::-webkit-scrollbar-thumb {
         background-color: rgba(0, 0, 0, 0.1);
         border-radius: 6px;
       }
     }
-    
+
     .close-icon {
       color: #888;
       cursor: pointer;
       padding: 6px;
       border-radius: 50%;
-      transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1.0);
+      transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
 
       &:hover {
         background-color: rgba(0, 0, 0, 0.06);
         transform: scale(1.1);
       }
-      
+
       &:active {
         background-color: rgba(0, 0, 0, 0.1);
         transform: scale(1);
@@ -191,8 +193,8 @@ defineExpose({
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-    transition: transform 0.2s cubic-bezier(0.25, 0.1, 0.25, 1.0);
-    
+    transition: transform 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+
     &:hover {
       transform: scale(1.03);
     }
@@ -214,13 +216,13 @@ defineExpose({
       padding: 4px;
       cursor: pointer;
       z-index: 2;
-      transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1.0);
+      transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
 
       &:hover {
         background-color: rgba(220, 38, 38, 0.9);
         transform: scale(1.1);
       }
-      
+
       &:active {
         transform: scale(1);
       }
@@ -234,17 +236,17 @@ defineExpose({
       font-size: 15px;
       line-height: 1.5;
       letter-spacing: -0.01em;
-      transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1.0);
+      transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
       border-radius: 16px !important;
       border-color: transparent;
 
       &:hover {
-        box-shadow: 0 0 0 1px rgba(0, 122, 255, 0.2);
+        box-shadow: 0 0 0 1px rgba(0, 122, 255, 0.3);
         // background-color: #f9fafb;
       }
 
       &:focus {
-        box-shadow: 0 0 0 1px rgba(0, 122, 255, 0.2);
+        box-shadow: 0 0 0 1px rgba(0, 122, 255, 0.3);
         // background-color: #f9fafb;
       }
     }
@@ -252,15 +254,16 @@ defineExpose({
 
   .enter-icon {
     cursor: pointer;
+    width: 30px;
     padding: 6px;
     border-radius: 50%;
-    transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1.0);
+    transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
 
     &:hover {
       transform: translateY(-2px) scale(1.1);
       background-color: rgba(0, 122, 255, 0.1);
     }
-    
+
     &:active {
       transform: translateY(0) scale(1);
       background-color: rgba(0, 122, 255, 0.2);
