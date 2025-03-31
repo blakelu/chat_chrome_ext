@@ -2,59 +2,59 @@
   <div class="api-settings">
     <div ref="apiListRef" class="api-list">
       <!-- <TransitionGroup name="api-card" tag="div"> -->
-        <div v-for="(item, index) in apiList" :key="index" class="api-card" :class="{ 'is-active': item.selected }">
-          <div class="card-header">
-            <div class="selection-indicator" @click="handleClick(item, index)">
-              <div class="radio-btn">
-                <div class="radio-inner" v-if="item.selected"></div>
-              </div>
-              <span>{{ item.remark || `API配置 ${index + 1}` }}</span>
+      <div v-for="(item, index) in apiList" :key="index" class="api-card" :class="{ 'is-active': item.selected }">
+        <div class="card-header">
+          <div class="selection-indicator" @click="handleClick(item, index)">
+            <div class="radio-btn">
+              <div class="radio-inner" v-if="item.selected"></div>
             </div>
-
-            <div class="card-actions">
-              <el-tooltip content="删除" placement="top" v-if="apiList.length > 1">
-                <el-button class="action-btn delete-btn" @click="handleDelete(item, index)">
-                  <el-icon><ep-delete /></el-icon>
-                </el-button>
-              </el-tooltip>
-
-              <el-tooltip content="拖动排序" placement="top">
-                <div class="drag-handle">
-                  <el-icon><ep-rank /></el-icon>
-                </div>
-              </el-tooltip>
-            </div>
+            <span>{{ item.remark || `API配置 ${index + 1}` }}</span>
           </div>
 
-          <div class="card-body">
-            <div class="form-group">
-              <label>API URL</label>
-              <el-input v-model="item.API_URL" size="small" placeholder="例如: https://api.openai.com" clearable>
-                <template #prefix>
-                  <el-icon><ep-link /></el-icon>
-                </template>
-              </el-input>
-            </div>
+          <div class="card-actions">
+            <el-tooltip content="删除" placement="top" v-if="apiList.length > 1">
+              <el-button class="action-btn delete-btn" @click="handleDelete(item, index)">
+                <el-icon><ep-delete /></el-icon>
+              </el-button>
+            </el-tooltip>
 
-            <div class="form-group">
-              <label>API Key</label>
-              <el-input v-model="item.API_KEY" size="small" placeholder="输入您的API Key" show-password clearable>
-                <template #prefix>
-                  <el-icon><ep-key /></el-icon>
-                </template>
-              </el-input>
-            </div>
-
-            <div class="form-group">
-              <label>备注名称</label>
-              <el-input v-model="item.remark" size="small" placeholder="为此配置添加备注名称" clearable>
-                <template #prefix>
-                  <el-icon><ep-notebook /></el-icon>
-                </template>
-              </el-input>
-            </div>
+            <el-tooltip content="拖动排序" placement="top">
+              <div class="drag-handle">
+                <el-icon><ep-rank /></el-icon>
+              </div>
+            </el-tooltip>
           </div>
         </div>
+
+        <div class="card-body">
+          <div class="form-group">
+            <label>API URL</label>
+            <el-input v-model="item.API_URL" size="small" placeholder="例如: https://api.openai.com" clearable>
+              <template #prefix>
+                <el-icon><ep-link /></el-icon>
+              </template>
+            </el-input>
+          </div>
+
+          <div class="form-group">
+            <label>API Key</label>
+            <el-input v-model="item.API_KEY" size="small" placeholder="输入您的API Key" show-password clearable>
+              <template #prefix>
+                <el-icon><ep-key /></el-icon>
+              </template>
+            </el-input>
+          </div>
+
+          <div class="form-group">
+            <label>备注名称</label>
+            <el-input v-model="item.remark" size="small" placeholder="为此配置添加备注名称" clearable>
+              <template #prefix>
+                <el-icon><ep-notebook /></el-icon>
+              </template>
+            </el-input>
+          </div>
+        </div>
+      </div>
       <!-- </TransitionGroup> -->
 
       <div class="add-card-wrapper">
@@ -62,6 +62,9 @@
           <el-icon></el-icon>
           添加新配置
         </el-button>
+      </div>
+      <div>
+        <el-button type="dashed" class="add-card-btn" @click="handleGetTestConfig"> 获取测试配置 </el-button>
       </div>
     </div>
   </div>
@@ -72,6 +75,7 @@ import { useDraggable } from 'vue-draggable-plus'
 import { useStorage } from '@vueuse/core'
 import { ref, onMounted, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { getTestConfig } from '@/api/index.ts'
 
 const emit = defineEmits(['confirm'])
 const apiListRef = ref()
@@ -96,6 +100,20 @@ useDraggable(apiListRef, apiList, {
   chosenClass: 'api-card-chosen'
 })
 
+const handleGetTestConfig = () => {
+  getTestConfig({}).then((res: any) => {
+    console.log(res)
+    if (res.apiUrl && res.apiKey) {
+      const newItem = {
+        API_URL: res.apiUrl,
+        API_KEY: res.apiKey,
+        remark: res.remark,
+        selected: false
+      }
+      apiList.value.push(newItem)
+    }
+  })
+}
 const handleAdd = () => {
   const newItem = {
     API_URL: '',
