@@ -48,14 +48,14 @@ export function useChat() {
 
   // OpenAI client
   let openai: any = null
-  
+
   // Initialize OpenAI client
   const initOpenAI = async () => {
     const baseURL = `${API_URL.value}${API_URL.value === 'https://models.inference.ai.azure.com' ? '' : '/v1'}`
-    openai = new OpenAI({ 
-      baseURL, 
-      apiKey: API_KEY.value, 
-      dangerouslyAllowBrowser: true 
+    openai = new OpenAI({
+      baseURL,
+      apiKey: API_KEY.value,
+      dangerouslyAllowBrowser: true
     })
     return openai
   }
@@ -199,7 +199,7 @@ export function useChat() {
       }))
       return [{ type: 'text', text }, ...urls]
     }
-    
+
     if (selectedText.value) {
       return {
         isQuote: true,
@@ -207,7 +207,7 @@ export function useChat() {
         content: text
       }
     }
-    
+
     return text
   }
 
@@ -227,24 +227,24 @@ export function useChat() {
   // Process user input and send to AI
   const sendMessage = async (content: string | any, voice: string = 'zh-CN-XiaoxiaoNeural') => {
     if (loading.value) return
-    
+
     // If no explicit content provided, use the current input message
     const messageContent = content || inputMessage.value
     if (!messageContent) return
-    
+
     // Add user message
     addUserMessage(messageContent)
     inputMessage.value = ''
     picList.value = []
-    
+
     // Add temporary assistant message for streaming response
     const temporaryMessageId = addAssistantMessage()
-    
+
     // Prepare custom prompt
     const customPrompt = prepareCustomPrompt()
-    
+
     loading.value = true
-    
+
     try {
       await handleModelResponse(messageContent, temporaryMessageId, customPrompt, voice)
     } catch (error) {
@@ -254,7 +254,7 @@ export function useChat() {
     } finally {
       loading.value = false
     }
-    
+
     return chatMessages.value[temporaryMessageId - 1]
   }
 
@@ -262,10 +262,10 @@ export function useChat() {
   const processMessage = async (text: string, pics: string[] = [], voice: string = 'zh-CN-XiaoxiaoNeural') => {
     const content = prepareContent(text, pics)
     const result = await sendMessage(content, voice)
-    
+
     // Clear selected text after processing
     selectedText.value = ''
-    
+
     return result
   }
 
@@ -320,17 +320,17 @@ export function useChat() {
     initialLoading,
     selectedText,
     picList,
-    
+
     // Storage
     API_KEY,
     API_URL,
     commonSettings,
     selectMode,
-    
+
     // Assets
     USER_AVATAR,
     ASSISTANT_AVATAR,
-    
+
     // Methods
     initOpenAI,
     initChat,

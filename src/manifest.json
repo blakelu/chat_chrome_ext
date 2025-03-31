@@ -17,7 +17,7 @@
       "128": "assets/icons/icon.png"
     }
   },
-  "permissions": ["storage", "sidePanel", "scripting", "tabs"],
+  "permissions": ["storage", "sidePanel"],
   "side_panel": {
     "default_path": "popup.html",
     "openPanelOnActionClick": true
