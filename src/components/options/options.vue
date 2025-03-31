@@ -101,7 +101,7 @@ const onApiConfirm = (data: any) => {
   background-color: #ffffff;
 }
 .tabs {
-  width: 310px;
+  width: 290px;
   border-right: 1px solid #e2e8f0;
   padding: 0 16px;
 
@@ -125,7 +125,7 @@ const onApiConfirm = (data: any) => {
     }
   }
   .tab-item {
-    width: 260px;
+    width: 258px;
     padding: 8px 12px;
     margin: 6px 0;
     border-radius: 12px;

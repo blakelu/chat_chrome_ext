@@ -2,11 +2,8 @@
   <div class="api-settings">
     <div ref="apiListRef" class="api-list">
       <div v-for="(item, index) in apiList" :key="index" class="api-card" :class="{ 'is-active': item.selected }">
-        <div class="card-header">
-          <div class="selection-indicator" @click="handleClick(item, index)">
-            <div class="radio-btn">
-              <div class="radio-inner" v-if="item.selected"></div>
-            </div>
+        <div class="card-header" @click="handleClick(item, index)">
+          <div class="selection-indicator">
             <span>{{ item.remark || `API配置 ${index + 1}` }}</span>
           </div>
 
@@ -27,14 +24,22 @@
       </div>
       <div class="add-card-wrapper">
         <el-button type="dashed" class="add-card-btn" @click="handleAdd">
-          <el-icon></el-icon>
+          <el-icon><ep-plus /></el-icon>
           添加新配置
         </el-button>
       </div>
     </div>
     <div class="card-body">
       <div class="form-group">
-        <label>API URL</label>
+        <label>名称</label>
+        <el-input v-model="apiList[currentIndex].remark" size="small" placeholder="为此配置设置名称" clearable>
+          <template #prefix>
+            <el-icon><ep-notebook /></el-icon>
+          </template>
+        </el-input>
+      </div>
+      <div class="form-group">
+        <label>API地址</label>
         <el-input v-model="apiList[currentIndex].API_URL" size="small" placeholder="例如: https://api.openai.com" clearable>
           <template #prefix>
             <el-icon><ep-link /></el-icon>
@@ -43,36 +48,60 @@
       </div>
 
       <div class="form-group">
-        <label>API Key</label>
+        <label>API密钥</label>
         <el-input v-model="apiList[currentIndex].API_KEY" size="small" placeholder="输入您的API Key" show-password clearable>
           <template #prefix>
             <el-icon><ep-key /></el-icon>
           </template>
         </el-input>
       </div>
-
       <div class="form-group">
-        <label>备注名称</label>
-        <el-input v-model="apiList[currentIndex].remark" size="small" placeholder="为此配置添加备注名称" clearable>
-          <template #prefix>
-            <el-icon><ep-notebook /></el-icon>
-          </template>
-        </el-input>
+        <label>模型</label>
+        <div class="tags-wrapper">
+          <div class="tag-item" v-for="(model, index) in apiList[currentIndex].modelList" :key="index">
+            <span class="tag-text">{{ model }}</span>
+            <el-button class="tag-close" circle plain size="small" @click="deleteModel(index)">
+              <el-icon><ep-close /></el-icon>
+            </el-button>
+          </div>
+          <div v-if="showModelInput" class="tag-input-wrapper" key="input">
+            <el-input
+              ref="InputRef"
+              v-model="inputValue"
+              size="default"
+              placeholder="输入模型名称"
+              @keyup.enter="handleInputConfirm"
+              @blur="handleInputConfirm"
+              class="tag-input"
+            />
+          </div>
+        </div>
+
+        <div class="flex mt-2">
+          <el-button type="primary" size="small" @click="handleSelectModel">选择可用模型</el-button>
+          <el-button size="small" @click="handleAddModel">添加模型</el-button>
+        </div>
       </div>
     </div>
   </div>
+  <ModelList v-model:visible="showModelDialog" :modelInfo="apiList[currentIndex]" @confirm="handleConfirm" />
 </template>
 
 <script setup lang="ts">
 import { useDraggable } from 'vue-draggable-plus'
-import { useStorage } from '@vueuse/core'
+import { useAppStorage } from '@/composables/useAppStorage.ts'
 import { ref, onMounted, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import ModelList from './modelList.vue'
 
 const emit = defineEmits(['confirm'])
 const apiListRef = ref()
-const apiList: any = useStorage('apiList', [] as any)
+const apiList: any = useAppStorage('apiList', [] as any)
 const currentIndex = ref(0)
+const showModelDialog = ref(false)
+const showModelInput = ref(false)
+const inputValue = ref('')
+const InputRef = ref()
 
 // Initialize with default if empty
 onMounted(() => {
@@ -81,6 +110,7 @@ onMounted(() => {
       API_URL: 'https://api.openai.com',
       API_KEY: '',
       remark: 'OpenAI API',
+      modelList: [],
       selected: true
     })
   } else {
@@ -100,9 +130,13 @@ const handleAdd = () => {
     API_URL: '',
     API_KEY: '',
     remark: '',
-    selected: false
+    modelList: [],
+    selected: true
   }
-
+  currentIndex.value = apiList.value.length
+  apiList.value.forEach((item: any) => {
+    item.selected = false
+  })
   apiList.value.push(newItem)
 
   nextTick(() => {
@@ -119,17 +153,6 @@ const handleClick = (item: any, index: number) => {
   })
   item.selected = true
   currentIndex.value = index
-  emit('confirm', {
-    API_URL: item.API_URL,
-    API_KEY: item.API_KEY
-  })
-
-  // ElMessage({
-  //   message: item.remark ? `已选择: ${item.remark}` : '已选择API配置',
-  //   type: 'success',
-  //   offset: 60,
-  //   duration: 2000
-  // })
 }
 
 const handleDelete = async (item: any, index: number) => {
@@ -146,10 +169,6 @@ const handleDelete = async (item: any, index: number) => {
       if (nextIndex < apiList.value.length) {
         const nextSelected = apiList.value[nextIndex]
         nextSelected.selected = true
-        emit('confirm', {
-          API_URL: nextSelected.API_URL,
-          API_KEY: nextSelected.API_KEY
-        })
       }
     }
 
@@ -159,13 +178,49 @@ const handleDelete = async (item: any, index: number) => {
     // User canceled deletion
   }
 }
+const handleSelectModel = () => {
+  showModelDialog.value = true
+}
+const handleConfirm = (selectedModels: any) => {
+  const modifiedModels = selectedModels.filter((model: any) => {
+    return !apiList.value[currentIndex.value].modelList.includes(model)
+  })
+  apiList.value[currentIndex.value].modelList.push(...modifiedModels)
+}
+const deleteModel = async (index: number) => {
+  await ElMessageBox.confirm(`确定要删除此模型吗？`, '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  })
+  apiList.value[currentIndex.value].modelList.splice(index, 1)
+  ElMessage.success('已删除模型')
+}
+const handleAddModel = () => {
+  showModelInput.value = true
+  nextTick(() => {
+    InputRef.value?.focus()
+  })
+}
+const handleInputConfirm = () => {
+  if (inputValue.value) {
+    if (apiList.value[currentIndex.value].modelList.includes(inputValue.value)) {
+      ElMessage.warning('该模型已存在')
+    } else {
+      apiList.value[currentIndex.value].modelList.push(inputValue.value)
+      ElMessage.success(`已添加模型: ${inputValue.value}`)
+    }
+  }
+  showModelInput.value = false
+  inputValue.value = ''
+}
 </script>
 
 <style lang="less" scoped>
 .api-settings {
-  padding-top: 10px;
+  padding-top: 28px;
   display: flex;
-  gap: 24px;
+  gap: 42px;
 
   .api-list {
     scroll-behavior: smooth;
@@ -174,23 +229,19 @@ const handleDelete = async (item: any, index: number) => {
   .api-card {
     width: 200px;
     background-color: #fff;
-    border-radius: 6px;
+    border-radius: 12px;
+    overflow: hidden;
     margin-bottom: 12px;
-    border: 1px solid #e4e9f0;
     transition: all 0.2s ease;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 
     &:hover {
       border-color: #c8d5e9;
     }
 
     &.is-active {
-      border-color: #4f8df5;
-      background-color: #f8fbff;
       box-shadow: 0 1px 3px rgba(59, 130, 246, 0.1);
 
       .card-header {
-        border-bottom-color: #e0ecfd;
         background-color: #f0f7ff;
         color: #1e40af;
       }
@@ -214,13 +265,13 @@ const handleDelete = async (item: any, index: number) => {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid #f0f4f9;
-      border-radius: 6px 6px 0 0;
-      background-color: #f8fafd;
-
+      &:hover {
+        background-color: #f0f7ff;
+      }
       .selection-indicator {
         display: flex;
         align-items: center;
+        flex: 1;
         gap: 8px;
         font-weight: 500;
         color: #334155;
@@ -245,14 +296,6 @@ const handleDelete = async (item: any, index: number) => {
             height: 8px;
             border-radius: 50%;
             background-color: #4f8df5;
-          }
-        }
-
-        &:hover {
-          background-color: #f0f5ff;
-
-          .radio-btn {
-            border-color: #6b8cce;
           }
         }
       }
@@ -299,6 +342,9 @@ const handleDelete = async (item: any, index: number) => {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 8px;
   }
 
   .form-group {
@@ -328,6 +374,50 @@ const handleDelete = async (item: any, index: number) => {
 
       .el-input__prefix-inner {
         color: #64748b;
+      }
+    }
+    .tags-wrapper {
+      background-color: #f8fafc;
+      border-radius: 12px;
+      padding: 16px;
+      border: 1px solid #e2e8f0;
+      overflow-y: auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      .tag-item {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 4px 4px 8px;
+        border-radius: 8px;
+        background-color: #fff;
+        color: #334155;
+        font-size: 14px;
+        transition: all 0.2s ease;
+        user-select: none;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+        &:hover {
+          border-color: #94a3b8;
+        }
+
+        .tag-text {
+          margin-right: 4px;
+        }
+
+        .tag-close {
+          color: #94a3b8;
+          border: none;
+          height: 24px;
+          width: 24px;
+          transition: all 0.2s ease;
+
+          &:hover {
+            color: #ef4444;
+            background-color: #fee2e2;
+            transform: rotate(90deg);
+          }
+        }
       }
     }
   }

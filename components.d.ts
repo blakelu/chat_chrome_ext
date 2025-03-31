@@ -18,6 +18,7 @@ declare module 'vue' {
     Components: typeof import('./src/components/index.vue')['default']
     ElAlert: typeof import('element-plus/es')['ElAlert']
     ElButton: typeof import('element-plus/es')['ElButton']
+    ElCheckbox: typeof import('element-plus/es')['ElCheckbox']
     ElDialog: typeof import('element-plus/es')['ElDialog']
     ElDrawer: typeof import('element-plus/es')['ElDrawer']
     ElDropdown: typeof import('element-plus/es')['ElDropdown']
@@ -33,8 +34,6 @@ declare module 'vue' {
     ElRadioGroup: typeof import('element-plus/es')['ElRadioGroup']
     ElScrollbar: typeof import('element-plus/es')['ElScrollbar']
     ElSwitch: typeof import('element-plus/es')['ElSwitch']
-    ElTabPane: typeof import('element-plus/es')['ElTabPane']
-    ElTabs: typeof import('element-plus/es')['ElTabs']
     ElTooltip: typeof import('element-plus/es')['ElTooltip']
     Empty: typeof import('./src/components/chat/empty.vue')['default']
     EpArrowDown: typeof import('~icons/ep/arrow-down')['default']
@@ -56,10 +55,9 @@ declare module 'vue' {
     EpMicrophone: typeof import('~icons/ep/microphone')['default']
     EpNotebook: typeof import('~icons/ep/notebook')['default']
     EpPicture: typeof import('~icons/ep/picture')['default']
+    EpPlus: typeof import('~icons/ep/plus')['default']
     EpPosition: typeof import('~icons/ep/position')['default']
-    EpPromotion: typeof import('~icons/ep/promotion')['default']
     EpRank: typeof import('~icons/ep/rank')['default']
-    EpSetting: typeof import('~icons/ep/setting')['default']
     EpShare: typeof import('~icons/ep/share')['default']
     ExportDialog: typeof import('./src/components/chat/ExportDialog.vue')['default']
     FloatingMenu: typeof import('./src/components/injected/FloatingMenu.vue')['default']
@@ -67,6 +65,7 @@ declare module 'vue' {
     KeyboardShortcut: typeof import('./src/components/common/KeyboardShortcut.vue')['default']
     Message: typeof import('./src/components/chat/message.vue')['default']
     MessageActions: typeof import('./src/components/chat/MessageActions.vue')['default']
+    ModelList: typeof import('./src/components/settings/modelList.vue')['default']
     ModelSettings: typeof import('./src/components/settings/ModelSettings.vue')['default']
     NetworkStatus: typeof import('./src/components/common/NetworkStatus.vue')['default']
     Options: typeof import('./src/components/options/options.vue')['default']
@@ -79,5 +78,8 @@ declare module 'vue' {
     SimpleAIChat: typeof import('./src/components/injected/SimpleAIChat.vue')['default']
     UiSettings: typeof import('./src/components/settings/UiSettings.vue')['default']
     VoiceInput: typeof import('./src/components/common/VoiceInput.vue')['default']
+  }
+  export interface ComponentCustomProperties {
+    vLoading: typeof import('element-plus/es')['ElLoadingDirective']
   }
 }

@@ -27,8 +27,8 @@ export function useAppStorage<T>(
   // Try to get value from storage on mount
   try {
     let value: string | null = null;
-    
-    if (storage === 'chrome' && typeof chrome !== 'undefined' && chrome.storage) {
+    console.log(storage,chrome.storage)
+    if (storage === 'local' && typeof chrome !== 'undefined' && chrome.storage) {
       // Use Chrome storage API if available
       chrome.storage.local.get([key], (result) => {
         if (result[key]) {
@@ -59,7 +59,7 @@ export function useAppStorage<T>(
       try {
         const serialized = serialize(newValue);
         
-        if (storage === 'chrome' && typeof chrome !== 'undefined' && chrome.storage) {
+        if (storage === 'local' && typeof chrome !== 'undefined' && chrome.storage) {
           // Use Chrome storage API if available
           chrome.storage.local.set({ [key]: serialized });
         } else {
