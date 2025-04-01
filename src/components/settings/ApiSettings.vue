@@ -123,7 +123,15 @@ import ModelList from './modelList.vue'
 
 const emit = defineEmits(['confirm'])
 const apiListRef = ref()
-const apiList: any = useAppStorage('apiList', [] as any)
+const apiList: any = useAppStorage('apiList', [
+  {
+    apiUrl: 'https://api.openai.com',
+    apiKey: '',
+    remark: 'OpenAI API',
+    modelList: [],
+    selected: true
+  }
+])
 const currentIndex = ref(0)
 const showModelDialog = ref(false)
 const showModelInput = ref(false)
@@ -141,37 +149,15 @@ const realBaseURL = computed(() => {
     return baseURL + '/v1/chat/completions'
   }
 })
-// Initialize with default if empty
-// onMounted(() => {
-//   console.log(apiList.value, '0000')
-//   if (apiList.value.length === 0) {
-//     apiList.value.push({
-//       apiUrl: 'https://api.openai.com',
-//       apiKey: '',
-//       remark: 'OpenAI API',
-//       modelList: [],
-//       selected: true
-//     })
-//   } else {
-//     currentIndex.value = apiList.value.findIndex((item: any) => item.selected)
-//     console.log(currentIndex.value, 'currentIndex')
-//     console.log(apiList.value[currentIndex.value], 'currentItem')
-//   }
-// })
-watch(apiList, (newList) => {
-  if (newList.length > 0) {
-    currentIndex.value = newList.findIndex((item: any) => item.selected)
-  } else {
-    apiList.value.push({
-      apiUrl: 'https://api.openai.com',
-      apiKey: '',
-      remark: 'OpenAI API',
-      modelList: [],
-      selected: true
-    })
-    currentIndex.value = 0
-  }
-}, { deep: true, immediate: true })
+watch(
+  apiList,
+  (newList) => {
+    if (newList.length > 0) {
+      currentIndex.value = newList.findIndex((item: any) => item.selected)
+    }
+  },
+  { deep: true, immediate: true }
+)
 
 useDraggable(apiListRef, apiList, {
   animation: 150,

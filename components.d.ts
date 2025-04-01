@@ -60,6 +60,7 @@ declare module 'vue' {
     EpPlus: typeof import('~icons/ep/plus')['default']
     EpPosition: typeof import('~icons/ep/position')['default']
     EpRank: typeof import('~icons/ep/rank')['default']
+    EpSearch: typeof import('~icons/ep/search')['default']
     EpShare: typeof import('~icons/ep/share')['default']
     EpWarning: typeof import('~icons/ep/warning')['default']
     FloatingMenu: typeof import('./src/components/injected/FloatingMenu.vue')['default']

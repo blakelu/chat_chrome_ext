@@ -277,7 +277,13 @@ body {
 .el-textarea__inner {
   border-radius: var(--app-border-radius-md) !important;
 }
-
+.el-dialog {
+  border-radius: var(--app-border-radius-lg);
+  .el-dialog__title {
+    color: #333333;
+    font-weight: 500;
+  }
+}
 /* Add tailwind */
 @tailwind base;
 @tailwind components;
@@ -290,7 +296,6 @@ body {
   --el-color-success: var(--app-success);
   --el-color-warning: var(--app-warning);
   --el-color-danger: var(--app-danger);
-  --el-color-info: var(--app-info);
   --el-border-color: var(--app-border-color);
   --el-text-color-primary: var(--app-text-color);
   --el-text-color-regular: var(--app-text-secondary);

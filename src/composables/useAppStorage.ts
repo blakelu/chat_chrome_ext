@@ -27,9 +27,6 @@ export function useAppStorage<T>(
   // Try to get value from storage on mount
   try {
     let value: string | null = null;
-    console.log(storage,chrome.storage.local.get([key], (result) => {
-      console.log(result);
-    }));
     if (storage === 'local' && typeof chrome !== 'undefined' && chrome.storage) {
       // Use Chrome storage API if available
       chrome.storage.local.get([key], (result) => {
@@ -45,6 +42,15 @@ export function useAppStorage<T>(
           chrome.storage.local.set({ [key]: serialized }, () => {
             storedValue.value = initialValue;
           });
+        }
+      });
+      chrome.storage.local.onChanged.addListener((changes, namespace) => {
+        if (changes[key] && changes[key].newValue) {
+          try {
+            storedValue.value = deserialize(changes[key].newValue);
+          } catch (error) {
+            onError(new Error(`Failed to parse stored value: ${error}`));
+          }
         }
       });
     } else {

@@ -46,6 +46,11 @@ export function useChat() {
   })
   const commonSettings = useAppStorage('COMMON_SETTINGS', settings.value)
 
+  watch(apiInfo, (newValue) => {
+    if (newValue.apiKey && newValue.apiUrl) {
+      initOpenAI()
+    }
+  })
   // OpenAI client
   let openai: any = null
 

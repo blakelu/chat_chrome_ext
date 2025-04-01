@@ -85,8 +85,6 @@ const {
   loading,
   initialLoading,
   selectedText: chatSelectedText,
-  commonSettings,
-  selectMode,
   initOpenAI,
   clearChat,
   sendMessage,
@@ -94,27 +92,6 @@ const {
   retryMessage
 } = useChat()
 
-const init = async () => {
-  return new Promise((resolve) => {
-    if (typeof chrome !== 'undefined' && chrome.storage) {
-      chrome.storage.local.get(['mode', 'GPT_API_KEY', 'GPT_API_URL', 'COMMON_SETTINGS'], async (data) => {
-        // Store API settings
-        if (data.GPT_API_KEY) API_KEY.value = data.GPT_API_KEY
-        if (data.GPT_API_URL) API_URL.value = data.GPT_API_URL
-        if (data.mode) selectMode.value = data.mode
-
-        // Copy system prompt if available
-        if (data.COMMON_SETTINGS?.prompt) {
-          commonSettings.value.prompt = data.COMMON_SETTINGS.prompt
-        }
-
-        console.log('API settings loaded', API_KEY.value, API_URL.value, selectMode.value)
-        await initOpenAI()
-        resolve(true)
-      })
-    }
-  })
-}
 const handleOpen = async () => {
   await initOpenAI()
   if (props.selectedText) {

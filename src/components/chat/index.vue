@@ -162,7 +162,7 @@ const handleChooseModel = (api, model) => {
   apiInfo.value.apiKey = api.apiKey
   apiInfo.value.apiUrl = api.apiUrl
   selectMode.value = model
-  initOpenAI()
+  // initOpenAI()
 }
 // Open the extension's options page
 const openOptionsPage = () => {
