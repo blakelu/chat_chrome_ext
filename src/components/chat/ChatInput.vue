@@ -28,7 +28,6 @@
         placeholder="请输入您的问题"
         @keydown.ctrl.enter="$emit('send')"
         @keydown.meta.enter="$emit('send')"
-        @keydown.tab.prevent="$emit('auto-complete')"
         @keydown.up.prevent="$emit('load-previous')"
         @keydown.escape="$emit('escape')"
         @compositionstart="$emit('composition-start')"
@@ -67,7 +66,6 @@ const emit = defineEmits([
   'update:modelValue',
   'update:picList',
   'send',
-  'auto-complete',
   'load-previous',
   'escape',
   'composition-start',

@@ -1,12 +1,12 @@
 import { ref, computed, watch, unref } from 'vue'
 import OpenAI from 'openai'
 import { useStorage } from '@vueuse/core'
+import { useAppStorage } from './useAppStorage.ts'
 import { ElMessage } from 'element-plus'
 
 // Import assets
 import USER_AVATAR from '@/assets/icons/user.png'
 import ASSISTANT_AVATAR from '@/assets/icons/ROBOT.png'
-
 
 export function useChat() {
   // Interfaces
@@ -33,9 +33,8 @@ export function useChat() {
   const picList = ref<string[]>([])
 
   // Storage
-  const API_KEY = useStorage('GPT_API_KEY', '')
-  const API_URL = useStorage('GPT_API_URL', '')
-  const selectMode = useStorage('mode', 'gpt-4o')
+  const apiInfo: any = useAppStorage('API_INFO', { apiKey: '', apiUrl: '' })
+  const selectMode = useAppStorage('model', '')
   const settings = ref({
     temperature: 0.7,
     limitContext: 6,
@@ -45,18 +44,25 @@ export function useChat() {
     stream: true,
     prompt: ''
   })
-  const commonSettings = useStorage('COMMON_SETTINGS', settings, localStorage, { mergeDefaults: true })
+  const commonSettings = useAppStorage('COMMON_SETTINGS', settings.value)
 
   // OpenAI client
   let openai: any = null
-  
+
   // Initialize OpenAI client
   const initOpenAI = async () => {
-    const baseURL = `${API_URL.value}${API_URL.value === 'https://models.inference.ai.azure.com' ? '' : '/v1'}`
-    openai = new OpenAI({ 
-      baseURL, 
-      apiKey: API_KEY.value, 
-      dangerouslyAllowBrowser: true 
+    let baseURL = unref(apiInfo).apiUrl
+    if (baseURL.endsWith('/')) {
+      baseURL = baseURL
+    } else if (baseURL.endsWith('#')) {
+      baseURL = baseURL.slice(0, -1)
+    } else {
+      baseURL = baseURL + '/v1'
+    }
+    openai = new OpenAI({
+      baseURL,
+      apiKey: unref(apiInfo).apiKey,
+      dangerouslyAllowBrowser: true
     })
     return openai
   }
@@ -200,7 +206,7 @@ export function useChat() {
       }))
       return [{ type: 'text', text }, ...urls]
     }
-    
+
     if (selectedText.value) {
       return {
         isQuote: true,
@@ -208,7 +214,7 @@ export function useChat() {
         content: text
       }
     }
-    
+
     return text
   }
 
@@ -228,24 +234,24 @@ export function useChat() {
   // Process user input and send to AI
   const sendMessage = async (content: string | any, voice: string = 'zh-CN-XiaoxiaoNeural') => {
     if (loading.value) return
-    
+
     // If no explicit content provided, use the current input message
     const messageContent = content || inputMessage.value
     if (!messageContent) return
-    
+
     // Add user message
     addUserMessage(messageContent)
     inputMessage.value = ''
     picList.value = []
-    
+
     // Add temporary assistant message for streaming response
     const temporaryMessageId = addAssistantMessage()
-    
+
     // Prepare custom prompt
     const customPrompt = prepareCustomPrompt()
-    
+
     loading.value = true
-    
+
     try {
       await handleModelResponse(messageContent, temporaryMessageId, customPrompt, voice)
     } catch (error) {
@@ -255,7 +261,7 @@ export function useChat() {
     } finally {
       loading.value = false
     }
-    
+
     return chatMessages.value[temporaryMessageId - 1]
   }
 
@@ -263,10 +269,10 @@ export function useChat() {
   const processMessage = async (text: string, pics: string[] = [], voice: string = 'zh-CN-XiaoxiaoNeural') => {
     const content = prepareContent(text, pics)
     const result = await sendMessage(content, voice)
-    
+
     // Clear selected text after processing
     selectedText.value = ''
-    
+
     return result
   }
 
@@ -321,17 +327,16 @@ export function useChat() {
     initialLoading,
     selectedText,
     picList,
-    
+
     // Storage
-    API_KEY,
-    API_URL,
+    apiInfo,
     commonSettings,
     selectMode,
-    
+
     // Assets
     USER_AVATAR,
     ASSISTANT_AVATAR,
-    
+
     // Methods
     initOpenAI,
     initChat,

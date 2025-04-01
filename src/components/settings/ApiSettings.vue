@@ -1,15 +1,18 @@
 <template>
-  <div class="api-settings">
+  <div class="api-settings-container">
     <div ref="apiListRef" class="api-list">
       <div v-for="(item, index) in apiList" :key="index" class="api-card" :class="{ 'is-active': item.selected }">
         <div class="card-header" @click="handleClick(item, index)">
           <div class="selection-indicator">
-            <span>{{ item.remark || `API配置 ${index + 1}` }}</span>
+            <div class="radio-btn" v-if="item.selected">
+              <div class="radio-inner"></div>
+            </div>
+            <span class="card-title">{{ item.remark || `API配置 ${index + 1}` }}</span>
           </div>
 
           <div class="card-actions">
             <el-tooltip content="删除" placement="top" v-if="apiList.length > 1">
-              <el-button class="action-btn delete-btn" @click="handleDelete(item, index)">
+              <el-button class="action-btn delete-btn" @click.stop="handleDelete(item, index)">
                 <el-icon><ep-delete /></el-icon>
               </el-button>
             </el-tooltip>
@@ -29,57 +32,82 @@
         </el-button>
       </div>
     </div>
-    <div class="card-body">
-      <div class="form-group">
-        <label>名称</label>
-        <el-input v-model="apiList[currentIndex].remark" size="small" placeholder="为此配置设置名称" clearable>
-          <template #prefix>
-            <el-icon><ep-notebook /></el-icon>
-          </template>
-        </el-input>
-      </div>
-      <div class="form-group">
-        <label>API地址</label>
-        <el-input v-model="apiList[currentIndex].API_URL" size="small" placeholder="例如: https://api.openai.com" clearable>
-          <template #prefix>
-            <el-icon><ep-link /></el-icon>
-          </template>
-        </el-input>
+
+    <div class="card-body-container">
+      <div class="card-body-header">
+        <h3 class="config-title">{{ apiList[currentIndex].remark || `API配置 ${currentIndex + 1}` }}</h3>
       </div>
 
-      <div class="form-group">
-        <label>API密钥</label>
-        <el-input v-model="apiList[currentIndex].API_KEY" size="small" placeholder="输入您的API Key" show-password clearable>
-          <template #prefix>
-            <el-icon><ep-key /></el-icon>
-          </template>
-        </el-input>
-      </div>
-      <div class="form-group">
-        <label>模型</label>
-        <div class="tags-wrapper">
-          <div class="tag-item" v-for="(model, index) in apiList[currentIndex].modelList" :key="index">
-            <span class="tag-text">{{ model }}</span>
-            <el-button class="tag-close" circle plain size="small" @click="deleteModel(index)">
-              <el-icon><ep-close /></el-icon>
-            </el-button>
-          </div>
-          <div v-if="showModelInput" class="tag-input-wrapper" key="input">
-            <el-input
-              ref="InputRef"
-              v-model="inputValue"
-              size="default"
-              placeholder="输入模型名称"
-              @keyup.enter="handleInputConfirm"
-              @blur="handleInputConfirm"
-              class="tag-input"
-            />
+      <div class="card-body">
+        <div class="form-group">
+          <label>配置名称</label>
+          <el-input v-model="apiList[currentIndex].remark" size="large" placeholder="为此配置设置名称" clearable>
+            <template #prefix>
+              <el-icon><ep-notebook /></el-icon>
+            </template>
+          </el-input>
+        </div>
+
+        <div class="form-group">
+          <label>API 地址</label>
+          <el-input v-model="apiList[currentIndex].apiUrl" size="large" placeholder="例如: https://api.openai.com" clearable>
+            <template #prefix>
+              <el-icon><ep-link /></el-icon>
+            </template>
+          </el-input>
+          <div class="flex justify-between text-[#999]">
+            <div class="w-[50%]">{{ realBaseURL }}</div>
+            <div class="">以‘/’结尾不自动加v1，以‘#’结尾强制使用输入地址</div>
           </div>
         </div>
 
-        <div class="flex mt-2">
-          <el-button type="primary" size="small" @click="handleSelectModel">选择可用模型</el-button>
-          <el-button size="small" @click="handleAddModel">添加模型</el-button>
+        <div class="form-group">
+          <label>API 密钥</label>
+          <el-input v-model="apiList[currentIndex].apiKey" size="large" placeholder="输入您的API Key" show-password clearable>
+            <template #prefix>
+              <el-icon><ep-key /></el-icon>
+            </template>
+          </el-input>
+        </div>
+
+        <div class="form-group model-group">
+          <div class="model-header">
+            <label>可用模型</label>
+            <div class="model-actions">
+              <el-button type="primary" size="small" @click="handleSelectModel" class="select-model-btn">
+                <el-icon><ep-list /></el-icon>选择可用模型
+              </el-button>
+              <el-button size="small" @click="handleAddModel" class="add-model-btn">
+                <el-icon><ep-plus /></el-icon>添加模型
+              </el-button>
+            </div>
+          </div>
+
+          <div class="tags-wrapper">
+            <div v-if="apiList[currentIndex].modelList.length === 0" class="empty-models">
+              <el-icon><ep-warning /></el-icon>
+              <span>尚未添加任何模型</span>
+            </div>
+
+            <div class="tag-item" v-for="(model, index) in apiList[currentIndex].modelList" :key="index">
+              <span class="tag-text">{{ model }}</span>
+              <el-button class="tag-close" circle plain size="small" @click="deleteModel(index)">
+                <el-icon><ep-close /></el-icon>
+              </el-button>
+            </div>
+
+            <div v-if="showModelInput" class="tag-input-wrapper" key="input">
+              <el-input
+                ref="InputRef"
+                v-model="inputValue"
+                size="default"
+                placeholder="输入模型名称"
+                @keyup.enter="handleInputConfirm"
+                @blur="handleInputConfirm"
+                class="tag-input"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -90,7 +118,6 @@
 <script setup lang="ts">
 import { useDraggable } from 'vue-draggable-plus'
 import { useAppStorage } from '@/composables/useAppStorage.ts'
-import { ref, onMounted, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import ModelList from './modelList.vue'
 
@@ -103,20 +130,48 @@ const showModelInput = ref(false)
 const inputValue = ref('')
 const InputRef = ref()
 
+const realBaseURL = computed(() => {
+  const baseURL = apiList.value[currentIndex.value]?.apiUrl
+  if (!baseURL) return ''
+  if (baseURL.endsWith('/')) {
+    return baseURL + 'chat/completions'
+  } else if (baseURL.endsWith('#')) {
+    return baseURL.slice(0, -1)
+  } else {
+    return baseURL + '/v1/chat/completions'
+  }
+})
 // Initialize with default if empty
-onMounted(() => {
-  if (apiList.value.length === 0) {
+// onMounted(() => {
+//   console.log(apiList.value, '0000')
+//   if (apiList.value.length === 0) {
+//     apiList.value.push({
+//       apiUrl: 'https://api.openai.com',
+//       apiKey: '',
+//       remark: 'OpenAI API',
+//       modelList: [],
+//       selected: true
+//     })
+//   } else {
+//     currentIndex.value = apiList.value.findIndex((item: any) => item.selected)
+//     console.log(currentIndex.value, 'currentIndex')
+//     console.log(apiList.value[currentIndex.value], 'currentItem')
+//   }
+// })
+watch(apiList, (newList) => {
+  if (newList.length > 0) {
+    currentIndex.value = newList.findIndex((item: any) => item.selected)
+  } else {
     apiList.value.push({
-      API_URL: 'https://api.openai.com',
-      API_KEY: '',
+      apiUrl: 'https://api.openai.com',
+      apiKey: '',
       remark: 'OpenAI API',
       modelList: [],
       selected: true
     })
-  } else {
-    currentIndex.value = apiList.value.findIndex((item: any) => item.selected)
+    currentIndex.value = 0
   }
-})
+}, { deep: true, immediate: true })
 
 useDraggable(apiListRef, apiList, {
   animation: 150,
@@ -127,8 +182,8 @@ useDraggable(apiListRef, apiList, {
 
 const handleAdd = () => {
   const newItem = {
-    API_URL: '',
-    API_KEY: '',
+    apiUrl: '',
+    apiKey: '',
     remark: '',
     modelList: [],
     selected: true
@@ -182,10 +237,7 @@ const handleSelectModel = () => {
   showModelDialog.value = true
 }
 const handleConfirm = (selectedModels: any) => {
-  const modifiedModels = selectedModels.filter((model: any) => {
-    return !apiList.value[currentIndex.value].modelList.includes(model)
-  })
-  apiList.value[currentIndex.value].modelList.push(...modifiedModels)
+  apiList.value[currentIndex.value].modelList = selectedModels
 }
 const deleteModel = async (index: number) => {
   await ElMessageBox.confirm(`确定要删除此模型吗？`, '提示', {
@@ -217,231 +269,398 @@ const handleInputConfirm = () => {
 </script>
 
 <style lang="less" scoped>
-.api-settings {
-  padding-top: 28px;
+.api-settings-container {
   display: flex;
-  gap: 42px;
+  gap: 32px;
+  padding: 4px;
+  margin-top: 8px;
+  background-color: #f9fafb;
+  border-radius: 16px;
+  min-height: 600px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.01);
+}
 
-  .api-list {
-    scroll-behavior: smooth;
+.api-list {
+  width: 260px;
+  padding: 16px;
+  flex-shrink: 0;
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  max-height: 600px;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+
+  &::-webkit-scrollbar {
+    width: 6px;
   }
 
-  .api-card {
-    width: 200px;
-    background-color: #fff;
-    border-radius: 12px;
-    overflow: hidden;
-    margin-bottom: 12px;
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+}
+
+.api-card {
+  background-color: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  transition: all 0.3s ease;
+  border: 1px solid #eaecf0;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+
+  &.is-active {
+    border-color: #4f8df5;
+    background: linear-gradient(to right, #f0f7ff, #ffffff);
+    box-shadow: 0 4px 12px rgba(79, 141, 245, 0.1);
+
+    .card-header {
+      background-color: #f0f7ff;
+      color: #1e40af;
+    }
+
+    .selection-indicator {
+      color: #1d4ed8;
+    }
+
+    .card-title {
+      font-weight: 600;
+    }
+  }
+
+  &-ghost {
+    opacity: 0.7;
+    background-color: #f5f8ff;
+    border: 1px dashed #4f8df5;
+  }
+
+  &-chosen {
+    border-color: #4f8df5;
+    box-shadow: 0 0 0 2px rgba(79, 141, 245, 0.2);
+  }
+
+  .card-header {
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     transition: all 0.2s ease;
 
     &:hover {
-      border-color: #c8d5e9;
-    }
-
-    &.is-active {
-      box-shadow: 0 1px 3px rgba(59, 130, 246, 0.1);
-
-      .card-header {
-        background-color: #f0f7ff;
-        color: #1e40af;
-      }
-
-      .selection-indicator {
-        color: #1d4ed8;
-      }
-    }
-
-    &-ghost {
-      opacity: 0.8;
-      background-color: #f5f8ff;
-    }
-
-    &-chosen {
-      border-color: #4f8df5;
-    }
-
-    .card-header {
-      padding: 8px 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      &:hover {
-        background-color: #f0f7ff;
-      }
-      .selection-indicator {
-        display: flex;
-        align-items: center;
-        flex: 1;
-        gap: 8px;
-        font-weight: 500;
-        color: #334155;
-        cursor: pointer;
-        padding: 3px;
-        border-radius: 4px;
-        transition: background-color 0.2s;
-
-        .radio-btn {
-          width: 16px;
-          height: 16px;
-          border-radius: 50%;
-          border: 2px solid #cbd5e1;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: all 0.2s ease;
-          flex-shrink: 0;
-
-          .radio-inner {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: #4f8df5;
-          }
-        }
-      }
-
-      .card-actions {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-
-        .action-btn {
-          color: #64748b;
-          font-size: 14px;
-          transition: all 0.2s ease;
-          height: 24px;
-          width: 24px;
-          padding: 6px;
-          border-radius: 6px;
-          border: none;
-          background-color: transparent;
-
-          &.delete-btn:hover {
-            background-color: #eef2fd;
-            color: #ef4444;
-          }
-        }
-
-        .drag-handle {
-          cursor: move;
-          padding: 4px;
-          border-radius: 4px;
-          color: #94a3b8;
-          display: flex;
-
-          &:hover {
-            background-color: #eef2fd;
-            color: #4b63a9;
-          }
-        }
-      }
-    }
-  }
-  .card-body {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 12px;
-    background: rgba(0, 0, 0, 0.02);
-    border-radius: 8px;
-  }
-
-  .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-
-    label {
-      font-size: 13px;
-      font-weight: 500;
-      color: #475569;
-      margin-left: 2px;
-    }
-
-    :deep(.el-input__wrapper) {
-      box-shadow: 0 0 0 1px #e0e4ec;
-      border-radius: 5px;
-      transition: all 0.2s ease;
-
-      &:hover {
-        box-shadow: 0 0 0 1px #c0c8d8;
-      }
-
-      &:focus-within {
-        box-shadow: 0 0 0 1px #4f8df5;
-      }
-
-      .el-input__prefix-inner {
-        color: #64748b;
-      }
-    }
-    .tags-wrapper {
       background-color: #f8fafc;
-      border-radius: 12px;
-      padding: 16px;
-      border: 1px solid #e2e8f0;
-      overflow-y: auto;
+    }
+
+    .selection-indicator {
       display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      .tag-item {
-        display: inline-flex;
+      align-items: center;
+      flex: 1;
+      gap: 10px;
+      font-weight: 500;
+      color: #334155;
+      cursor: pointer;
+      padding: 3px;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+
+      .radio-btn {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 2px solid #4f8df5;
+        display: flex;
         align-items: center;
-        padding: 4px 4px 4px 8px;
-        border-radius: 8px;
+        justify-content: center;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
         background-color: #fff;
-        color: #334155;
+
+        .radio-inner {
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          background-color: #4f8df5;
+        }
+      }
+
+      .card-title {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 160px;
+        font-size: 14px;
+      }
+    }
+
+    .card-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      opacity: 0.6;
+      transition: opacity 0.2s ease;
+
+      .action-btn {
+        color: #64748b;
         font-size: 14px;
         transition: all 0.2s ease;
-        user-select: none;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        height: 28px;
+        width: 28px;
+        padding: 6px;
+        border-radius: 6px;
+        border: none;
+        background-color: transparent;
+
+        &.delete-btn:hover {
+          background-color: #fee2e2;
+          color: #ef4444;
+        }
+      }
+
+      .drag-handle {
+        cursor: move;
+        padding: 6px;
+        border-radius: 6px;
+        color: #94a3b8;
+        display: flex;
 
         &:hover {
-          border-color: #94a3b8;
-        }
-
-        .tag-text {
-          margin-right: 4px;
-        }
-
-        .tag-close {
-          color: #94a3b8;
-          border: none;
-          height: 24px;
-          width: 24px;
-          transition: all 0.2s ease;
-
-          &:hover {
-            color: #ef4444;
-            background-color: #fee2e2;
-            transform: rotate(90deg);
-          }
+          background-color: #eef2fd;
+          color: #4b63a9;
         }
       }
     }
-  }
-  .add-card-wrapper {
-    width: 200px;
-    padding: 4px 0 12px;
 
-    .add-card-btn {
-      width: 100%;
-      height: 42px;
-      border: 1px dashed #d0d5dd;
-      border-radius: 6px;
-      color: #5a7bb6;
-      font-weight: 500;
-      transition: all 0.2s ease;
+    &:hover .card-actions {
+      opacity: 1;
+    }
+  }
+}
+
+.add-card-wrapper {
+  padding: 8px 0 16px;
+
+  .add-card-btn {
+    width: 100%;
+    height: 48px;
+    border: 2px dashed #d0d5dd;
+    border-radius: 12px;
+    color: #5a7bb6;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background-color: #f8fafc;
+
+    &:hover {
+      border-color: #4f8df5;
+      color: #4f8df5;
+      background-color: #f0f7ff;
+      transform: translateY(-2px);
+    }
+
+    .el-icon {
+      font-size: 18px;
+    }
+  }
+}
+
+.card-body-container {
+  width: 600px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.card-body-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #eaecf0;
+  background: linear-gradient(to right, #f0f7ff, #ffffff);
+
+  .config-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+  }
+}
+
+.card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 12px 24px;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #475569;
+    margin-left: 2px;
+  }
+
+  :deep(.el-input__wrapper) {
+    box-shadow: 0 0 0 1px #e2e8f0;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    padding: 4px 12px;
+
+    &:hover {
+      box-shadow: 0 0 0 1px #cbd5e1;
+    }
+
+    &:focus-within {
+      box-shadow: 0 0 0 2px rgba(79, 141, 245, 0.3);
+    }
+
+    .el-input__prefix-inner {
+      color: #64748b;
+      margin-right: 8px;
+    }
+  }
+}
+
+.model-group {
+  .model-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+
+    .model-actions {
       display: flex;
-      align-items: center;
-      justify-content: center;
       gap: 8px;
 
-      &:hover {
+      .select-model-btn {
+        background-color: #4f8df5;
         border-color: #4f8df5;
+
+        &:hover {
+          background-color: #3b7de2;
+          border-color: #3b7de2;
+        }
+      }
+
+      .add-model-btn {
         color: #4f8df5;
-        background-color: #f0f7ff;
+        border-color: #4f8df5;
+
+        &:hover {
+          color: #3b7de2;
+          border-color: #3b7de2;
+          background-color: #f0f7ff;
+        }
+      }
+
+      .el-icon {
+        margin-right: 4px;
+      }
+    }
+  }
+
+  .tags-wrapper {
+    background-color: #f8fafc;
+    border-radius: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid #e2e8f0;
+    align-content: flex-start;
+
+    .empty-models {
+      width: 100%;
+      height: 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #94a3b8;
+      gap: 8px;
+
+      .el-icon {
+        font-size: 24px;
+      }
+    }
+
+    .tag-item {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 6px 2px 12px;
+      border-radius: 12px;
+      background-color: #fff;
+      color: #334155;
+      font-size: 12px;
+      transition: all 0.2s ease;
+      user-select: none;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e2e8f0;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+      }
+
+      .tag-text {
+        margin-right: 8px;
+        word-break: break-all;
+      }
+
+      .tag-close {
+        color: #94a3b8;
+        border: none;
+        height: 24px;
+        width: 24px;
+        transition: all 0.3s ease;
+
+        &:hover {
+          color: #ef4444;
+          background-color: #fee2e2;
+          transform: rotate(90deg);
+        }
+      }
+    }
+
+    .tag-input-wrapper {
+      min-width: 200px;
+
+      .tag-input {
+        :deep(.el-input__wrapper) {
+          box-shadow: 0 0 0 1px #4f8df5;
+        }
       }
     }
   }
@@ -450,16 +669,16 @@ const handleInputConfirm = () => {
 // Transition animations
 .api-card-enter-active,
 .api-card-leave-active {
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .api-card-enter-from {
   opacity: 0;
-  transform: translateY(8px);
+  transform: translateY(12px);
 }
 
 .api-card-leave-to {
   opacity: 0;
-  transform: translateX(-20px);
+  transform: translateX(-30px);
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <el-dialog v-model="show" title="选择模型" width="600" @open="handleOpen">
+  <el-dialog v-model="show" title="选择模型" width="600" @open="handleOpen" modal-class="model-list-dialog">
     <div class="model-list" v-loading="loading">
       <div v-for="(model, index) in modelList" :key="index" class="model-item">
         <el-checkbox v-model="model.selected">
@@ -9,8 +9,8 @@
     </div>
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="show = false">Cancel</el-button>
-        <el-button type="primary" @click="handleConfirm"> Confirm </el-button>
+        <el-button @click="show = false">取消</el-button>
+        <el-button type="primary" @click="handleConfirm">确认</el-button>
       </div>
     </template>
   </el-dialog>
@@ -35,20 +35,18 @@ const modelList: any = ref([])
 const loading = ref(false)
 
 const handleOpen = async () => {
-  let baseURL = props.modelInfo.API_URL
-  if (baseURL.endsWith('/v1')) {
-    baseURL = baseURL.slice(0, -3)
-  } else if (baseURL.endsWith('/')) {
-    baseURL = baseURL.slice(0, -1)
-  } else if (baseURL.endsWith('#')) {
+  let baseURL = props.modelInfo.apiUrl
+  if (baseURL.endsWith('/')) {
     baseURL = baseURL
+  } else if (baseURL.endsWith('#')) {
+    baseURL = baseURL.slice(0, -1)
   } else {
     baseURL = baseURL + '/v1'
   }
 
   const openai = new OpenAI({
     baseURL: baseURL,
-    apiKey: props.modelInfo.API_KEY,
+    apiKey: props.modelInfo.apiKey,
     dangerouslyAllowBrowser: true
   })
   loading.value = true
@@ -57,9 +55,12 @@ const handleOpen = async () => {
   if (res.body.success) {
     modelList.value = res.data.sort((a, b) => a.id.localeCompare(b.id))
     if (props.modelInfo.modelList.length > 0) {
-      modelList.value.forEach((model) => {
-        if (props.modelInfo.modelList.includes(model.id)) {
-          model.selected = true
+      props.modelInfo.modelList.forEach((model) => {
+        const foundModel = modelList.value.find((m) => m.id === model)
+        if (foundModel) {
+          foundModel.selected = true
+        } else {
+          modelList.value.push({ id: model, selected: true })
         }
       })
     } else {

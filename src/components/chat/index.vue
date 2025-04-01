@@ -2,9 +2,7 @@
   <ChatMessages
     :messages="chatMessages"
     :loading="loading"
-    :themeSettings="themeSettings"
     @retry="retryMessage"
-    @scroll="handleMessagesScroll"
     ref="messagesRef"
   >
     <template #empty>
@@ -14,7 +12,7 @@
 
   <div class="operate_wrap">
     <MessageActions
-      v-model:model="selectMode"
+      :model="selectMode"
       :settings="commonSettings"
       :picCount="picList.length"
       :hasMessages="chatMessages.length > 0"
@@ -23,9 +21,7 @@
       @show-history="$emit('showHistory')"
       @new-chat="$emit('addNewSession')"
       @show-settings="openOptionsPage"
-      @show-prompt-dialog="promptVisible = true"
-      @show-export-dialog="openExportDialog"
-      @theme-change="handleThemeChange"
+      @show-choose-model="openChooseModel"
     />
 
     <ChatInput
@@ -35,7 +31,6 @@
       @update:selectedText="(val) => (selectedText = val)"
       @delete-pic="handleDeletePic"
       @send="handleInputEnter"
-      @auto-complete="handleTabCompletion"
       @load-previous="loadPreviousMessage"
       @escape="handleEscape"
       @composition-start="composing = true"
@@ -43,15 +38,13 @@
       ref="inputRef"
     />
   </div>
+  <ChooseModel v-model:show-modal="showModelModal" @select-model="handleChooseModel" />
 
   <RolePrompt v-model:show="promptVisible" />
 
-  <ExportDialog :messages="chatMessages" v-model:visible="exportDialogVisible" @copy="handleExportCopy" @download="handleExportDownload" />
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
-import { useStorage } from '@vueuse/core'
 import { ElMessage } from 'element-plus'
 
 // Import composable
@@ -61,7 +54,6 @@ import { useChat } from '@/composables/useChat.ts'
 import ChatMessages from './ChatMessages.vue'
 import MessageActions from './MessageActions.vue'
 import ChatInput from './ChatInput.vue'
-import ExportDialog from './ExportDialog.vue'
 import empty from './empty.vue'
 import RolePrompt from '../settings/RolePrompt.vue'
 
@@ -87,8 +79,7 @@ const {
   loading,
   selectedText,
   picList,
-  API_KEY,
-  API_URL,
+  apiInfo,
   commonSettings,
   selectMode,
   initOpenAI,
@@ -100,25 +91,10 @@ const {
 
 // Local state that's not in the composable
 const promptVisible = ref(false)
-const exportDialogVisible = ref(false)
 const composing = ref(false)
 const inputHistory = ref<string[]>([])
 const currentHistoryIndex = ref(-1)
-
-// UI settings storage
-const themeSettings = useStorage(
-  'UI_SETTINGS',
-  {
-    theme: 'light',
-    fontSize: 'medium',
-    smoothScrolling: true,
-    animations: true,
-    highContrast: false,
-    reducedMotion: false
-  },
-  localStorage,
-  { mergeDefaults: true }
-)
+const showModelModal = ref(false)
 
 // Refs
 const inputRef = ref()
@@ -126,8 +102,10 @@ const messagesRef = ref()
 
 // Lifecycle hooks
 onMounted(async () => {
-  if (!API_KEY.value) {
+  const { apiKey, apiUrl } = unref(apiInfo)
+  if (!apiKey || !apiUrl) {
     openOptionsPage()
+    return
   }
   initChat(props.context)
   initOpenAI()
@@ -143,21 +121,15 @@ onMounted(async () => {
 
 // 设置选中文本监听器
 const setupSelectedTextListener = () => {
-  // 如果在 Chrome 扩展环境中运行
   if (typeof chrome !== 'undefined' && chrome.runtime) {
-    // 注册消息监听器
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message.action === 'textSelected') {
         selectedText.value = message.text
         inputRef.value.focus()
-        // 响应消息确认收到
         sendResponse({ status: 'success' })
       }
-      // 返回true以支持异步响应
       return true
     })
-
-    // 向后台脚本发送消息，通知它侧边栏已打开
     try {
       chrome.runtime
         .sendMessage('sidePanelOpened')
@@ -166,15 +138,6 @@ const setupSelectedTextListener = () => {
     } catch (error) {
       console.error('Error sending initial message:', error)
     }
-  } else {
-    // 如果不在扩展环境中，使用普通的事件监听
-    window.addEventListener('message', (event) => {
-      if (event.data.action === 'textSelected' && event.data.text) {
-        const maxLength = 1000
-        selectedText.value = event.data.text.length > maxLength ? event.data.text.substring(0, maxLength) + '...' : event.data.text
-        inputRef.value.focus()
-      }
-    })
   }
 }
 
@@ -193,18 +156,14 @@ watch(
     initChat(val)
   }
 )
-watch(selectMode, (newVal) => {
-  chrome.storage.local.set({ mode: newVal })
-})
 
 // Methods
-const handleConfirm = (data: any) => {
-  API_URL.value = data.API_URL
-  API_KEY.value = data.API_KEY
-  chrome.storage.local.set({ GPT_API_KEY: data.API_KEY, GPT_API_URL: data.API_URL })
+const handleChooseModel = (api, model) => {
+  apiInfo.value.apiKey = api.apiKey
+  apiInfo.value.apiUrl = api.apiUrl
+  selectMode.value = model
   initOpenAI()
 }
-
 // Open the extension's options page
 const openOptionsPage = () => {
   if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.openOptionsPage) {
@@ -247,36 +206,9 @@ const handleClearChat = () => {
   clearChat()
   emit('clear')
 }
-
-// Handle tab completion
-const handleTabCompletion = async () => {
-  if (!inputMessage.value.trim()) return
-
-  try {
-    ElMessage.info('生成自动补全...')
-
-    // Initialize OpenAI if needed
-    const openai = initOpenAI()
-
-    // Get completion from API
-    const completion = await openai.completions.create({
-      model: 'gpt-3.5-turbo-instruct',
-      prompt: inputMessage.value.trim() + '\n\nComplete this thought:',
-      max_tokens: 50,
-      temperature: 0.7,
-      stop: ['\n', '。', '.', '?', '？', '!', '！']
-    })
-
-    // Add completion to prompt
-    if (completion.choices && completion.choices[0].text) {
-      inputMessage.value += completion.choices[0].text
-    }
-  } catch (error) {
-    ElMessage.error('自动补全失败')
-    console.error('Tab completion error:', error)
-  }
+const openChooseModel = () => {
+  showModelModal.value = true 
 }
-
 // Load previous message from history
 const loadPreviousMessage = () => {
   if (chatMessages.value.length === 0) return
@@ -311,15 +243,6 @@ const handleEscape = () => {
   inputRef.value.focus()
 }
 
-// Theme change handler
-const handleThemeChange = (theme) => {
-  themeSettings.value.theme = theme
-}
-
-// Handle messages scroll events
-const handleMessagesScroll = (scrollData) => {
-  // Handle any scroll related logic if needed
-}
 
 async function handleInputEnter() {
   if (!inputMessage.value || composing.value) return
@@ -344,28 +267,6 @@ async function handleInputEnter() {
 const emptyConfirm = (data: string) => {
   inputMessage.value = data
   handleInputEnter()
-}
-
-// Export functionality
-const openExportDialog = () => {
-  if (chatMessages.value.length === 0) {
-    ElMessage.warning('没有对话可导出')
-    return
-  }
-  exportDialogVisible.value = true
-}
-
-const handleExportCopy = (result) => {
-  if (result.success) {
-    ElMessage.success('已复制到剪贴板')
-  } else {
-    ElMessage.error('复制失败，请手动选择文本复制')
-    console.error('复制失败:', result.error)
-  }
-}
-
-const handleExportDownload = (result) => {
-  ElMessage.success(`已导出对话为 ${result.format.toUpperCase()} 格式`)
 }
 
 // Expose methods to parent component

@@ -7,3 +7,5 @@ interface Window {
     _pendingRequests: Map<number, Function>;
   }
 }
+
+declare chrome: any;

@@ -12,7 +12,6 @@
         @saveHistory="saveHistory"
         @changeModel="onChangeMode"
         @updateSelectMode="selectMode = $event"
-        @openSettings="settingsDrawer = true"
         @updateTtsVoice="ttsvoice = $event"
       />
     </div>
@@ -24,112 +23,15 @@
       @navToHistory="navToHistory" 
       @reload="initLastInfo" 
     />
-    
-    <!-- 设置面板
-    <el-drawer
-      v-model="settingsDrawer"
-      title="会话设置"
-      direction="rtl"
-      size="320px"
-    >
-      <div class="settings-panel">
-        <div class="settings-section">
-          <div class="section-title">基础设置</div>
-          
-          <div class="setting-item">
-            <span class="setting-label">流式输出</span>
-            <el-switch v-model="commonSettings.stream" />
-          </div>
-          
-          <div class="setting-item">
-            <span class="setting-label">温度</span>
-            <div class="setting-control">
-              <el-slider 
-                v-model="commonSettings.temperature" 
-                :min="0" 
-                :max="2" 
-                :step="0.1" 
-                show-input
-              />
-            </div>
-          </div>
-          
-          <div class="setting-item">
-            <span class="setting-label">上下文限制</span>
-            <div class="setting-control">
-              <el-input-number 
-                v-model="commonSettings.limitContext" 
-                :min="1" 
-                :max="20" 
-                size="small" 
-              />
-            </div>
-          </div>
-
-          <div class="setting-item" v-if="selectMode.includes('dall-e')">
-            <span class="setting-label">图像尺寸</span>
-            <div class="setting-control">
-              <el-select v-model="commonSettings.dalleSize" size="small">
-                <el-option label="1024x1024" value="1024x1024" />
-                <el-option label="1024x1792" value="1024x1792" />
-                <el-option label="1792x1024" value="1792x1024" />
-              </el-select>
-            </div>
-          </div>
-
-          <div class="setting-item" v-if="selectMode.includes('dall-e')">
-            <span class="setting-label">图像风格</span>
-            <div class="setting-control">
-              <el-radio-group v-model="commonSettings.dalleStyle" size="small">
-                <el-radio-button label="vivid">生动</el-radio-button>
-                <el-radio-button label="natural">自然</el-radio-button>
-              </el-radio-group>
-            </div>
-          </div>
-        </div>
-        
-        <div class="settings-section">
-          <div class="section-title">系统提示词</div>
-          <el-input
-            v-model="commonSettings.prompt"
-            type="textarea"
-            :rows="4"
-            placeholder="可以设定AI的角色和行为规则..."
-          />
-        </div>
-      </div>
-    </el-drawer> -->
-    
-    <!-- Keyboard shortcut info modal -->
-    <el-dialog
-      v-model="keyboardHelpVisible"
-      title="键盘快捷键"
-      width="360px"
-      class="keyboard-help-dialog"
-    >
-      <div class="keyboard-shortcuts-list">
-        <div class="shortcut-item" v-for="shortcut in shortcuts" :key="shortcut.keys.join('-')">
-          <div class="shortcut-description">{{ shortcut.description }}</div>
-          <KeyboardShortcut :keys="shortcut.keys" />
-        </div>
-      </div>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="keyboardHelpVisible = false">关闭</el-button>
-        </span>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { v4 as uuidv4 } from 'uuid'
 import dayjs from 'dayjs'
+import { v4 as uuidv4 } from 'uuid'
 import Chatgpt from './chat/index.vue'
 import History from './history/index.vue'
-import KeyboardShortcut from './common/KeyboardShortcut.vue'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts.ts'
-import { Plus, Setting, Document, Microphone } from '@element-plus/icons-vue'
 
 
 const selectMode = useStorage('mode', 'gpt-4o')
@@ -139,30 +41,9 @@ const settingsDrawer = ref<boolean>(false) // 设置面板
 const sessionId = ref('') //  当前会话Id
 const currentContext = ref<any>([]) // 当前会话上下文
 const ttsvoice = ref('zh-CN-henan-YundengNeural')
-const keyboardHelpVisible = ref(false)
-
-// Define keyboard shortcuts
-const shortcuts = [
-  { keys: ['Ctrl', 'Shift', 'I'], description: '打开侧边栏' },
-  { keys: ['Ctrl', '/'], description: '显示快捷键帮助' },
-  { keys: ['Ctrl', 'N'], description: '新建对话' },
-  { keys: ['Ctrl', 'Enter'], description: '发送消息' },
-  { keys: ['Ctrl', 'H'], description: '显示历史记录' },
-  { keys: ['Ctrl', ','], description: '打开设置' },
-  { keys: ['Esc'], description: '关闭弹窗' },
-  { keys: ['Tab'], description: '自动补全' }
-]
 
 // Register keyboard shortcuts
 useKeyboardShortcuts([
-  {
-    key: '/',
-    ctrlKey: true,
-    handler: () => {
-      keyboardHelpVisible.value = true
-    },
-    description: '显示快捷键帮助'
-  },
   {
     key: 'n',
     ctrlKey: true,
@@ -183,14 +64,13 @@ useKeyboardShortcuts([
     key: ',',
     ctrlKey: true,
     handler: () => {
-      settingsDrawer.value = true
+      chrome?.runtime.openOptionsPage()
     },
     description: '打开设置'
   },
   {
     key: 'Escape',
     handler: () => {
-      keyboardHelpVisible.value = false
       historyDrawer.value = false
       settingsDrawer.value = false
     },

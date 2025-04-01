@@ -296,8 +296,9 @@ body {
   --el-text-color-regular: var(--app-text-secondary);
   --el-bg-color: var(--app-card-bg);
   --el-bg-color-overlay: var(--app-card-bg);
-  --el-popper-border-radius: var(--app-border-radius-md);
-  --el-border-radius-base: var(--app-border-radius-md);
+  --el-popper-border-radius: var(--app-border-radius-lg);
+  --el-border-radius-base: var(--app-border-radius-lg);
+  --el-messagebox-border-radius: var(--app-border-radius-lg);
 }
 
 /* Utility classes */

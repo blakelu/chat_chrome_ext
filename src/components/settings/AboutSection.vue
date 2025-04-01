@@ -45,13 +45,6 @@
       </div>
     </div>
     
-    <div class="github-info">
-      <a href="https://github.com/blakelu/chat_chrome_ext" target="_blank" class="github-link">
-        <el-icon><ep-link /></el-icon>
-        访问 GitHub 仓库
-      </a>
-    </div>
-    
     <p class="copyright">
       &copy; {{ new Date().getFullYear() }} CloseAI Team. 保留所有权利。
     </p>
@@ -64,7 +57,8 @@
 
 <style lang="less" scoped>
 .about-section {
-  max-width: 600px;
+  width: 600px;
+  margin: 0 auto;
   padding: 20px;
   display: flex;
   flex-direction: column;

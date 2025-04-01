@@ -6,7 +6,7 @@
     :modal="false"
     :close-on-click-modal="false"
     draggable
-    append-to-body
+    append-to="#closeAI-app"
     @open="handleOpen"
     @close="handleClose"
   >
@@ -85,8 +85,6 @@ const {
   loading,
   initialLoading,
   selectedText: chatSelectedText,
-  API_KEY,
-  API_URL,
   commonSettings,
   selectMode,
   initOpenAI,
@@ -118,7 +116,7 @@ const init = async () => {
   })
 }
 const handleOpen = async () => {
-  await init()
+  await initOpenAI()
   if (props.selectedText) {
     chatSelectedText.value = props.selectedText
     initialQuery()

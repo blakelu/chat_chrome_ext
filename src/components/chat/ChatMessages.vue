@@ -3,7 +3,6 @@
     class="closeAI-messages" 
     ref="messagesRef" 
     @scroll="handleScroll"
-    :data-smooth-scroll="themeSettings.smoothScrolling"
   >
     <template v-if="messages.length === 0">
       <slot name="empty"></slot>
@@ -45,12 +44,6 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
-  themeSettings: {
-    type: Object,
-    default: () => ({
-      smoothScrolling: true
-    })
-  }
 });
 
 const emit = defineEmits(['retry', 'scroll']);

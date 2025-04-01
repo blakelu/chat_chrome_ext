@@ -25,11 +25,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useStorage } from '@vueuse/core'
 import { ElMessage } from 'element-plus'
 // Import composable
-import { useChat } from '@/composables/useChat.ts'
 import ApiSettings from '@/components/settings/ApiSettings.vue'
 import ModelSettings from '@/components/settings/ModelSettings.vue'
 import UiSettings from '@/components/settings/UiSettings.vue'
@@ -40,10 +37,10 @@ import AboutSection from '@/components/settings/AboutSection.vue'
 const activeTab = ref('ApiSettings')
 const tabs = [
   { label: 'API配置', name: 'ApiSettings', component: ApiSettings },
-  { label: '模型配置', name: 'ModelSettings', component: ModelSettings },
-  { label: '界面设置', name: 'UiSettings', component: UiSettings },
+  // { label: '模型配置', name: 'ModelSettings', component: ModelSettings },
+  // { label: '界面设置', name: 'UiSettings', component: UiSettings },
   { label: '快捷键', name: 'ShortcutsSettings', component: ShortcutsSettings },
-  { label: '角色设置', name: 'RolePrompt', component: RolePrompt },
+  // { label: '角色设置', name: 'RolePrompt', component: RolePrompt },
   { label: '关于', name: 'AboutSection', component: AboutSection }
 ]
 const activeTitle = computed(() => {
@@ -52,52 +49,14 @@ const activeTitle = computed(() => {
 const activeComponent = computed(() => {
   return tabs.find((tab) => tab.name === unref(activeTab))?.component
 })
-// UI theme settings
-const themeSettings = useStorage(
-  'UI_SETTINGS',
-  {
-    theme: 'light',
-    fontSize: 'medium',
-    density: 'comfortable',
-    smoothScrolling: true,
-    animations: true,
-    highContrast: false,
-    reducedMotion: false
-  },
-  localStorage,
-  { mergeDefaults: true }
-)
-
-const setTheme = (theme: string) => {
-  themeSettings.value.theme = theme
-  document.documentElement.setAttribute('data-theme', theme)
-  ElMessage.success(`已切换至${theme === 'light' ? '浅色' : theme === 'dark' ? '深色' : '自动'}模式`)
-}
-const { API_URL, API_KEY } = useChat()
-// Apply theme on component mount
-onMounted(() => {
-  const theme = themeSettings.value.theme
-  if (theme === 'auto') {
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light')
-  } else {
-    document.documentElement.setAttribute('data-theme', theme)
-  }
-})
-
-const onApiConfirm = (data: any) => {
-  API_URL.value = data.API_URL
-  API_KEY.value = data.API_KEY
-  chrome.storage.local.set({ GPT_API_KEY: data.API_KEY, GPT_API_URL: data.API_URL })
-}
 </script>
 
 <style lang="less" scoped>
 .options-container {
   display: flex;
+  justify-content: center;
   height: 100vh;
   overflow-y: hidden;
-  padding: 0 100px;
   background-color: #ffffff;
 }
 .tabs {
@@ -143,9 +102,8 @@ const onApiConfirm = (data: any) => {
   }
 }
 .options-content {
-  flex: 1;
+  width: 924px;
   padding: 24px;
-  width: 100%;
   overflow-y: auto;
 }
 </style>
