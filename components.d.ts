@@ -61,7 +61,7 @@ declare module 'vue' {
     History: typeof import('./src/components/history/index.vue')['default']
     Message: typeof import('./src/components/chat/message.vue')['default']
     MessageActions: typeof import('./src/components/chat/MessageActions.vue')['default']
-    ModelList: typeof import('./src/components/settings/ModelList.vue')['default']
+    ModelList: typeof import('./src/components/settings/modelList.vue')['default']
     ModelSettings: typeof import('./src/components/settings/ModelSettings.vue')['default']
     NetworkStatus: typeof import('./src/components/common/NetworkStatus.vue')['default']
     Options: typeof import('./src/components/options/options.vue')['default']
