@@ -1,5 +1,6 @@
 {
   "apiUrl": "https://burn.hair",
   "apiKey":"sk-jc5c3OjT8TTKlrze3cE740Ac52C244A8B4C2530035617c23",
-  "remark": "测试专用，额度共享。如无法使用，请自行向靠谱买家购买"
+  "remark": "测试专用，额度共享。如无法使用，请自行向靠谱买家购买",
+  "modelList": ["gpt-4o-2024-11-20"]
 }

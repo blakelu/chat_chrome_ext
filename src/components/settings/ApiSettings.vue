@@ -3,7 +3,7 @@
     <div ref="apiListRef" class="api-list">
       <div v-for="(item, index) in apiList" :key="index" class="api-card" :class="{ 'is-active': item.selected }">
         <div class="card-header" @click="handleClick(item, index)">
-          <div class="selection-indicator">
+          <div class="selection-indicator truncate">
             <div class="radio-btn" v-if="item.selected">
               <div class="radio-inner"></div>
             </div>
@@ -87,12 +87,12 @@
           </div>
 
           <div class="tags-wrapper">
-            <div v-if="apiList[currentIndex].modelList.length === 0" class="empty-models">
+            <div v-if="!(apiList[currentIndex]?.modelList?.length > 0)" class="empty-models">
               <el-icon><ep-warning /></el-icon>
               <span>尚未添加任何模型</span>
             </div>
 
-            <div class="tag-item" v-for="(model, index) in apiList[currentIndex].modelList" :key="index">
+            <div class="tag-item" v-for="(model, index) in apiList[currentIndex]?.modelList || []" :key="index">
               <span class="tag-text">{{ model }}</span>
               <el-button class="tag-close" circle plain size="small" @click="deleteModel(index)">
                 <el-icon><ep-close /></el-icon>
@@ -121,8 +121,9 @@
 <script setup lang="ts">
 import { useDraggable } from 'vue-draggable-plus'
 import { useAppStorage } from '@/composables/useAppStorage.ts'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElLoading, ElMessage, ElMessageBox } from 'element-plus'
 import ModelList from './ModelList.vue'
+import { getTestConfig } from '@/api/index.ts'
 
 const emit = defineEmits(['confirm'])
 const apiListRef = ref()
@@ -170,18 +171,28 @@ useDraggable(apiListRef, apiList, {
 })
 
 const handleGetTestConfig = () => {
-  getTestConfig({}).then((res: any) => {
-    console.log(res)
-    if (res.apiUrl && res.apiKey) {
-      const newItem = {
-        API_URL: res.apiUrl,
-        API_KEY: res.apiKey,
-        remark: res.remark,
-        selected: false
-      }
-      apiList.value.push(newItem)
-    }
+  const loading = ElLoading.service({
+    lock: true,
+    text: 'Loading',
+    background: 'rgba(0, 0, 0, 0.7)'
   })
+  getTestConfig({})
+    .then((res: any) => {
+      console.log(res)
+      if (res.apiUrl && res.apiKey) {
+        const newItem = {
+          apiUrl: res.apiUrl,
+          apiKey: res.apiKey,
+          remark: res.remark,
+          modelList: res.modelList || [],
+          selected: false
+        }
+        apiList.value.push(newItem)
+      }
+    })
+    .finally(() => {
+      loading.close()
+    })
 }
 const handleAdd = () => {
   const newItem = {
