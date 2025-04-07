@@ -1,15 +1,15 @@
 <template>
   <div ref="menuRef" class="floating-menu" :style="menuStyle">
     <div class="menu-item" @click="onAsk('explain')">
-      <el-icon><ep-chat-dot-square /></el-icon>
+      <img src="@/assets/icons/speak.png" class="menu-icon" />
       解释
     </div>
     <div class="menu-item" @click="onAsk('translate')">
-      <el-icon><ep-connection /></el-icon>
+      <img src="@/assets/icons/translate.png" class="menu-icon" />
       翻译
     </div>
     <div class="menu-item" @click="onAsk('polish')">
-      <el-icon><ep-magic-stick /></el-icon>
+      <img src="@/assets/icons/magic.png" class="menu-icon" />
       润色
     </div>
   </div>
@@ -72,7 +72,8 @@ onUnmounted(() => {
 .floating-menu {
   position: absolute;
   background: white;
-  width: 240px;
+  // width: 240px;
+  padding: 0 6px;
   border-radius: 8px;
   box-shadow:
     0 6px 16px rgba(0, 0, 0, 0.12),
@@ -89,14 +90,19 @@ onUnmounted(() => {
 }
 
 .menu-item {
+  min-width: 62px;
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  padding: 6px;
   font-size: 13px;
   cursor: pointer;
   transition: background-color 0.2s;
   color: #333333;
+  .menu-icon {
+    width: 16px;
+    height: 16px;
+  }
 }
 
 .menu-item:hover {
@@ -108,7 +114,7 @@ onUnmounted(() => {
   cursor: not-allowed;
 }
 
-.menu-item .el-icon {
+.menu-item .closeai-icon {
   // color: #3b82f6;
   font-size: 16px;
 }

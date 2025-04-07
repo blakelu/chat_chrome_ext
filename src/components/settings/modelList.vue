@@ -52,7 +52,7 @@ const handleOpen = async () => {
   loading.value = true
   const res: any = await openai.models.list()
   loading.value = false
-  if (res.body.success) {
+  if (res.data && res.data.length > 0) {
     modelList.value = res.data.sort((a, b) => a.id.localeCompare(b.id))
     if (props.modelInfo.modelList.length > 0) {
       props.modelInfo.modelList.forEach((model) => {

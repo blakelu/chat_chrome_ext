@@ -1,7 +1,7 @@
 <template>
   <div class="empty">
     <div class="empty-animation">
-      <img src="@/assets/icons/ROBOT.png" />
+      <img src="@/assets/icons/icon.png" />
     </div>
     <div class="empty-title">今天我能为你做什么？</div>
     <div class="question-list">
@@ -48,7 +48,6 @@ const list = ref([
 
   .empty-animation {
     margin-bottom: 28px;
-    background: linear-gradient(145deg, #f1f7ff, #e6f5fd);
     border-radius: 50%;
     width: 110px;
     height: 110px;
@@ -56,7 +55,6 @@ const list = ref([
     align-items: center;
     flex-shrink: 0;
     justify-content: center;
-    box-shadow: 0 10px 25px -5px rgba(0, 122, 255, 0.12);
     transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1.0);
 
     &:hover {

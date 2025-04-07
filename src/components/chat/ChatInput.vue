@@ -25,7 +25,7 @@
         type="textarea"
         ref="inputRef"
         :rows="4"
-        placeholder="请输入您的问题"
+        placeholder="请输入您的问题..."
         @keydown.ctrl.enter="$emit('send')"
         @keydown.meta.enter="$emit('send')"
         @keydown.up.prevent="$emit('load-previous')"
@@ -114,8 +114,8 @@ defineExpose({
   .selected-text {
     border-radius: 12px 12px 0 0;
     padding: 10px 12px;
-    font-size: 14px;
-    color: #555;
+    font-size: 12px;
+    color: #666666;
     position: relative;
     display: flex;
     justify-content: space-between;
@@ -227,8 +227,8 @@ defineExpose({
     }
   }
 
-  .el-textarea {
-    :deep(.el-textarea__inner) {
+  .closeai-textarea {
+    :deep(.closeai-textarea__inner) {
       padding: 14px 48px 14px 16px;
       resize: none;
       font-size: 15px;

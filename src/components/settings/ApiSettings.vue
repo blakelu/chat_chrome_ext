@@ -11,13 +11,13 @@
           </div>
 
           <div class="card-actions">
-            <el-tooltip content="删除" placement="top" v-if="apiList.length > 1">
+            <el-tooltip content="删除" placement="top" append-to="#closeAI-app" v-if="apiList.length > 1">
               <el-button class="action-btn delete-btn" @click.stop="handleDelete(item, index)">
                 <el-icon><ep-delete /></el-icon>
               </el-button>
             </el-tooltip>
 
-            <el-tooltip content="拖动排序" placement="top">
+            <el-tooltip content="拖动排序" placement="top" append-to="#closeAI-app">
               <div class="drag-handle">
                 <el-icon><ep-rank /></el-icon>
               </div>
@@ -119,7 +119,7 @@
 import { useDraggable } from 'vue-draggable-plus'
 import { useAppStorage } from '@/composables/useAppStorage.ts'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import ModelList from './modelList.vue'
+import ModelList from './ModelList.vue'
 
 const emit = defineEmits(['confirm'])
 const apiListRef = ref()
@@ -258,7 +258,7 @@ const handleInputConfirm = () => {
 .api-settings-container {
   display: flex;
   gap: 32px;
-  padding: 4px;
+  padding: 8px;
   margin-top: 8px;
   background-color: #f9fafb;
   border-radius: 16px;
@@ -454,15 +454,14 @@ const handleInputConfirm = () => {
       transform: translateY(-2px);
     }
 
-    .el-icon {
+    .closeai-icon {
       font-size: 18px;
     }
   }
 }
 
 .card-body-container {
-  width: 600px;
-  flex-shrink: 0;
+  flex: 1 0 600px;
   display: flex;
   flex-direction: column;
   background-color: #fff;
@@ -518,7 +517,7 @@ const handleInputConfirm = () => {
     margin-left: 2px;
   }
 
-  :deep(.el-input__wrapper) {
+  :deep(.closeai-input__wrapper) {
     box-shadow: 0 0 0 1px #e2e8f0;
     border-radius: 8px;
     transition: all 0.2s ease;
@@ -532,7 +531,7 @@ const handleInputConfirm = () => {
       box-shadow: 0 0 0 2px rgba(79, 141, 245, 0.3);
     }
 
-    .el-input__prefix-inner {
+    .closeai-input__prefix-inner {
       color: #64748b;
       margin-right: 8px;
     }
@@ -571,7 +570,7 @@ const handleInputConfirm = () => {
         }
       }
 
-      .el-icon {
+      .closeai-icon {
         margin-right: 4px;
       }
     }
@@ -597,7 +596,7 @@ const handleInputConfirm = () => {
       color: #94a3b8;
       gap: 8px;
 
-      .el-icon {
+      .closeai-icon {
         font-size: 24px;
       }
     }
@@ -644,7 +643,7 @@ const handleInputConfirm = () => {
       min-width: 200px;
 
       .tag-input {
-        :deep(.el-input__wrapper) {
+        :deep(.closeai-input__wrapper) {
           box-shadow: 0 0 0 1px #4f8df5;
         }
       }

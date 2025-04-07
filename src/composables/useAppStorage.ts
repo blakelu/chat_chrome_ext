@@ -29,7 +29,7 @@ export function useAppStorage<T>(
     let value: string | null = null;
     if (storage === 'local' && typeof chrome !== 'undefined' && chrome.storage) {
       // Use Chrome storage API if available
-      chrome.storage.local.get([key], (result) => {
+      chrome.storage.local.get([key], (result: any) => {
         if (result[key]) {
           try {
             storedValue.value = deserialize(result[key]);
@@ -40,11 +40,11 @@ export function useAppStorage<T>(
           // If no value is found, set the initial value
           const serialized = serialize(initialValue);
           chrome.storage.local.set({ [key]: serialized }, () => {
-            storedValue.value = initialValue;
+            storedValue.value = deserialize(serialized);
           });
         }
       });
-      chrome.storage.local.onChanged.addListener((changes, namespace) => {
+      chrome.storage.local.onChanged.addListener((changes: any) => {
         if (changes[key] && changes[key].newValue) {
           try {
             storedValue.value = deserialize(changes[key].newValue);

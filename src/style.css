@@ -55,14 +55,14 @@
   --app-selection-bg: #1e3a8a;
   
   /* Element Plus overrides for dark theme */
-  --el-color-primary: var(--app-accent-color);
-  --el-border-color: var(--app-border-color);
-  --el-text-color-primary: var(--app-text-color);
-  --el-text-color-regular: var(--app-text-secondary);
-  --el-bg-color: var(--app-card-bg);
-  --el-bg-color-overlay: var(--app-card-bg);
-  --el-fill-color-blank: var(--app-bg-color);
-  --el-border-radius-base: 12px;
+  --closeai-color-primary: var(--app-accent-color);
+  --closeai-border-color: var(--app-border-color);
+  --closeai-text-color-primary: var(--app-text-color);
+  --closeai-text-color-regular: var(--app-text-secondary);
+  --closeai-bg-color: var(--app-card-bg);
+  --closeai-bg-color-overlay: var(--app-card-bg);
+  --closeai-fill-color-blank: var(--app-bg-color);
+  --closeai-border-radius-base: 12px;
   
   /* CodeMirror styles for dark theme */
   --cm-background: #1f2937;
@@ -269,17 +269,17 @@ body {
 } */
 
 /* Element Plus theme overrides */
-.el-button {
+.closeai-button {
   border-radius: var(--app-border-radius-md);
 }
 
-.el-input__wrapper,
-.el-textarea__inner {
+.closeai-input__wrapper,
+.closeai-textarea__inner {
   border-radius: var(--app-border-radius-md) !important;
 }
-.el-dialog {
+.closeai-dialog {
   border-radius: var(--app-border-radius-lg);
-  .el-dialog__title {
+  .closeai-dialog__title {
     color: #333333;
     font-weight: 500;
   }
@@ -291,19 +291,19 @@ body {
 
 /* Element Plus theme overrides */
 :root {
-  --el-color-primary: var(--app-accent-color);
-  --el-color-primary-light-3: var(--app-accent-hover);
-  --el-color-success: var(--app-success);
-  --el-color-warning: var(--app-warning);
-  --el-color-danger: var(--app-danger);
-  --el-border-color: var(--app-border-color);
-  --el-text-color-primary: var(--app-text-color);
-  --el-text-color-regular: var(--app-text-secondary);
-  --el-bg-color: var(--app-card-bg);
-  --el-bg-color-overlay: var(--app-card-bg);
-  --el-popper-border-radius: var(--app-border-radius-lg);
-  --el-border-radius-base: var(--app-border-radius-lg);
-  --el-messagebox-border-radius: var(--app-border-radius-lg);
+  --closeai-color-primary: var(--app-accent-color);
+  --closeai-color-primary-light-3: var(--app-accent-hover);
+  --closeai-color-success: var(--app-success);
+  --closeai-color-warning: var(--app-warning);
+  --closeai-color-danger: var(--app-danger);
+  --closeai-border-color: var(--app-border-color);
+  --closeai-text-color-primary: var(--app-text-color);
+  --closeai-text-color-regular: var(--app-text-secondary);
+  --closeai-bg-color: var(--app-card-bg);
+  --closeai-bg-color-overlay: var(--app-card-bg);
+  --closeai-popper-border-radius: var(--app-border-radius-lg);
+  --closeai-border-radius-base: var(--app-border-radius-lg);
+  --closeai-messagebox-border-radius: var(--app-border-radius-lg);
 }
 
 /* Utility classes */

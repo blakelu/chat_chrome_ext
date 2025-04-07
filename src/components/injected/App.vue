@@ -1,9 +1,11 @@
 <template>
-  <div class="crx-app-container">
-    <FloatingMenu v-if="showMenu && selectedText" :position="selectionPosition" @close="closeMenu" @askAI="handleAskAI" />
+  <el-config-provider namespace="closeai">
+    <div class="crx-app-container">
+      <FloatingMenu v-if="showMenu && selectedText" :position="selectionPosition" @close="closeMenu" @askAI="handleAskAI" />
 
-    <SimpleAIChat v-model:isDialogVisible="isDialogVisible" :selectedText="selectedText" :askType="askType" @close="closeChat" />
-  </div>
+      <SimpleAIChat v-model:isDialogVisible="isDialogVisible" :selectedText="selectedText" :askType="askType" @close="closeChat" />
+    </div>
+  </el-config-provider>
 </template>
 
 <script lang="ts" setup>
@@ -92,6 +94,7 @@ onUnmounted(() => {
   z-index: 9999999;
   pointer-events: none;
   line-height: 1.5;
+  box-sizing: border-box;
 }
 
 .crx-app-container * {

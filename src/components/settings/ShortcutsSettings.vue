@@ -2,6 +2,40 @@
   <div class="shortcuts-settings">
     <div class="shortcuts-table">
       <div class="shortcuts-row">
+        <div class="shortcuts-action">流式输出</div>
+        <div class="shortcuts-keys">
+          <el-switch v-model="commonSettings.stream" />
+        </div>
+      </div>
+      <div class="shortcuts-row">
+        <div class="flex items-center gap-1">
+          <div class="shortcuts-action">模型温度</div>
+          <el-tooltip
+            effect="dark"
+            content="模型生成文本的随机程度。值越大， 回复内容越有多样性、创造性、随机性；设为0根据事实回答。日常聊天建议设置为0.7"
+            placement="top"
+          >
+            <el-icon size="16"><ep-QuestionFilled /></el-icon>
+          </el-tooltip>
+        </div>
+        <div class="shortcuts-keys">
+          <el-slider v-model="commonSettings.temperature" :min="0" :max="1" :step="0.1" />
+        </div>
+      </div>
+      <div class="shortcuts-row">
+        <div class="flex items-center gap-1">
+          <div class="shortcuts-action">上下文数</div>
+          <el-tooltip effect="dark" content="要保留在上下文中的消息数量，上下文越多，消耗的token越多。普通聊天建议 5-10" placement="top">
+            <el-icon size="16"><ep-QuestionFilled /></el-icon>
+          </el-tooltip>
+        </div>
+        <div class="shortcuts-keys">
+          <el-slider v-model="commonSettings.limitContext" :min="1" :max="10" :step="1" />
+        </div>
+      </div>
+    </div>
+    <div class="shortcuts-table">
+      <div class="shortcuts-row">
         <div class="shortcuts-action">打开侧边栏</div>
         <div class="shortcuts-keys">
           <span class="key">Ctrl</span>
@@ -47,15 +81,20 @@
 </template>
 
 <script setup lang="ts">
-// No script content needed for this component
+import { useAppStorage } from '@/composables/useAppStorage.ts'
+
+const settings = ref({
+  temperature: 0.7,
+  limitContext: 6,
+  stream: true,
+  prompt: ''
+})
+const commonSettings = useAppStorage('COMMON_SETTINGS', settings.value)
 </script>
 
 <style lang="less" scoped>
 .shortcuts-settings {
-  padding: 10px 16px 16px;
   margin-top: 8px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 
   .section-title {
     font-size: 18px;
@@ -65,47 +104,51 @@
     padding-bottom: 8px;
     border-bottom: 1px solid #e2e8f0;
   }
+}
+.shortcuts-table {
+  padding: 0 16px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 
-  .shortcuts-table {
-    margin-bottom: 24px;
+  .shortcuts-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 8px;
+    border-bottom: 1px solid #f1f5f9;
 
-    .shortcuts-row {
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .shortcuts-action {
+      font-size: 15px;
+      color: #334155;
+    }
+
+    .shortcuts-keys {
+      gap: 6px;
+      width: 200px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding: 14px 8px;
-      border-bottom: 1px solid #f1f5f9;
+      justify-content: flex-end;
 
-      &:last-child {
-        border-bottom: none;
-      }
-
-      .shortcuts-action {
-        font-size: 15px;
-        color: #334155;
-      }
-
-      .shortcuts-keys {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-
-        .key {
-          background-color: #f1f5f9;
-          border: 1px solid #e2e8f0;
-          border-radius: 4px;
-          padding: 3px 8px;
-          font-size: 13px;
-          font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-          color: #475569;
-          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-        }
+      .key {
+        background-color: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-radius: 4px;
+        padding: 3px 8px;
+        font-size: 13px;
+        font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+        color: #475569;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
       }
     }
   }
+}
 
-  .shortcuts-note {
-    margin-top: 24px;
-  }
+.shortcuts-note {
+  margin-top: 24px;
 }
 </style>

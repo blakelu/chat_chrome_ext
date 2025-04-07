@@ -3,12 +3,12 @@
     <div class="tools-left">
       <div class="choose-model" @click="$emit('show-choose-model')">
         <span class="model-name">{{ model }}</span>
-        <el-icon class="el-icon--right"><ep-arrow-down /></el-icon>
+        <img src="@/assets/icons/down.svg" class="w-[16px]" alt="选择模型" />
       </div>
 
-      <el-tooltip effect="dark" content="上传图片" placement="top">
+      <el-tooltip effect="dark" content="上传图片" placement="top" append-to="#closeAI-app">
         <el-button v-if="picCount < 7" class="tool-btn" text @click="$emit('upload-image')">
-          <img src="@/assets/icons/upload.png" class="w-[16px]" alt="上传图片" />
+          <img src="@/assets/icons/upload.svg" class="w-[16px]" alt="上传图片" />
         </el-button>
       </el-tooltip>
     </div>
@@ -19,17 +19,17 @@
           <img src="@/assets/icons/setting.svg" class="w-[16px]" alt="设置" />
         </el-button>
       </el-tooltip>
-      <el-tooltip effect="dark" content="清空对话" placement="top">
+      <el-tooltip effect="dark" content="清空对话" placement="top" append-to="#closeAI-app">
         <el-button class="tool-btn" text @click="$emit('clear-chat')">
           <img src="@/assets/icons/clear.svg" class="w-[16px]" alt="清空对话" />
         </el-button>
       </el-tooltip>
-      <el-tooltip effect="dark" content="历史记录" placement="top">
+      <el-tooltip effect="dark" content="历史记录" placement="top" append-to="#closeAI-app">
         <el-button class="tool-btn" text @click="$emit('show-history')">
           <img src="@/assets/icons/history.svg" class="w-[16px]" alt="历史记录" />
         </el-button>
       </el-tooltip>
-      <el-tooltip effect="dark" content="新对话" placement="top">
+      <el-tooltip effect="dark" content="新对话" placement="top" append-to="#closeAI-app">
         <el-button class="tool-btn new-chat" text @click="$emit('new-chat')">
           <img src="@/assets/icons/newChat.png" class="w-[16px]" alt="新对话" />
         </el-button>
@@ -75,7 +75,7 @@ const emit = defineEmits([
   border-radius: 12px;
   margin-bottom: 4px;
 
-  .el-button + .el-button {
+  .closeai-button + .closeai-button {
     margin-left: 0;
   }
 
@@ -84,7 +84,7 @@ const emit = defineEmits([
     display: flex;
     align-items: center;
     gap: 4px;
-    .el-dropdown {
+    .closeai-dropdown {
       line-height: 1.2;
     }
   }
@@ -106,10 +106,10 @@ const emit = defineEmits([
     }
 
     .model-name {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 500;
       letter-spacing: -0.01em;
-      max-width: 120px;
+      max-width: 180px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -151,10 +151,10 @@ const emit = defineEmits([
 .setting-group {
   margin-bottom: 10px;
 
-  :deep(.el-radio) {
+  :deep(.closeai-radio) {
     margin-right: 12px;
 
-    .el-radio__label {
+    .closeai-radio__label {
       font-size: 13px;
     }
   }
@@ -163,16 +163,16 @@ const emit = defineEmits([
 .setting-slider {
   width: 200px;
 
-  :deep(.el-slider__runway) {
+  :deep(.closeai-slider__runway) {
     height: 4px;
   }
 
-  :deep(.el-slider__bar) {
+  :deep(.closeai-slider__bar) {
     height: 4px;
     background-color: #007aff;
   }
 
-  :deep(.el-slider__button) {
+  :deep(.closeai-slider__button) {
     width: 16px;
     height: 16px;
     border: 2px solid #007aff;

@@ -1,8 +1,11 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path, { resolve } from 'path'
+import tailwindcss from 'tailwindcss'
+import autoprefixer from 'autoprefixer'
 import crx from 'vite-plugin-crx-mv3'
 import { fileURLToPath, URL } from 'node:url'
+import prefixer from 'postcss-prefix-selector'
 // 按需引入
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
@@ -20,7 +23,9 @@ export const commonConfig = {
     AutoImport({
       imports: ['vue', 'vue-router', '@vueuse/core'],
       dts: true,
-      resolvers: [ElementPlusResolver()]
+      resolvers: [ElementPlusResolver({
+        importStyle: 'sass'
+      })]
     }),
     Components({
       resolvers: [
@@ -32,7 +37,9 @@ export const commonConfig = {
           enabledCollections: ['ep']
         }),
         // 自动导入 Element Plus 组件
-        ElementPlusResolver()
+        ElementPlusResolver({
+          importStyle: 'sass'
+        })
       ]
     }),
     // Icons图标自动下载
@@ -53,6 +60,29 @@ export default defineConfig(({ mode }) => {
       }
     },
     ...commonConfig,
+    css: {
+      preprocessorOptions: {
+        scss: {
+          additionalData: `@use "./src/styles/element/index.scss" as *;`,
+        },
+      },
+      // postcss: {
+      //   plugins: [
+      //     tailwindcss, 
+      //     autoprefixer,
+      //     prefixer({
+      //       prefix: '#closeAI-app',
+      //       exclude: ['body', 'html', '#closeAI-app'],
+      //       transform: function (prefix, selector, prefixedSelector) {
+      //         if (selector === ':root') {
+      //           return '#closeAI-app'
+      //         }
+      //         return selector
+      //       }
+      //     })
+      //   ]
+      // },
+    },
     optimizeDeps: {
       include: ['markdown-it', '@element-plus/icons-vue', 'dayjs']
     },
@@ -88,6 +118,7 @@ export default defineConfig(({ mode }) => {
             }
           }
         }
+        // cssCodeSplit: true,
       }
     }
   }

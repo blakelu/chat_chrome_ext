@@ -5,22 +5,22 @@
 :root {
   --app-border-radius-md: 6px;
   --app-border-radius-lg: 12px;
-  --el-popper-border-radius: var(--app-border-radius-lg);
-  --el-border-radius-base: var(--app-border-radius-md);
-  --el-messagebox-border-radius: var(--app-border-radius-lg);
+  --closeai-popper-border-radius: var(--app-border-radius-lg);
+  --closeai-border-radius-base: var(--app-border-radius-md);
+  --closeai-messagebox-border-radius: var(--app-border-radius-lg);
 }
 
-.el-dialog {
+.closeai-dialog {
   border-radius: var(--app-border-radius-lg);
-  .el-dialog__title {
+  .closeai-dialog__title {
     color: #333333;
     font-weight: 500;
   }
 
 }
-.el-message-box {
+.closeai-message-box {
   border-radius: var(--app-border-radius-lg);
-  .el-message-box__title {
+  .closeai-message-box__title {
     color: #333333;
     font-weight: 500;
   }

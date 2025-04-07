@@ -1,16 +1,23 @@
 {
-  "id": "4566987",
-  "name": "chat",
-  "font_family": "font_family",
+  "id": "",
+  "name": "",
+  "font_family": "iconfont",
   "css_prefix_text": "icon-",
   "description": "",
   "glyphs": [
     {
-      "icon_id": "40534404",
+      "icon_id": "27514966",
       "name": "copy_code",
       "font_class": "copy_code",
-      "unicode": "e603",
-      "unicode_decimal": 58883
+      "unicode": "e800",
+      "unicode_decimal": 59392
+    },
+    {
+      "icon_id": "29849763",
+      "name": "复制成功",
+      "font_class": "fuzhichenggong",
+      "unicode": "e613",
+      "unicode_decimal": 58899
     }
   ]
 }

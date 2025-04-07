@@ -34,7 +34,7 @@
         <div v-if="historyInfoList.length === 0" class="empty-history">
           <el-empty description="暂无历史记录" :image-size="120">
             <template #image>
-              <img src="@/assets/icons/ROBOT.png" class="empty-icon" />
+              <img src="@/assets/icons/icon.png" class="empty-icon" />
             </template>
             <el-button type="primary" @click="createNewChat">开始新对话</el-button>
           </el-empty>
@@ -108,7 +108,8 @@ const confirmDelete = async (index, item) => {
     await ElMessageBox.confirm('确定要删除这条历史记录吗？', '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
-      type: 'warning'
+      type: 'warning',
+      // appendTo: '#closeAI-app'
     })
     removeItem(index, item)
   } catch (e) {
@@ -128,6 +129,7 @@ const clearAllHistory = async () => {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning',
+      // appendTo: '#closeAI-app',
       confirmButtonClass: 'el-button--danger'
     })
 
@@ -147,16 +149,16 @@ const createNewChat = () => {
 
 <style lang="less" scoped>
 .history-drawer {
-  :deep(.el-drawer__header) {
+  :deep(.closeai-drawer__header) {
     margin-bottom: 0;
     padding-bottom: 10px;
 
-    .el-drawer__close {
+    .closeai-drawer__close {
       color: #64748b;
     }
   }
 
-  :deep(.el-drawer__body) {
+  :deep(.closeai-drawer__body) {
     padding: 0;
     overflow: hidden;
   }
@@ -283,11 +285,15 @@ const createNewChat = () => {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    :deep(.closeai-empty__image) {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
     .empty-icon {
       width: 80px;
       height: 80px;
-      opacity: 0.7;
     }
   }
 }

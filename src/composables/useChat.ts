@@ -6,7 +6,7 @@ import { ElMessage } from 'element-plus'
 
 // Import assets
 import USER_AVATAR from '@/assets/icons/user.png'
-import ASSISTANT_AVATAR from '@/assets/icons/ROBOT.png'
+import ASSISTANT_AVATAR from '@/assets/icons/ai.png'
 
 export function useChat() {
   // Interfaces
@@ -38,19 +38,16 @@ export function useChat() {
   const settings = ref({
     temperature: 0.7,
     limitContext: 6,
-    quality: 'standard',
-    dalleSize: '1024x1024',
-    dalleStyle: 'vivid',
     stream: true,
     prompt: ''
   })
   const commonSettings = useAppStorage('COMMON_SETTINGS', settings.value)
 
-  watch(apiInfo, (newValue) => {
-    if (newValue.apiKey && newValue.apiUrl) {
-      initOpenAI()
-    }
-  })
+  // watch(apiInfo, (newValue, oldValue) => {
+  //   if (newValue.apiKey !== oldValue.apiKey || newValue.apiUrl !== oldValue.apiUrl) {
+  //     initOpenAI()
+  //   }
+  // })
   // OpenAI client
   let openai: any = null
 
@@ -176,7 +173,7 @@ export function useChat() {
       model: selectMode.value,
       messages: customPrompt,
       temperature: commonSettings.value.temperature,
-      stream: commonSettings.value.stream
+      stream: commonSettings.value.stream,
     })
 
     if (commonSettings.value.stream) {

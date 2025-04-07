@@ -197,12 +197,12 @@
   
   <style lang="less" scoped>
   .prompt-drawer {
-    :deep(.el-drawer__header) {
+    :deep(.closeai-drawer__header) {
       margin-bottom: 0;
       padding: 0;
     }
     
-    :deep(.el-drawer__body) {
+    :deep(.closeai-drawer__body) {
       padding: 0;
     }
     
@@ -280,7 +280,7 @@
       flex: 1;
       height: calc(100% - 80px);
       
-      :deep(.el-textarea__inner) {
+      :deep(.closeai-textarea__inner) {
         height: 100%;
         font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
         font-size: 14px;

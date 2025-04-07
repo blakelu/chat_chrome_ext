@@ -13,7 +13,7 @@
               <div v-html="md.render(msg.content.quote || '')" class="quote-content"></div>
             </div>
             <div class="share-message" :class="{ 'is-self': msg.role === 'user' }">
-              <div class="share-avatar" :class="{ 'avatar-left': msg.role === 'user', 'avatar-right': isAssistant(msg) }">
+              <div class="share-avatar" :class="{ 'avatar-left': msg.role === 'user' }">
                 <img :src="msg.avatar" />
               </div>
               <div class="share-content" :class="{ 'content-assistant': isAssistant(msg) }">
@@ -151,18 +151,18 @@ onMounted(() => {
 
 <style lang="less" scoped>
 .share-dialog {
-  :deep(.el-dialog__header) {
+  :deep(.closeai-dialog__header) {
     padding: 16px;
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 
-    .el-dialog__title {
+    .closeai-dialog__title {
       font-weight: 500;
       font-size: 16px;
       letter-spacing: -0.01em;
     }
   }
 
-  :deep(.el-dialog__body) {
+  :deep(.closeai-dialog__body) {
     padding: 16px;
   }
 }
@@ -260,10 +260,6 @@ onMounted(() => {
   margin-left: 6px;
 }
 
-.avatar-right {
-  margin-right: 6px;
-}
-
 .share-content {
   font-size: 14px;
   line-height: 1.5;
@@ -272,7 +268,7 @@ onMounted(() => {
   background-color: #f1f3f5;
   padding: 4px 8px;
   border-radius: 10px;
-  max-width: 85%;
+  // max-width: 85%;
   word-wrap: break-word;
   overflow-x: visible;
 
@@ -351,7 +347,7 @@ onMounted(() => {
   gap: 16px;
   margin-top: 16px;
 
-  .el-button {
+  .closeai-button {
     border-radius: 12px;
     padding: 10px 24px;
     font-size: 15px;

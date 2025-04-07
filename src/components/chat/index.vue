@@ -1,10 +1,5 @@
 <template>
-  <ChatMessages
-    :messages="chatMessages"
-    :loading="loading"
-    @retry="retryMessage"
-    ref="messagesRef"
-  >
+  <ChatMessages :messages="chatMessages" :loading="loading" @retry="retryMessage" ref="messagesRef">
     <template #empty>
       <empty @confirm="emptyConfirm" />
     </template>
@@ -41,12 +36,9 @@
   <ChooseModel v-model:show-modal="showModelModal" @select-model="handleChooseModel" />
 
   <RolePrompt v-model:show="promptVisible" />
-
 </template>
 
 <script lang="ts" setup>
-import { ElMessage } from 'element-plus'
-
 // Import composable
 import { useChat } from '@/composables/useChat.ts'
 
@@ -100,16 +92,38 @@ const showModelModal = ref(false)
 const inputRef = ref()
 const messagesRef = ref()
 
-// Lifecycle hooks
-onMounted(async () => {
-  const { apiKey, apiUrl } = unref(apiInfo)
-  if (!apiKey || !apiUrl) {
-    openOptionsPage()
-    return
+// Open the extension's options page
+const openOptionsPage = () => {
+  if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.openOptionsPage) {
+    chrome.runtime.openOptionsPage()
   }
-  initChat(props.context)
-  initOpenAI()
+}
 
+// Initialize with a loading state
+const apiCheckCompleted = ref(false)
+
+// Watch for API info changes
+watch(
+  apiInfo,
+  (newValue) => {
+    if (newValue.apiKey && newValue.apiUrl) {
+      initOpenAI()
+    } else if (apiCheckCompleted.value) {
+      openOptionsPage()
+    }
+  },
+  { immediate: true, deep: true }
+)
+
+// Set a timeout to check if apiInfo is loaded
+setTimeout(() => {
+  apiCheckCompleted.value = true
+  if (!unref(apiInfo).apiKey || !unref(apiInfo).apiUrl) {
+    openOptionsPage()
+  }
+}, 1000)
+
+onMounted(() => {
   // 监听选中文本事件
   setupSelectedTextListener()
 
@@ -117,6 +131,7 @@ onMounted(async () => {
   nextTick(() => {
     messagesRef.value?.scrollToBottom()
   })
+  initChat(props.context)
 })
 
 // 设置选中文本监听器
@@ -164,15 +179,6 @@ const handleChooseModel = (api, model) => {
   selectMode.value = model
   // initOpenAI()
 }
-// Open the extension's options page
-const openOptionsPage = () => {
-  if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.openOptionsPage) {
-    chrome.runtime.openOptionsPage()
-  } else {
-    // Fallback for development environment or when Chrome API is not available
-    ElMessage.info('请在扩展管理页面打开选项设置')
-  }
-}
 
 const uploadPic = () => {
   const inputFile = document.getElementById('inputFile')
@@ -207,7 +213,7 @@ const handleClearChat = () => {
   emit('clear')
 }
 const openChooseModel = () => {
-  showModelModal.value = true 
+  showModelModal.value = true
 }
 // Load previous message from history
 const loadPreviousMessage = () => {
@@ -242,7 +248,6 @@ const handleEscape = () => {
   currentHistoryIndex.value = -1
   inputRef.value.focus()
 }
-
 
 async function handleInputEnter() {
   if (!inputMessage.value || composing.value) return

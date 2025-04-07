@@ -3,10 +3,10 @@
     <div v-html="md.render(realMessage.content.quote)" class="quote-content"></div>
   </div>
   <div class="closeAI-message" :class="{ 'is-self': isUser }">
-    <div class="avatar" :class="{ 'avatar-left': isUser, 'avatar-right': isAssistant }">
+    <div class="avatar" :class="{ 'avatar-left': isUser }">
       <img :src="realMessage.avatar" />
     </div>
-    <div class="flex flex-col max-w-[85%]">
+    <div class="content-container">
       <div class="content" :class="{ 'content-assistant': isAssistant }">
         <div v-if="realMessage.content?.type == 'audio'" class="audio-content">
           <audio controls>
@@ -148,10 +148,6 @@ const handleShare = () => {
     margin-left: 8px;
   }
 
-  .avatar-right {
-    margin-right: 8px;
-  }
-
   .content-assistant {
     padding-bottom: 0 !important;
     background-color: transparent !important;
@@ -170,7 +166,11 @@ const handleShare = () => {
       object-fit: cover;
     }
   }
-
+  .content-container {
+    display: flex;
+    flex-direction: column;
+    max-width: 88%;
+  }
   .content {
     font-size: 14px;
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
@@ -211,6 +211,7 @@ const handleShare = () => {
 
     .markdown-content {
       :deep(p) {
+        margin: 0;
         padding: 6px 0;
         line-height: 1.5;
       }
@@ -246,7 +247,7 @@ const handleShare = () => {
   .actions {
     display: flex;
     transition: opacity 0.2s;
-    .el-button + .el-button {
+    .closeai-button + .closeai-button {
       margin-left: 0;
     }
     .tool-btn {

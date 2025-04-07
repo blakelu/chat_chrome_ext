@@ -3,15 +3,12 @@
     <div class="chat-container">
       <Chatgpt
         ref="contentRef"
-        :model="selectMode"
         :ttsvoice="ttsvoice"
         :context="currentContext"
         @showHistory="historyDrawer = true"
         @addNewSession="addNewSession"
         @clear="clearCurrentChat"
         @saveHistory="saveHistory"
-        @changeModel="onChangeMode"
-        @updateSelectMode="selectMode = $event"
         @updateTtsVoice="ttsvoice = $event"
       />
     </div>
@@ -32,9 +29,11 @@ import { v4 as uuidv4 } from 'uuid'
 import Chatgpt from './chat/index.vue'
 import History from './history/index.vue'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts.ts'
+import { useAppStorage } from '@/composables/useAppStorage.ts'
 
+// 设置选中文字带入sidebar默认值
+const selectedTextInSidebar  = useAppStorage('selectedTextInSidebar', true)
 
-const selectMode = useStorage('mode', 'gpt-4o')
 const contentRef = ref<any>(null)
 const historyDrawer = ref<boolean>(false) // 历史记录弹窗
 const settingsDrawer = ref<boolean>(false) // 设置面板
@@ -210,7 +209,7 @@ const saveHistory = (context: { role: string; content: string }[]) => {
         font-size: 16px;
         font-weight: 500;
         margin-bottom: 16px;
-        color: var(--el-text-color-primary);
+        color: var(--closeai-text-color-primary);
         padding-bottom: 8px;
         border-bottom: 1px solid var(--app-border-color);
       }
@@ -224,7 +223,7 @@ const saveHistory = (context: { role: string; content: string }[]) => {
           width: 80px;
           flex-shrink: 0;
           font-size: 14px;
-          color: var(--el-text-color-regular);
+          color: var(--closeai-text-color-regular);
         }
         
         .setting-control {
@@ -259,21 +258,21 @@ const saveHistory = (context: { role: string; content: string }[]) => {
 }
 
 .keyboard-help-dialog {
-  :deep(.el-dialog__header) {
+  :deep(.closeai-dialog__header) {
     padding: 16px 20px;
     margin-right: 0;
     border-bottom: 1px solid var(--app-border-color);
   }
   
-  :deep(.el-dialog__headerbtn) {
+  :deep(.closeai-dialog__headerbtn) {
     top: 16px;
   }
   
-  :deep(.el-dialog__body) {
+  :deep(.closeai-dialog__body) {
     padding: 20px;
   }
   
-  :deep(.el-dialog__footer) {
+  :deep(.closeai-dialog__footer) {
     padding: 12px 20px;
     border-top: 1px solid var(--app-border-color);
   }

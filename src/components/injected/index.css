@@ -1,26 +1,53 @@
-@tailwind base;
+/* @tailwind base;
 @tailwind components;
-@tailwind utilities;
+@tailwind utilities; */
 
-:root {
+#closeAI-app {
   --app-border-radius-md: 6px;
   --app-border-radius-lg: 12px;
-  --el-popper-border-radius: var(--app-border-radius-lg);
-  --el-border-radius-base: var(--app-border-radius-md);
-  --el-messagebox-border-radius: var(--app-border-radius-lg);
+  --closeai-popper-border-radius: var(--app-border-radius-lg);
+  --closeai-border-radius-base: var(--app-border-radius-md);
+  --closeai-messagebox-border-radius: var(--app-border-radius-lg);
 }
 
-.el-dialog {
+.closeai-dialog {
   border-radius: var(--app-border-radius-lg);
-  .el-dialog__title {
+  .closeai-dialog__title {
     color: #333333;
     font-weight: 500;
   }
 }
-.el-message-box {
+.closeai-message-box {
   border-radius: var(--app-border-radius-lg);
-  .el-message-box__title {
+  .closeai-message-box__title {
     color: #333333;
     font-weight: 500;
   }
 }
+
+#closeAI-app {
+  line-height: 1.5;
+}
+/* #closeAI-app blockquote,
+dl,
+dd,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+hr,
+figure,
+p,
+pre {
+  margin: 0px;
+  line-height: 1.5;
+}
+ol,
+ul,
+menu {
+  list-style: none;
+  margin: 0px;
+  padding: 0px;
+} */

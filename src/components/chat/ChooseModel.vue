@@ -1,5 +1,5 @@
 <template>
-  <el-dialog v-model="show" title="选择模型" width="480px" :close-on-click-modal="false">
+  <el-dialog v-model="show" title="选择模型" width="90%" :close-on-click-modal="false">
     <div class="search-container">
       <el-input v-model="searchQuery" placeholder="搜索模型..." prefix-icon="el-icon-search" clearable>
         <template #prefix>

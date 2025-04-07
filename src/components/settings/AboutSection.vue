@@ -1,6 +1,6 @@
 <template>
   <div class="about-section">
-    <img src="@/assets/icons/ROBOT.png" alt="Logo" class="app-logo">
+    <img src="@/assets/icons/icon.png" alt="Logo" class="app-logo">
     <h2>CloseAI</h2>
     <p class="version">v1.0.0</p>
     
@@ -69,7 +69,6 @@
     height: 80px;
     margin-bottom: 16px;
     border-radius: 16px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
   
   h2 {

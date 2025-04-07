@@ -106,7 +106,7 @@ defineExpose({
   overflow-y: auto;
   background-color: #ffffff;
   scroll-behavior: smooth;
-  padding: 16px 12px;
+  padding: 6px 0 20px;
   
   &::-webkit-scrollbar {
     width: 8px;
@@ -126,7 +126,6 @@ defineExpose({
   :deep(img) {
     width: 100%;
     border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   }
 }
 

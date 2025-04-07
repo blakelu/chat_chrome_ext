@@ -1,14 +1,16 @@
 <template>
-  <div 
-    class="app" 
+  <div
+    class="app"
     :class="[
-      `theme-${currentTheme}`, 
+      `theme-${currentTheme}`,
       `font-${uiSettings.fontSize}`,
       { 'high-contrast': uiSettings.highContrast },
       { 'reduced-motion': uiSettings.reducedMotion }
     ]"
   >
-    <Index />
+    <el-config-provider namespace="closeai">
+      <Index />
+    </el-config-provider>
   </div>
 </template>
 
@@ -36,21 +38,37 @@ const currentTheme = computed(() => {
 })
 
 // Set theme and font size attributes on document element
-watch(currentTheme, (newTheme) => {
-  document.documentElement.setAttribute('data-theme', newTheme)
-}, { immediate: true })
+watch(
+  currentTheme,
+  (newTheme) => {
+    document.documentElement.setAttribute('data-theme', newTheme)
+  },
+  { immediate: true }
+)
 
-watch(() => uiSettings.value.fontSize, (newSize) => {
-  document.documentElement.setAttribute('data-font-size', newSize)
-}, { immediate: true })
+watch(
+  () => uiSettings.value.fontSize,
+  (newSize) => {
+    document.documentElement.setAttribute('data-font-size', newSize)
+  },
+  { immediate: true }
+)
 
-watch(() => uiSettings.value.highContrast, (highContrast) => {
-  document.documentElement.setAttribute('data-high-contrast', String(highContrast))
-}, { immediate: true })
+watch(
+  () => uiSettings.value.highContrast,
+  (highContrast) => {
+    document.documentElement.setAttribute('data-high-contrast', String(highContrast))
+  },
+  { immediate: true }
+)
 
-watch(() => uiSettings.value.reducedMotion, (reducedMotion) => {
-  document.documentElement.setAttribute('data-reduced-motion', String(reducedMotion))
-}, { immediate: true })
+watch(
+  () => uiSettings.value.reducedMotion,
+  (reducedMotion) => {
+    document.documentElement.setAttribute('data-reduced-motion', String(reducedMotion))
+  },
+  { immediate: true }
+)
 
 // Check for required permissions
 onMounted(() => {
@@ -60,7 +78,7 @@ onMounted(() => {
   // Add listener for system theme changes if using auto theme
   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
   mediaQuery.addEventListener('change', syncThemeWithSystem)
-  
+
   // Clean up event listener on unmount
   onUnmounted(() => {
     mediaQuery.removeEventListener('change', syncThemeWithSystem)
@@ -69,10 +87,7 @@ onMounted(() => {
 
 function syncThemeWithSystem() {
   if (uiSettings.value.theme === 'auto') {
-    document.documentElement.setAttribute(
-      'data-theme', 
-      prefersDark.value ? 'dark' : 'light'
-    )
+    document.documentElement.setAttribute('data-theme', prefersDark.value ? 'dark' : 'light')
   }
 }
 </script>
@@ -83,34 +98,36 @@ function syncThemeWithSystem() {
   color: var(--app-text-color);
   height: 100%;
   font-size: var(--app-font-size-base);
-  transition: background-color 0.3s ease, color 0.3s ease;
-  
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+
   // Theme variations
   &.theme-dark {
-    --el-color-primary: var(--app-accent-color);
-    --el-border-color: var(--app-border-color);
-    
-    :deep(.el-button--primary) {
+    --closeai-color-primary: var(--app-accent-color);
+    --closeai-border-color: var(--app-border-color);
+
+    :deep(.closeai-button--primary) {
       background-color: var(--app-accent-color);
       border-color: var(--app-accent-color);
     }
   }
-  
+
   // Font size variations
   &.font-small {
     font-size: var(--app-font-size-small);
   }
-  
+
   &.font-large {
     font-size: var(--app-font-size-large);
   }
-  
+
   // Accessibility
   &.high-contrast {
     --app-message-user: #ffffff;
     --app-message-assistant: #d6ebff;
     --app-border-color: #000000;
-    
+
     :deep(*) {
       border-color: var(--app-border-color);
       outline-color: var(--app-border-color);

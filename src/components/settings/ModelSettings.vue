@@ -212,7 +212,7 @@ const restoreDefaults = async () => {
         .tag-input {
           width: 100%;
 
-          :deep(.el-input__wrapper) {
+          :deep(.closeai-input__wrapper) {
             box-shadow: 0 0 0 1px #3b82f6;
             border-radius: 8px;
           }

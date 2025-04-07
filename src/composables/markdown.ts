@@ -1,9 +1,11 @@
-import MarkdownIt from 'markdown-it';
-import markdownItCodeCopy from 'markdown-it-code-copy';
-import highlight from 'highlight.js';
-import 'highlight.js/styles/atom-one-dark.css';
+import MarkdownIt from 'markdown-it'
+import markdownItCodeCopy from 'markdown-it-code-copy'
+import highlight from 'highlight.js'
+import hljsVueLanguage from 'highlight.js/lib/languages/xml'
+import 'highlight.js/styles/atom-one-dark.css'
+import { ElMessage } from 'element-plus'
 
- 
+highlight.registerLanguage('vue', hljsVueLanguage)
 const mdOptions: MarkdownIt.Options = {
   linkify: true,
   typographer: true,
@@ -12,14 +14,18 @@ const mdOptions: MarkdownIt.Options = {
   highlight(str: string, lang: string) {
     if (lang && highlight.getLanguage(lang)) {
       try {
-        return '<pre class="hljs"><code>' + highlight.highlight(str, { language: lang, ignoreIllegals: true }).value + '</code></pre>';
+        return '<pre class="hljs"><code>' + highlight.highlight(str, { language: lang, ignoreIllegals: true }).value + '</code></pre>'
       } catch (__) {}
     }
-    return '';
+    return ''
   }
-};
+}
 
 export default new MarkdownIt(mdOptions).use(markdownItCodeCopy, {
   iconStyle: 'color: white; font-size: 18px;',
-  iconClass: 'iconfont icon-copy_code'
-});
+  iconClass: 'iconfont icon-copy_code',
+  successIconClass: 'iconfont .icon-fuzhichenggong',
+  onSuccess: (trigger: HTMLElement) => {
+    ElMessage.success('copied to clipboard')
+  }
+})
