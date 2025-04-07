@@ -31,6 +31,9 @@
           添加新配置
         </el-button>
       </div>
+      <div>
+        <el-button type="dashed" class="add-card-btn" @click="handleGetTestConfig"> 获取测试配置 </el-button>
+      </div>
     </div>
 
     <div class="card-body-container">
@@ -166,6 +169,20 @@ useDraggable(apiListRef, apiList, {
   chosenClass: 'api-card-chosen'
 })
 
+const handleGetTestConfig = () => {
+  getTestConfig({}).then((res: any) => {
+    console.log(res)
+    if (res.apiUrl && res.apiKey) {
+      const newItem = {
+        API_URL: res.apiUrl,
+        API_KEY: res.apiKey,
+        remark: res.remark,
+        selected: false
+      }
+      apiList.value.push(newItem)
+    }
+  })
+}
 const handleAdd = () => {
   const newItem = {
     apiUrl: '',
