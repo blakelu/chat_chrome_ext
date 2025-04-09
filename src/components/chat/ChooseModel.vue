@@ -17,6 +17,9 @@
           <div v-for="(model, modelIndex) in api.modelList" :key="modelIndex" class="model-item" @click="selectModel(api, model)">
             <span class="model-name">{{ model }}</span>
           </div>
+          <div v-if="api.modelList.length === 0">
+            <el-button @click="navToConfig(api)">此api下无可用模型，立即配置</el-button>
+          </div>
         </div>
       </div>
 
@@ -37,6 +40,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'update:showModal', value: boolean): void
   (e: 'selectModel', api: any, model: string): void
+  (e: 'navToConfig', api: any): void
 }>()
 
 const show = useVModel(props, 'showModal')
@@ -64,6 +68,9 @@ const filteredApiList = computed(() => {
 const selectModel = (api: any, model: string) => {
   emit('selectModel', api, model)
   show.value = false
+}
+const navToConfig = (api: any) => {
+  emit('navToConfig', api)
 }
 </script>
 
