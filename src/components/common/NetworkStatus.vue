@@ -3,9 +3,9 @@
     <div v-if="!isOnline" class="network-status">
       <el-icon class="status-icon"></el-icon>
       <span>网络连接已断开，部分功能可能无法正常工作</span>
-      <el-button 
-        size="small" 
-        type="primary" 
+      <el-button
+        size="small"
+        type="primary"
         @click="retryConnection"
         class="retry-btn"
       >重试</el-button>
@@ -21,19 +21,19 @@ const isOnline = ref(true);
 // Check network status and set up listeners
 onMounted(() => {
   isOnline.value = navigator.onLine;
-  
+
   window.addEventListener('online', handleOnline);
   window.addEventListener('offline', handleOffline);
-  
+
   // Set up periodic check for actual internet connectivity
   const intervalCheck = setInterval(checkActualConnectivity, 30000);
-  
+
   onUnmounted(() => {
     window.removeEventListener('online', handleOnline);
     window.removeEventListener('offline', handleOffline);
     clearInterval(intervalCheck);
   });
-  
+
   // Initial check
   checkActualConnectivity();
 });
@@ -53,23 +53,24 @@ function handleOffline() {
 // Check actual connectivity by making a request
 async function checkActualConnectivity() {
   try {
+    return
     if (!navigator.onLine) {
       isOnline.value = false;
       return;
     }
-    
+
     // Use a tiny request to check connectivity
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
-    
+
     const response = await fetch('https://www.google.com/favicon.ico', {
       mode: 'no-cors',
       cache: 'no-store',
       signal: controller.signal
     });
-    
+
     clearTimeout(timeoutId);
-    
+
     if (!isOnline.value) {
       isOnline.value = true;
       ElMessage.success('网络连接已恢复');
@@ -106,13 +107,13 @@ function retryConnection() {
   gap: 10px;
   border: 1px solid var(--app-border-color);
   max-width: 90%;
-  
+
   .status-icon {
     color: var(--app-warning);
     font-size: 18px;
     flex-shrink: 0;
   }
-  
+
   span {
     font-size: var(--app-font-size-small);
     color: var(--app-text-secondary);
@@ -120,7 +121,7 @@ function retryConnection() {
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  
+
   .retry-btn {
     flex-shrink: 0;
     font-size: 12px;
