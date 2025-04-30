@@ -31,7 +31,7 @@ const props = defineProps({
 })
 const emit = defineEmits(['update:visible', 'confirm'])
 const show = useVModel(props, 'visible', emit)
-const modelList: any = ref([])
+const modelList = ref<any>([])
 const loading = ref(false)
 
 const handleOpen = async () => {
@@ -53,10 +53,10 @@ const handleOpen = async () => {
   const res: any = await openai.models.list()
   loading.value = false
   if (res.data && res.data.length > 0) {
-    modelList.value = res.data.sort((a, b) => a.id.localeCompare(b.id))
-    if (props.modelInfo.modelList.length > 0) {
-      props.modelInfo.modelList.forEach((model) => {
-        const foundModel = modelList.value.find((m) => m.id === model)
+    modelList.value = res.data.sort((a: any, b: any) => a.id.localeCompare(b.id))
+    if (props.modelInfo?.modelList?.length > 0) {
+      props.modelInfo.modelList.forEach((model: any) => {
+        const foundModel = modelList.value.find((m: any) => m.id === model)
         if (foundModel) {
           foundModel.selected = true
         } else {
@@ -64,7 +64,7 @@ const handleOpen = async () => {
         }
       })
     } else {
-      modelList.value.forEach((model) => {
+      modelList.value.forEach((model: any) => {
         model.selected = false
       })
     }
@@ -73,7 +73,7 @@ const handleOpen = async () => {
   }
 }
 const handleConfirm = () => {
-  const selectedModels = modelList.value.filter((model) => model.selected).map((model) => model.id)
+  const selectedModels = modelList.value.filter((model: any) => model.selected).map((model: any) => model.id)
   if (selectedModels.length === 0) {
     ElMessage.error('请至少选择一个模型')
     return

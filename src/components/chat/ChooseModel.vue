@@ -17,13 +17,13 @@
           <div v-for="(model, modelIndex) in api.modelList" :key="modelIndex" class="model-item" @click="selectModel(api, model)">
             <span class="model-name">{{ model }}</span>
           </div>
-          <div v-if="api.modelList.length === 0">
+          <div v-if="api.modelList?.length === 0 || !api.modelList">
             <el-button @click="navToConfig(api)">此api下无可用模型，立即配置</el-button>
           </div>
         </div>
       </div>
 
-      <div v-if="filteredApiList.length === 0" class="no-results">
+      <div v-if="filteredApiList?.length === 0" class="no-results">
         <el-empty description="没有找到匹配的模型" />
       </div>
     </div>

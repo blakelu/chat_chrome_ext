@@ -26,13 +26,13 @@
         </div>
       </div>
       <div class="add-card-wrapper">
-        <el-button type="dashed" class="add-card-btn" @click="handleAdd">
+        <el-button class="add-card-btn" @click="handleAdd">
           <el-icon><ep-plus /></el-icon>
           添加新配置
         </el-button>
       </div>
       <div>
-        <el-button type="dashed" class="add-card-btn" @click="handleGetTestConfig"> 获取测试配置 </el-button>
+        <el-button @click="handleGetTestConfig"> 获取测试配置 </el-button>
       </div>
     </div>
 
@@ -122,11 +122,10 @@
 import { useDraggable } from 'vue-draggable-plus'
 import { useAppStorage } from '@/composables/useAppStorage.ts'
 import { ElLoading, ElMessage, ElMessageBox } from 'element-plus'
-import ModelList from './ModelList.vue'
 import { getTestConfig } from '@/api/index.ts'
 
 const emit = defineEmits(['confirm'])
-const apiListRef = ref()
+const apiListRef = ref<any>()
 const apiList: any = useAppStorage('apiList', [
   {
     apiUrl: 'https://api.openai.com',
@@ -163,6 +162,7 @@ watch(
   { deep: true, immediate: true }
 )
 
+//@ts-ignore
 useDraggable(apiListRef, apiList, {
   animation: 150,
   handle: '.drag-handle',
