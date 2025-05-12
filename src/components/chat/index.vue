@@ -70,6 +70,7 @@ const {
   inputMessage,
   loading,
   selectedText,
+  hiddenText,
   picList,
   apiInfo,
   commonSettings,
@@ -124,6 +125,10 @@ setTimeout(() => {
 }, 1000)
 
 onMounted(() => {
+  chrome.runtime.sendMessage({ action: 'sidePanelReady' }).catch((error) => {
+    console.error('Error notifying side panel readiness:', error);
+  });
+  chrome.runtime.connect({ name: 'mySidepanel' });
   // 监听选中文本事件
   setupSelectedTextListener()
 
@@ -142,6 +147,12 @@ const setupSelectedTextListener = () => {
         selectedText.value = message.text
         inputRef.value.focus()
         sendResponse({ status: 'success' })
+      }
+      if (message.action === 'summarizePage' || message.action === 'summarizePageWithSVG') {
+        selectedText.value = message.title
+        hiddenText.value = message.content
+        const prompt = message.action === 'summarizePage' ? '总结页面' : '总结页面并结合SVG展示'
+        emptyConfirm(prompt)
       }
       return true
     })

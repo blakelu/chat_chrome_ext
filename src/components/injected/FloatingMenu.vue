@@ -46,7 +46,7 @@ const onAsk = (type: string) => {
 // Close menu when clicking outside
 const handleClickOutside = (e) => {
   if (menuRef.value && !menuRef.value.contains(e.target)) {
-    emit('close');
+    emit('close')
   }
 }
 
@@ -87,35 +87,34 @@ onUnmounted(() => {
     'Segoe UI',
     Roboto,
     sans-serif;
-}
-
-.menu-item {
-  min-width: 62px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  color: #333333;
-  .menu-icon {
-    width: 16px;
-    height: 16px;
+  .menu-item {
+    min-width: 62px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    color: #333333;
+    .menu-icon {
+      width: 16px;
+      height: 16px;
+    }
   }
-}
 
-.menu-item:hover {
-  background-color: #f7fafc;
-}
+  .menu-item:hover {
+    background-color: #f7fafc;
+  }
 
-.menu-item.disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+  .menu-item.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 
-.menu-item .closeai-icon {
-  // color: #3b82f6;
-  font-size: 16px;
+  .menu-item .closeai-icon {
+    // color: #3b82f6;
+    font-size: 16px;
+  }
 }
 </style>
