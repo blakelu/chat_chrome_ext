@@ -17,12 +17,15 @@
       "128": "assets/icons/icon.png"
     }
   },
-  "permissions": ["storage", "sidePanel"],
+  "permissions": ["storage", "sidePanel", "contextMenus", "scripting"],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "options_page": "../options.html",
   "side_panel": {
     "default_path": "popup.html",
     "openPanelOnActionClick": true
   },
-  "options_page": "../options.html",
   "background": {
     "service_worker": "background.js",
     "type": "module"

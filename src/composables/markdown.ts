@@ -7,6 +7,7 @@ import { ElMessage } from 'element-plus'
 
 highlight.registerLanguage('vue', hljsVueLanguage)
 const mdOptions: MarkdownIt.Options = {
+  html: true, // Enable HTML tags in source
   linkify: true,
   typographer: true,
   breaks: true,

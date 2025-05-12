@@ -52,11 +52,12 @@ const handleOpen = async () => {
   loading.value = true
   const res: any = await openai.models.list()
   loading.value = false
-  if (res.data && res.data.length > 0) {
-    modelList.value = res.data.sort((a: any, b: any) => a.id.localeCompare(b.id))
-    if (props.modelInfo?.modelList?.length > 0) {
-      props.modelInfo.modelList.forEach((model: any) => {
-        const foundModel = modelList.value.find((m: any) => m.id === model)
+  if ((res.data && res.data.length > 0) || Array.isArray(res.body)) {
+    const data = Array.isArray(res.body) ? res.body.map((item) => ({ ...item, id: item.name })) : res.data
+    modelList.value = data.sort((a, b) => a.id.localeCompare(b.id))
+    if (props.modelInfo.modelList.length > 0) {
+      props.modelInfo.modelList.forEach((model) => {
+        const foundModel = modelList.value.find((m) => m.id === model)
         if (foundModel) {
           foundModel.selected = true
         } else {

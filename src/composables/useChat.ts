@@ -30,6 +30,7 @@ export function useChat() {
   const loading = ref(false)
   const initialLoading = ref(false)
   const selectedText = ref('')
+  const hiddenText = ref('') // 不展示在聊天记录中的文本
   const picList = ref<string[]>([])
 
   // Storage
@@ -96,7 +97,22 @@ export function useChat() {
     chatMessages.value = []
     chatContext.value = []
   }
-
+  const toolsObj = new Map([
+    ['总结页面', '请阅读以下页面内容，并用简明扼要的语言对其进行总结，要求包括主要观点、重要细节和核心结论，总结应突出页面的重点信息'],
+    [
+      '总结页面并结合SVG展示',
+      '请阅读以下页面内容，并用简明扼要的语言对其进行总结，要求包括主要观点、重要细节和核心结论，总结应突出页面的重点信息，并结合页面内容设计一段精美的SVG代码，用来视觉化表达总结内容。SVG应具备良好的美观性和代表性,整体排版要有呼吸感.'
+    ],
+    ['解释', 'Please explain clearly and concisely in Chinese'],
+    [
+      '翻译',
+      'Rewrite the text in triple quotes in Chinese. Only give me the translation and nothing else. Do not wrap responses in quotes.'
+    ],
+    [
+      '润色',
+      'Please polish and refine the following text to improve its clarity, coherence, and fluency. Correct any grammatical, spelling, or punctuation errors, and enhance the vocabulary and sentence structure where appropriate. Ensure the tone remains [formal/informal/academic/professional, etc.] and the original meaning is preserved。Respond in the same language as the original text'
+    ]
+  ])
   // Format prompt messages
   function formatPromptMessages(context) {
     let result = []
@@ -104,6 +120,7 @@ export function useChat() {
     for (let i = 0; i < context.length; i++) {
       const isAudio = Object.prototype.toString.call(context[i].content) === '[object Object]' && context[i].content.type === 'audio'
       const isQuote = context[i].content?.isQuote
+      const isHidden = context[i].content?.isHidden
       const hasNext = i + 1 < context.length
       const isArrayAndWrongModelForNext = hasNext && Array.isArray(context[i].content)
 
@@ -115,7 +132,15 @@ export function useChat() {
         i++
       } else if (isQuote) {
         const { role, content: contentObj } = context[i]
-        result.push({ role, content: `${contentObj.content}\n${contentObj.quote}` })
+        if (isHidden) {
+          const text = contentObj.content
+          const hiddenText = contentObj.hiddenText
+          result.push({ role, content: `${toolsObj.get(text)}\n${hiddenText}` })
+        } else {
+          const text = contentObj.content
+          const quote = contentObj.quote
+          result.push({ role, content: `${toolsObj.get(text)}:\n${quote}` })
+        }
       } else {
         result.push(context[i])
       }
@@ -173,7 +198,8 @@ export function useChat() {
       model: selectMode.value,
       messages: customPrompt,
       temperature: commonSettings.value.temperature,
-      stream: commonSettings.value.stream,
+      stream: commonSettings.value.stream
+      // reasoning_effort: 'high',
     })
 
     if (commonSettings.value.stream) {
@@ -210,10 +236,20 @@ export function useChat() {
     }
 
     if (selectedText.value) {
-      return {
-        isQuote: true,
-        quote: selectedText.value,
-        content: text
+      if (!hiddenText.value) {
+        return {
+          isQuote: true,
+          quote: selectedText.value,
+          content: text
+        }
+      } else {
+        return {
+          isQuote: true,
+          isHidden: true,
+          quote: selectedText.value,
+          hiddenText: hiddenText.value,
+          content: text
+        }
       }
     }
 
@@ -235,7 +271,7 @@ export function useChat() {
 
   // Process user input and send to AI
   const sendMessage = async (content: string | any, voice: string = 'zh-CN-XiaoxiaoNeural') => {
-    if (loading.value) return
+    // if (loading.value) return
 
     // If no explicit content provided, use the current input message
     const messageContent = content || inputMessage.value
@@ -328,6 +364,7 @@ export function useChat() {
     loading,
     initialLoading,
     selectedText,
+    hiddenText,
     picList,
 
     // Storage

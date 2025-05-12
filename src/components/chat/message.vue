@@ -15,7 +15,7 @@
           <a :href="realMessage.content.audioUrl" target="_blank" download="audio.mp3" class="download-link">下载音频(暂不支持历史记录)</a>
         </div>
         <div v-else-if="realMessage.content?.isQuote" v-html="md.render(realMessage.content.content)" class="markdown-content"></div>
-        <div v-else v-html="md.render(realMessage.content)" class="markdown-content"></div>
+        <div v-else v-html="md.render(realMessage.content)" class="markdown-content" ref="markdownContentRef"></div>
         <el-icon v-if="isAssistant && loading" class="loading-icon" color="#333"><ep-Loading /></el-icon>
       </div>
       <div class="actions" v-if="isAssistant">
@@ -33,7 +33,7 @@
 
 <script lang="ts" setup>
 import md from '@/composables/markdown.ts'
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import ShareModal from './ShareModal.vue'
 
 const props = defineProps({
@@ -53,6 +53,7 @@ const props = defineProps({
 
 const realMessage = ref<any>({})
 const showShareModal = ref(false)
+const markdownContentRef = ref<HTMLElement | null>(null)
 
 const formatMessage = async (val: any) => {
   const { content } = val
@@ -102,6 +103,81 @@ const messagesForShare = computed(() => {
 const handleShare = () => {
   showShareModal.value = true
 }
+
+// 修改SVG处理方法，隐藏代码块直接替换为图像
+const processSvgInContent = async () => {
+  await nextTick()
+  if (!markdownContentRef.value) return
+  
+  const codeBlocks = markdownContentRef.value.querySelectorAll('pre code')
+  codeBlocks.forEach(codeBlock => {
+    const codeContent = codeBlock.textContent || ''
+  
+    // 检测是否为SVG代码
+    if (codeContent.trim().startsWith('<svg') && codeContent.includes('</svg>')) {
+      // 清理SVG代码中可能存在的HTML注释
+      const cleanedSvgCode = codeContent.replace(/<!--[\s\S]*?-->/g, '')
+  
+      // 创建SVG Blob URL
+      const svgBlob = new Blob([cleanedSvgCode], { type: 'image/svg+xml' })
+      const svgUrl = URL.createObjectURL(svgBlob)
+  
+      // 创建图像容器
+      const svgContainer = document.createElement('div')
+      svgContainer.className = 'svg-rendered-container'
+  
+      // 创建图像元素
+      const imgElement = document.createElement('img')
+      imgElement.src = svgUrl
+      imgElement.className = 'svg-rendered-image'
+      imgElement.alt = 'SVG图像'
+  
+      // 将图像添加到容器
+      svgContainer.appendChild(imgElement)
+      
+      // 添加下载按钮
+      const downloadButton = document.createElement('button')
+      downloadButton.className = 'svg-download-button'
+      downloadButton.textContent = '下载SVG'
+      downloadButton.onclick = (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        const a = document.createElement('a')
+        a.href = svgUrl
+        a.download = 'image.svg'
+        a.click()
+      }
+      svgContainer.appendChild(downloadButton)
+      
+       // 在代码块后添加SVG图像
+      const preElement = codeBlock.parentElement
+      if (preElement && preElement.parentElement) {
+        preElement.parentElement.insertBefore(svgContainer, preElement.nextSibling)
+      }
+      // 获取包含代码块的pre元素
+      // const preElement = codeBlock.closest('pre')
+      // if (preElement && preElement.parentElement) {
+      //   // 替换代码块为SVG图像
+      //   preElement.parentElement.replaceChild(svgContainer, preElement)
+      // }
+    }
+  })
+}
+
+// 保留消息内容更新后处理SVG的监听
+watch(
+  () => realMessage.value.content,
+  () => {
+    nextTick(() => {
+      processSvgInContent()
+    })
+  }
+)
+
+// 保留组件挂载后处理初始内容
+onMounted(() => {
+  processSvgInContent()
+})
 </script>
 
 <style lang="less" scoped>
@@ -298,6 +374,77 @@ const handleShare = () => {
 
   to {
     transform: rotate(360deg);
+  }
+}
+
+.svg-rendered-container {
+  margin: 16px 0;
+  padding: 16px;
+  border-radius: 8px;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid #eaeaea;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.svg-rendered-image {
+  max-width: 100%;
+  height: auto !important;
+  object-fit: contain;
+  margin: 8px 0;
+}
+
+.svg-download-button {
+  margin-top: 12px;
+  padding: 6px 12px;
+  background-color: #e6f7ff;
+  color: #0066cc;
+  border: 1px solid #91caff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+  
+  &:hover {
+    background-color: #bae0ff;
+  }
+}
+
+// 确保样式穿透
+:deep(.svg-rendered-container) {
+  margin: 16px 0;
+  padding: 16px;
+  border-radius: 8px;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid #eaeaea;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+:deep(.svg-rendered-image) {
+  max-width: 100%;
+  height: auto !important;
+  object-fit: contain;
+  margin: 8px 0;
+}
+
+:deep(.svg-download-button) {
+  margin-top: 12px;
+  padding: 6px 12px;
+  background-color: #e6f7ff;
+  color: #0066cc;
+  border: 1px solid #91caff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+  
+  &:hover {
+    background-color: #bae0ff;
   }
 }
 </style>

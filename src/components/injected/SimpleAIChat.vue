@@ -110,7 +110,7 @@ const initialQuery = async () => {
     polish: '润色'
   }
   // Process the selected text with a standardized prompt
-  await processMessage(`帮我${askMap[props.askType]}这段内容`)
+  await processMessage(askMap[props.askType])
 
   initialLoading.value = false
 
