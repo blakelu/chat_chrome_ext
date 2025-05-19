@@ -76,15 +76,30 @@ const formatMessage = async (val: any) => {
     }
     return
   }
+  // 如果val.content里有<artifact>标签，把内容替换成```
+  if (typeof content === 'string' && content.indexOf('<artifact type=') != -1) {
+    const modifiedContent = content
+      .replace(/(<artifact[^>]*>)([\s\S]*?)(<\/artifact>)/g, '$1\n``` xml\n$2\n```\n$3')
+      .replace(/<\/?artifact[^>]*>/g, '')
+    realMessage.value = {
+      ...val,
+      content: modifiedContent
+    }
+    return
+  }
+  // 如果svg标签没有被```包裹，在svg标签外加上```
+  else if (typeof content === 'string' && content.indexOf('<svg') !== -1) {
+    // Check for SVG tags not already wrapped in code fences
+    const modifiedContent = content.replace(/(?<!```[\s\S]*?)(<svg[\s\S]*?<\/svg>)(?![\s\S]*?```)/g, '```xml\n$1\n```')
+    realMessage.value = {
+      ...val,
+      content: modifiedContent
+    }
+    return
+  }
+
   realMessage.value = val
 }
-watch(
-  () => props.message,
-  (val) => {
-    formatMessage(val)
-  },
-  { immediate: true }
-)
 
 const isUser = computed(() => props.message.role === 'user')
 
@@ -108,33 +123,34 @@ const handleShare = () => {
 const processSvgInContent = async () => {
   await nextTick()
   if (!markdownContentRef.value) return
-  
   const codeBlocks = markdownContentRef.value.querySelectorAll('pre code')
-  codeBlocks.forEach(codeBlock => {
+  codeBlocks.forEach((codeBlock) => {
     const codeContent = codeBlock.textContent || ''
-  
+
     // 检测是否为SVG代码
     if (codeContent.trim().startsWith('<svg') && codeContent.includes('</svg>')) {
       // 清理SVG代码中可能存在的HTML注释
       const cleanedSvgCode = codeContent.replace(/<!--[\s\S]*?-->/g, '')
-  
+
       // 创建SVG Blob URL
       const svgBlob = new Blob([cleanedSvgCode], { type: 'image/svg+xml' })
       const svgUrl = URL.createObjectURL(svgBlob)
-  
+
       // 创建图像容器
       const svgContainer = document.createElement('div')
       svgContainer.className = 'svg-rendered-container'
-  
-      // 创建图像元素
-      const imgElement = document.createElement('img')
-      imgElement.src = svgUrl
-      imgElement.className = 'svg-rendered-image'
-      imgElement.alt = 'SVG图像'
-  
-      // 将图像添加到容器
-      svgContainer.appendChild(imgElement)
-      
+
+      // 直接将SVG代码渲染到容器中
+      svgContainer.innerHTML = cleanedSvgCode
+
+      // 确保SVG元素具有正确的属性
+      const svgElement = svgContainer.querySelector('svg')
+      if (svgElement) {
+        svgElement.setAttribute('width', '100%')
+        // svgElement.setAttribute('height', 'auto')
+        svgElement.classList.add('svg-rendered-image')
+      }
+
       // 添加下载按钮
       const downloadButton = document.createElement('button')
       downloadButton.className = 'svg-download-button'
@@ -146,38 +162,32 @@ const processSvgInContent = async () => {
         a.href = svgUrl
         a.download = 'image.svg'
         a.click()
+        URL.revokeObjectURL(svgUrl) // 清理URL对象
       }
       svgContainer.appendChild(downloadButton)
-      
-       // 在代码块后添加SVG图像
-      const preElement = codeBlock.parentElement
-      if (preElement && preElement.parentElement) {
-        preElement.parentElement.insertBefore(svgContainer, preElement.nextSibling)
-      }
-      // 获取包含代码块的pre元素
-      // const preElement = codeBlock.closest('pre')
+
+      // 在代码块后添加SVG图像
+      // const preElement = codeBlock.parentElement
       // if (preElement && preElement.parentElement) {
-      //   // 替换代码块为SVG图像
-      //   preElement.parentElement.replaceChild(svgContainer, preElement)
+      //   preElement.parentElement.insertBefore(svgContainer, preElement.nextSibling)
       // }
+      // 获取包含代码块的pre元素
+      const preElement = codeBlock.closest('pre')
+      if (preElement && preElement.parentElement) {
+        // 替换代码块为SVG图像
+        preElement.parentElement.replaceChild(svgContainer, preElement)
+      }
     }
   })
 }
-
-// 保留消息内容更新后处理SVG的监听
 watch(
-  () => realMessage.value.content,
-  () => {
-    nextTick(() => {
-      processSvgInContent()
-    })
-  }
+  () => props.message,
+  (val) => {
+    formatMessage(val)
+    processSvgInContent()
+  },
+  { immediate: true, deep: true }
 )
-
-// 保留组件挂载后处理初始内容
-onMounted(() => {
-  processSvgInContent()
-})
 </script>
 
 <style lang="less" scoped>
@@ -406,7 +416,7 @@ onMounted(() => {
   cursor: pointer;
   font-size: 13px;
   transition: all 0.2s;
-  
+
   &:hover {
     background-color: #bae0ff;
   }
@@ -442,7 +452,7 @@ onMounted(() => {
   cursor: pointer;
   font-size: 13px;
   transition: all 0.2s;
-  
+
   &:hover {
     background-color: #bae0ff;
   }

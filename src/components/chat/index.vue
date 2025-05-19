@@ -33,7 +33,7 @@
       ref="inputRef"
     />
   </div>
-  <ChooseModel v-model:show-modal="showModelModal" @select-model="handleChooseModel" />
+  <ChooseModel v-model:show-modal="showModelModal" @select-model="handleChooseModel" @nav-to-config="handleNavToConfig" />
 
   <RolePrompt v-model:show="promptVisible" />
 </template>
@@ -189,6 +189,9 @@ const handleChooseModel = (api, model) => {
   apiInfo.value.apiUrl = api.apiUrl
   selectMode.value = model
   // initOpenAI()
+}
+const handleNavToConfig = (api: any) => {
+  openOptionsPage()
 }
 
 const uploadPic = () => {

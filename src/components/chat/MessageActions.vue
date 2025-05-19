@@ -2,7 +2,7 @@
   <div class="toolbar">
     <div class="tools-left">
       <div class="choose-model" @click="$emit('show-choose-model')">
-        <span class="model-name">{{ model }}</span>
+        <span class="model-name">{{ model || '选择模型' }}</span>
         <img src="@/assets/icons/down.svg" class="w-[16px]" alt="选择模型" />
       </div>
 
@@ -54,14 +54,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits([
-  'upload-image',
-  'clear-chat',
-  'show-history',
-  'new-chat',
-  'show-settings',
-  'show-choose-model',
-])
+const emit = defineEmits(['upload-image', 'clear-chat', 'show-history', 'new-chat', 'show-settings', 'show-choose-model'])
 </script>
 
 <style lang="less" scoped>

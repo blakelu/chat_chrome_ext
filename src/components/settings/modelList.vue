@@ -31,7 +31,7 @@ const props = defineProps({
 })
 const emit = defineEmits(['update:visible', 'confirm'])
 const show = useVModel(props, 'visible', emit)
-const modelList: any = ref([])
+const modelList = ref<any>([])
 const loading = ref(false)
 
 const handleOpen = async () => {
@@ -65,7 +65,7 @@ const handleOpen = async () => {
         }
       })
     } else {
-      modelList.value.forEach((model) => {
+      modelList.value.forEach((model: any) => {
         model.selected = false
       })
     }
@@ -74,7 +74,7 @@ const handleOpen = async () => {
   }
 }
 const handleConfirm = () => {
-  const selectedModels = modelList.value.filter((model) => model.selected).map((model) => model.id)
+  const selectedModels = modelList.value.filter((model: any) => model.selected).map((model: any) => model.id)
   if (selectedModels.length === 0) {
     ElMessage.error('请至少选择一个模型')
     return
