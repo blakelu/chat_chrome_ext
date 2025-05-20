@@ -7,11 +7,11 @@
             <div class="radio-btn" v-if="item.selected">
               <div class="radio-inner"></div>
             </div>
-            <span class="card-title">{{ item.remark || `API配置 ${index + 1}` }}</span>
+            <span class="card-title">{{ item?.remark || `API配置 ${index + 1}` }}</span>
           </div>
 
           <div class="card-actions">
-            <el-tooltip content="删除" placement="top" append-to="#closeAI-app" v-if="apiList.length > 1">
+            <el-tooltip content="删除" placement="top" append-to="#closeAI-app" v-if="apiList.length > 0">
               <el-button class="action-btn delete-btn" @click.stop="handleDelete(item, index)">
                 <el-icon><ep-delete /></el-icon>
               </el-button>
@@ -36,7 +36,7 @@
       </div>
     </div>
 
-    <div class="card-body-container">
+    <div v-if="apiList[currentIndex]" class="card-body-container">
       <div class="card-body-header">
         <h3 class="config-title">{{ apiList[currentIndex].remark || `API配置 ${currentIndex + 1}` }}</h3>
       </div>
@@ -87,12 +87,12 @@
           </div>
 
           <div class="tags-wrapper">
-            <div v-if="!(apiList[currentIndex]?.modelList?.length > 0)" class="empty-models">
+            <div v-if="!(apiList[currentIndex].modelList?.length > 0)" class="empty-models">
               <el-icon><ep-warning /></el-icon>
               <span>尚未添加任何模型</span>
             </div>
 
-            <div class="tag-item" v-for="(model, index) in apiList[currentIndex]?.modelList || []" :key="index">
+            <div class="tag-item" v-for="(model, index) in apiList[currentIndex].modelList || []" :key="index">
               <span class="tag-text">{{ model }}</span>
               <el-button class="tag-close" circle plain size="small" @click="deleteModel(index)">
                 <el-icon><ep-close /></el-icon>
@@ -113,7 +113,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </div v-if="apiList[currentIndex]" class="card-body-container">
   </div>
   <ModelList v-model:visible="showModelDialog" :modelInfo="apiList[currentIndex]" @confirm="handleConfirm" />
 </template>

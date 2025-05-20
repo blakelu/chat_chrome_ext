@@ -91,17 +91,25 @@ const navToConfig = (api: any) => {
 }
 .theme-dark {
   .header {
-    background-color: #1e1e1e;
-    color: var(--app-text-color);
+    background-color: #40444b;
+    color: #f4f5f6;
   }
   .model-item {
-    background-color: #999999;
-    color: var(--app-text-color);
+    background-color: #2f3136;
+    color: #f4f5f6;
     &:hover {
-      background-color: #666666;
+      background-color: #40444b;
       color: #ffffff;
       border: none;
       box-shadow: none;
+    }
+  }
+  .models-container {
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      border: 2px solid transparent;
+      background-clip: content-box;
     }
   }
 }
@@ -120,6 +128,7 @@ const navToConfig = (api: any) => {
 .model-item {
   padding: 8px 12px;
   background-color: #ffffff;
+  color: #303133;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
@@ -133,7 +142,6 @@ const navToConfig = (api: any) => {
 
   .model-name {
     font-size: 13px;
-    color: #303133;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

@@ -38,7 +38,7 @@ const list = ref([
 .theme-dark {
   .empty {
     .question-item {
-      background-color: #333333;
+      background-color: #2F3136;
       &:hover {
         color: #ffffff;
         background-color: #444444;

@@ -100,6 +100,13 @@ defineExpose({
 </script>
 
 <style lang="less" scoped>
+.theme-dark {
+  .closeAI-messages {
+    &::-webkit-scrollbar-thumb {
+      background-color: var(--app-card-bg);
+    }
+  }
+}
 .closeAI-messages {
   position: relative;
   flex: 1 1 0%;
