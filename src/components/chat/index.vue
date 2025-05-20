@@ -299,7 +299,6 @@ defineExpose({
 .operate_wrap {
   width: 100%;
   padding: 8px;
-  background-color: #fff;
   border-top: 1px solid rgba(0, 0, 0, 0.03);
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.03);
   border-radius: 16px 16px 0 0;

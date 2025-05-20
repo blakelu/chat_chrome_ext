@@ -172,7 +172,7 @@ const createNewChat = () => {
     h3 {
       font-size: 18px;
       font-weight: 600;
-      color: #0f172a;
+      color: var(--app-text-color);
       margin: 0;
     }
   }
@@ -190,7 +190,7 @@ const createNewChat = () => {
   }
 
   .history-item {
-    background-color: #ffffff;
+    background-color: var(--app-bg-color);
     border-radius: 12px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     overflow: hidden;
@@ -209,7 +209,7 @@ const createNewChat = () => {
 
     &.current {
       border-left: 4px solid #3b82f6;
-      background-color: #f0f9ff;
+      background-color: var(--app-bg-color);
     }
 
     .item-content {
@@ -224,7 +224,7 @@ const createNewChat = () => {
 
       .item-title {
         font-weight: 600;
-        color: #1e293b;
+        color: var(--app-text-color);
         font-size: 15px;
         line-height: 1.4;
       }

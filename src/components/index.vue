@@ -180,7 +180,6 @@ const saveHistory = (context: { role: string; content: string }[]) => {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    margin: 4px;
     padding: 10px 8px;
     border-radius: 12px;
     background-color: var(--app-bg-color);

@@ -7,7 +7,7 @@
       <img :src="realMessage.avatar" />
     </div>
     <div class="content-container">
-      <div class="content" :class="{ 'content-assistant': isAssistant }">
+      <div :class="{ 'content-assistant': isAssistant }" class="content">
         <div v-if="realMessage.content?.type == 'audio'" class="audio-content">
           <audio controls>
             <source :src="realMessage.content.audioUrl" type="audio/mpeg" />
@@ -191,6 +191,18 @@ watch(
 </script>
 
 <style lang="less" scoped>
+.theme-dark {
+  .closeAI-message {
+    .content {
+      color: var(--app-text-color) !important;
+      background-color: #3A3A3C !important;
+    }
+    .content-assistant {
+      color: var(--app-text-color) !important;
+      background-color: var(--app-card-bg) !important;
+    }
+  }
+}
 .closeAI-quote-container {
   display: flex;
   flex-direction: row-reverse;
@@ -235,7 +247,6 @@ watch(
   }
 
   .content-assistant {
-    padding-bottom: 0 !important;
     background-color: transparent !important;
     color: #1a1a1a !important;
   }

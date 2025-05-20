@@ -89,7 +89,22 @@ const navToConfig = (api: any) => {
 .api-list {
   margin: 16px 0;
 }
-
+.theme-dark {
+  .header {
+    background-color: #1e1e1e;
+    color: var(--app-text-color);
+  }
+  .model-item {
+    background-color: #999999;
+    color: var(--app-text-color);
+    &:hover {
+      background-color: #666666;
+      color: #ffffff;
+      border: none;
+      box-shadow: none;
+    }
+  }
+}
 .header {
   font-weight: 600;
   padding: 12px 16px;

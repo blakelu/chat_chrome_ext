@@ -35,6 +35,18 @@ const list = ref([
 ]);
 </script>
 <style lang="less" scoped>
+.theme-dark {
+  .empty {
+    .question-item {
+      background-color: #333333;
+      &:hover {
+        color: #ffffff;
+        background-color: #444444;
+        border-color: #555555;
+      }
+    }
+  }
+}
 .empty {
   height: 100%;
   display: flex;
@@ -44,7 +56,7 @@ const list = ref([
   padding: 32px 24px;
   text-align: center;
   background-color: var(--app-bg-color, #f7f8f9);
-  color: #1a202c;
+  color: var(--app-text-color);
 
   .empty-animation {
     margin-bottom: 28px;
@@ -72,7 +84,6 @@ const list = ref([
   .empty-title {
     font-size: 24px;
     font-weight: 500;
-    color: #2d3748;
     margin-bottom: 36px;
     letter-spacing: -0.02em;
   }
@@ -93,7 +104,6 @@ const list = ref([
     padding: 14px 18px;
     font-size: 15px;
     background-color: rgba(0, 0, 0, 0.02);
-    color: #4a5568;
     border-radius: 10px;
     cursor: pointer;
     transition: all 0.25s ease;
@@ -102,15 +112,12 @@ const list = ref([
       background-color: #f7faff;
       border-color: #cbd5e1;
       transform: translateY(-1px);
+      color: #2563eb;
 
       .question-arrow {
         transform: translateX(2px);
         opacity: 1;
-        color: #3b82f6;
-      }
-
-      .question-text {
-        color: #2563eb;
+        // color: #3b82f6;
       }
     }
 

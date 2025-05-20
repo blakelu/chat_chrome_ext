@@ -14,6 +14,12 @@
     </div>
 
     <div class="tools-right">
+      <el-tooltip effect="dark" :content="themeTooltip" placement="top" append-to="#closeAI-app">
+        <el-button class="tool-btn" text @click="handleToggleTheme">
+          <!-- Make sure you have sun.svg and moon.svg in @/assets/icons/ -->
+          <img :src="themeIconSrc" class="w-[16px]" :alt="themeTooltip" />
+        </el-button>
+      </el-tooltip>
       <el-tooltip effect="dark" content="设置" placement="top">
         <el-button class="tool-btn" text @click="$emit('show-settings')">
           <img src="@/assets/icons/setting.svg" class="w-[16px]" alt="设置" />
@@ -39,6 +45,10 @@
 </template>
 
 <script lang="ts" setup>
+import { computed, inject } from 'vue'
+import sun from '@/assets/icons/sun.svg'
+import moon from '@/assets/icons/moon.svg'
+
 const props = defineProps({
   model: {
     type: String,
@@ -55,6 +65,24 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['upload-image', 'clear-chat', 'show-history', 'new-chat', 'show-settings', 'show-choose-model'])
+
+const currentTheme = inject<any>('currentTheme')
+const toggleTheme = inject<() => void>('toggleTheme')
+
+const themeIconSrc = computed(() => {
+  // Assumes sun.svg for switching to light, moon.svg for switching to dark
+  return currentTheme?.value === 'dark' ? sun : moon
+})
+
+const themeTooltip = computed(() => {
+  return currentTheme?.value === 'dark' ? '切换到亮色模式' : '切换到暗色模式'
+})
+
+const handleToggleTheme = () => {
+  if (toggleTheme) {
+    toggleTheme()
+  }
+}
 </script>
 
 <style lang="less" scoped>
@@ -62,7 +90,6 @@ const emit = defineEmits(['upload-image', 'clear-chat', 'show-history', 'new-cha
   display: flex;
   justify-content: space-between;
   padding-bottom: 4px;
-  background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-radius: 12px;
