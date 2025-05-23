@@ -35,15 +35,15 @@
 
 /* Dark theme */
 [data-theme="dark"] {
-  --app-bg-color: #111827;
-  --app-text-color: #f1f5f9;
+  --app-bg-color: #111111;
+  --app-text-color: #f1f1f1;
   --app-text-secondary: #94a3b8;
   --app-border-color: #1e293b;
   --app-accent-color: #60a5fa;
   --app-accent-hover: #93c5fd;
   --app-header-gradient-start: #1e40af;
   --app-header-gradient-end: #0d9488;
-  --app-card-bg: #1f2937;
+  --app-card-bg: #36393F;
   --app-card-shadow: rgba(0, 0, 0, 0.2);
   --app-message-user: #1f2937;
   --app-message-assistant: #0c4a6e;
@@ -107,38 +107,6 @@
   --app-spacing-base: 10px;
 }
 
-/* High contrast mode */
-[data-high-contrast="true"] {
-  --app-accent-color: #0030b1;
-  --app-accent-hover: #001a6c;
-  --app-text-color: #000000;
-  --app-text-secondary: #202020;
-  --app-message-user: #ffffff;
-  --app-message-assistant: #d6ebff;
-  --app-border-color: #000000;
-  --app-card-shadow: rgba(0, 0, 0, 0.3);
-  --app-selection-bg: #ffcc00;
-  
-  /* Improved text contrast */
-  --app-danger: #d00000;
-  --app-success: #006600;
-  --app-warning: #cc5500;
-  --app-info: #0066cc;
-}
-
-/* Dark high contrast */
-[data-theme="dark"][data-high-contrast="true"] {
-  --app-bg-color: #000000;
-  --app-text-color: #ffffff;
-  --app-text-secondary: #eeeeee;
-  --app-border-color: #ffffff;
-  --app-accent-color: #60a5fa;
-  --app-accent-hover: #93c5fd;
-  --app-card-bg: #161616;
-  --app-message-user: #333333;
-  --app-message-assistant: #004080;
-  --app-selection-bg: #ffcc00;
-}
 
 html,
 body {
@@ -280,7 +248,7 @@ body {
 .closeai-dialog {
   border-radius: var(--app-border-radius-lg);
   .closeai-dialog__title {
-    color: #333333;
+    color: var(--app-text-color);
     font-weight: 500;
   }
 }

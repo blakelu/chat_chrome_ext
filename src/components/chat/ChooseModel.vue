@@ -17,7 +17,7 @@
           <div v-for="(model, modelIndex) in api.modelList" :key="modelIndex" class="model-item" @click="selectModel(api, model)">
             <span class="model-name">{{ model }}</span>
           </div>
-          <div v-if="api.modelList?.length === 0 || !api.modelList">
+          <div v-if="api.modelList?.length === 0 || !api.modelList" class="text-center pt-12px">
             <el-button @click="navToConfig(api)">此api下无可用模型，立即配置</el-button>
           </div>
         </div>
@@ -89,7 +89,30 @@ const navToConfig = (api: any) => {
 .api-list {
   margin: 16px 0;
 }
-
+.theme-dark {
+  .header {
+    background-color: #40444b;
+    color: #f4f5f6;
+  }
+  .model-item {
+    background-color: #2f3136;
+    color: #f4f5f6;
+    &:hover {
+      background-color: #40444b;
+      color: #ffffff;
+      border: none;
+      box-shadow: none;
+    }
+  }
+  .models-container {
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      border: 2px solid transparent;
+      background-clip: content-box;
+    }
+  }
+}
 .header {
   font-weight: 600;
   padding: 12px 16px;
@@ -105,6 +128,7 @@ const navToConfig = (api: any) => {
 .model-item {
   padding: 8px 12px;
   background-color: #ffffff;
+  color: #303133;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
@@ -118,7 +142,6 @@ const navToConfig = (api: any) => {
 
   .model-name {
     font-size: 13px;
-    color: #303133;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

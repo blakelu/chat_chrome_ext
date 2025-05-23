@@ -16,7 +16,8 @@
 
 <script setup lang="ts">
 import Index from '@/components/index.vue'
-import { useMediaQuery } from '@vueuse/core'
+import { useMediaQuery, useStorage } from '@vueuse/core' // Added useStorage
+import { computed, provide, watch, onMounted, onUnmounted } from 'vue' // Added provide
 
 // Theme settings
 const defaultUISettings = {
@@ -37,35 +38,22 @@ const currentTheme = computed(() => {
   return uiSettings.value.theme
 })
 
+const toggleTheme = () => {
+  if (currentTheme.value === 'light') {
+    uiSettings.value.theme = 'dark'
+  } else {
+    uiSettings.value.theme = 'light'
+  }
+}
+
+provide('currentTheme', currentTheme)
+provide('toggleTheme', toggleTheme)
+
 // Set theme and font size attributes on document element
 watch(
   currentTheme,
   (newTheme) => {
     document.documentElement.setAttribute('data-theme', newTheme)
-  },
-  { immediate: true }
-)
-
-watch(
-  () => uiSettings.value.fontSize,
-  (newSize) => {
-    document.documentElement.setAttribute('data-font-size', newSize)
-  },
-  { immediate: true }
-)
-
-watch(
-  () => uiSettings.value.highContrast,
-  (highContrast) => {
-    document.documentElement.setAttribute('data-high-contrast', String(highContrast))
-  },
-  { immediate: true }
-)
-
-watch(
-  () => uiSettings.value.reducedMotion,
-  (reducedMotion) => {
-    document.documentElement.setAttribute('data-reduced-motion', String(reducedMotion))
   },
   { immediate: true }
 )
@@ -89,6 +77,7 @@ function syncThemeWithSystem() {
   if (uiSettings.value.theme === 'auto') {
     document.documentElement.setAttribute('data-theme', prefersDark.value ? 'dark' : 'light')
   }
+  // uiSettings.value.theme = prefersDark.value ? 'dark' : 'light'
 }
 </script>
 
@@ -120,18 +109,6 @@ function syncThemeWithSystem() {
 
   &.font-large {
     font-size: var(--app-font-size-large);
-  }
-
-  // Accessibility
-  &.high-contrast {
-    --app-message-user: #ffffff;
-    --app-message-assistant: #d6ebff;
-    --app-border-color: #000000;
-
-    :deep(*) {
-      border-color: var(--app-border-color);
-      outline-color: var(--app-border-color);
-    }
   }
 }
 </style>

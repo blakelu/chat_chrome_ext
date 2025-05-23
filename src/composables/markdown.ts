@@ -7,7 +7,7 @@ import { ElMessage } from 'element-plus'
 
 highlight.registerLanguage('vue', hljsVueLanguage)
 const mdOptions: MarkdownIt.Options = {
-  html: true, // Enable HTML tags in source
+  // html: true, // Enable HTML tags in source
   linkify: true,
   typographer: true,
   breaks: true,
@@ -23,7 +23,7 @@ const mdOptions: MarkdownIt.Options = {
 }
 
 export default new MarkdownIt(mdOptions).use(markdownItCodeCopy, {
-  iconStyle: 'color: white; font-size: 18px;',
+  iconStyle: 'color: white; font-size: 16px;background: #eee; padding: 4px;',
   iconClass: 'iconfont icon-copy_code',
   successIconClass: 'iconfont .icon-fuzhichenggong',
   onSuccess: (trigger: HTMLElement) => {
