@@ -38,13 +38,13 @@
 
     <div class="card-body-container">
       <div class="card-body-header">
-        <h3 class="config-title">{{ apiList[currentIndex].remark || `API配置 ${currentIndex + 1}` }}</h3>
+        <h3 class="config-title">{{ apiList[currentIndex]?.remark || `API配置 ${currentIndex + 1}` }}</h3>
       </div>
 
       <div class="card-body">
         <div class="form-group">
           <label>配置名称</label>
-          <el-input v-model="apiList[currentIndex].remark" size="large" placeholder="为此配置设置名称" clearable>
+          <el-input v-model="apiList[currentIndex]?.remark" size="large" placeholder="为此配置设置名称" clearable>
             <template #prefix>
               <el-icon><ep-notebook /></el-icon>
             </template>
