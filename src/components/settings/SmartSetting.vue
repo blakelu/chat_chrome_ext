@@ -32,7 +32,7 @@ import { useAppStorage } from '@/composables/useAppStorage.ts'
 
 const selectedTextInSidebar = useAppStorage('selectedTextInSidebar', true)
 const smartMenuEnabled = useAppStorage('smartMenuEnabled', true)
-const smartMenuKey = useAppStorage('smartMenuKey', 'option')
+const smartMenuKey = useAppStorage('smartMenuKey', 'Option')
 </script>
 
 <style lang="less" scoped>

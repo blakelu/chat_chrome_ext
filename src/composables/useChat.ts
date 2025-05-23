@@ -15,12 +15,14 @@ export function useChat() {
     role: string
     avatar: string
     content: string | any
+    title?: string
     errorMessage?: string
   }
 
   interface SubmitMessage {
     role: string
-    content: string | any
+    content: string | any,
+    title?: string
   }
 
   // State
@@ -71,12 +73,13 @@ export function useChat() {
   }
 
   // Create a message object
-  function createMessage(id: number, role: string, avatar: string, content: string | any) {
+  function createMessage(id: number, role: string, avatar: string, content: string | any, title: string = '') {
     return {
       id,
       role,
       avatar,
-      content
+      content,
+      title
     }
   }
 
@@ -258,8 +261,12 @@ export function useChat() {
 
   // Add user message to chat
   function addUserMessage(content: any) {
-    chatMessages.value.push(createMessage(chatMessages.value.length + 1, 'user', USER_AVATAR, content))
-    chatContext.value.push({ role: 'user', content })
+    let title = content
+    if (typeof content === 'object' && content?.isQuote) {
+      title = content.content
+    }
+    chatMessages.value.push(createMessage(chatMessages.value.length + 1, 'user', USER_AVATAR, content, title))
+    chatContext.value.push({ role: 'user', content, title })
     return chatMessages.value.length
   }
 

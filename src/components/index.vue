@@ -33,6 +33,8 @@ import { useAppStorage } from '@/composables/useAppStorage.ts'
 
 // 设置选中文字带入sidebar默认值
 const selectedTextInSidebar  = useAppStorage('selectedTextInSidebar', true)
+const smartMenuEnabled = useAppStorage('smartMenuEnabled', true)
+const smartMenuKey = useAppStorage('smartMenuKey', 'Option')
 
 const contentRef = ref<any>(null)
 const historyDrawer = ref<boolean>(false) // 历史记录弹窗
@@ -141,7 +143,7 @@ const navToHistory = (item: any) => {
 }
 
 // 保存历史记录
-const saveHistory = (context: { role: string; content: string }[]) => {
+const saveHistory = (context: { role: string; content: string, title: string }[]) => {
   // if (context.length === 0) return
   const historyInfo = JSON.parse(localStorage.historyInfo || '[]')
   const historyIndex = historyInfo.findIndex((item: any) => item.sessionId === sessionId.value)
@@ -152,7 +154,7 @@ const saveHistory = (context: { role: string; content: string }[]) => {
     sessionId: sessionId.value,
     // mode: selectMode.value,
     timeStr: dayjs().format('YYYY-MM-DD HH:mm:ss'),
-    title: context?.[0]?.content ?? '',
+    title: context?.[0]?.title ?? '',
     desc: context.length > 1 ? context[context.length - 1].content : '',
     context,
     isLast: true

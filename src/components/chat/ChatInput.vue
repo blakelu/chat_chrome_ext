@@ -26,7 +26,7 @@
         type="textarea"
         ref="inputRef"
         :rows="4"
-        placeholder="请输入您的问题..."
+        placeholder="请输入您的问题，ctrl+enter发送"
         @keydown.ctrl.enter="$emit('send')"
         @keydown.meta.enter="$emit('send')"
         @keydown.up.prevent="$emit('load-previous')"
