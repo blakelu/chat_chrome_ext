@@ -44,7 +44,7 @@
       <div class="card-body">
         <div class="form-group">
           <label>配置名称</label>
-          <el-input v-model="apiList[currentIndex]?.remark" size="large" placeholder="为此配置设置名称" clearable>
+          <el-input v-model="apiList[currentIndex].remark" size="large" placeholder="为此配置设置名称" clearable>
             <template #prefix>
               <el-icon><ep-notebook /></el-icon>
             </template>
