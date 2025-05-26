@@ -23,7 +23,7 @@ const mdOptions: MarkdownIt.Options = {
 }
 
 export default new MarkdownIt(mdOptions).use(markdownItCodeCopy, {
-  iconStyle: 'color: white; font-size: 16px;background: #eee; padding: 4px;',
+  iconStyle: 'color: white; font-size: 15px; padding: 4px;',
   iconClass: 'iconfont icon-copy_code',
   successIconClass: 'iconfont .icon-fuzhichenggong',
   onSuccess: (trigger: HTMLElement) => {

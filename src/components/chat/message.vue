@@ -398,47 +398,12 @@ watch(
   }
 }
 
-.svg-rendered-container {
-  margin: 16px 0;
-  padding: 16px;
-  border-radius: 8px;
-  background-color: #fff;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  border: 1px solid #eaeaea;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-}
-
-.svg-rendered-image {
-  max-width: 100%;
-  height: auto !important;
-  object-fit: contain;
-  margin: 8px 0;
-}
-
-.svg-download-button {
-  margin-top: 12px;
-  padding: 6px 12px;
-  background-color: #e6f7ff;
-  color: #0066cc;
-  border: 1px solid #91caff;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 13px;
-  transition: all 0.2s;
-
-  &:hover {
-    background-color: #bae0ff;
-  }
-}
-
 // 确保样式穿透
 :deep(.svg-rendered-container) {
   margin: 16px 0;
   padding: 16px;
   border-radius: 8px;
-  background-color: #fff;
+  background-color: #36393F;
   display: flex;
   flex-direction: column;
   align-items: center;
