@@ -224,28 +224,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message && message.action === 'sidePanelReady') {
     isSidePanelReady = true
     sendResponse({ status: 'acknowledged' })
-  } else if (message && message.action === 'textSelected' && message.text) {
-    // Try sending to the side panel
-    sendToActiveTabOrBroadcast(message)
-    sendResponse({ status: 'received' })
-  } else if (message && message.action === 'showFloatingMenu' && message.data) {
-    const { text, position } = message.data
-
-    // If message came from a specific tab, try sending directly to that tab
-    if (sender && sender.tab && sender.tab.id) {
-      chrome.tabs
-        .sendMessage(sender.tab.id, {
-          action: 'showFloatingMenu',
-          data: { text, position }
-        })
-        .catch(() => {
-          // Ignore errors if content script isn't ready
-        })
-    }
-
-    sendResponse({ status: 'received' })
   }
-
   // Enable async response
   return true
 })
