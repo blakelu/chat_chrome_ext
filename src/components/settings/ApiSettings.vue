@@ -123,7 +123,7 @@ import { useDraggable } from 'vue-draggable-plus'
 import { useAppStorage } from '@/composables/useAppStorage.ts'
 import { ElLoading, ElMessage, ElMessageBox } from 'element-plus'
 import { getTestConfig } from '@/api/index.ts'
-import { DefaultApiList } from '@/composables/statistics'
+import { DefaultApiList } from '@/composables/statistics.ts'
 
 
 const emit = defineEmits(['confirm'])
