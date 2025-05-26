@@ -123,18 +123,12 @@ import { useDraggable } from 'vue-draggable-plus'
 import { useAppStorage } from '@/composables/useAppStorage.ts'
 import { ElLoading, ElMessage, ElMessageBox } from 'element-plus'
 import { getTestConfig } from '@/api/index.ts'
+import { DefaultApiList } from '@/composables/statistics'
+
 
 const emit = defineEmits(['confirm'])
 const apiListRef = ref<any>()
-const apiList: any = useAppStorage('apiList', [
-  {
-    apiUrl: 'https://api.openai.com',
-    apiKey: '',
-    remark: 'OpenAI API',
-    modelList: [],
-    selected: true
-  }
-])
+const apiList: any = useAppStorage('apiList', DefaultApiList)
 const currentIndex = ref(0)
 const showModelDialog = ref(false)
 const showModelInput = ref(false)
