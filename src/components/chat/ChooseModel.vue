@@ -32,7 +32,7 @@
 
 <script lang="ts" setup>
 import { useAppStorage } from '@/composables/useAppStorage.ts'
-import { DefaultApiList } from '@/composables/statistics'
+import { DefaultApiList } from '@/composables/statistics.ts'
 
 const props = defineProps<{
   showModal: boolean
