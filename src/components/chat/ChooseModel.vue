@@ -32,6 +32,7 @@
 
 <script lang="ts" setup>
 import { useAppStorage } from '@/composables/useAppStorage.ts'
+import { DefaultApiList } from '@/composables/statistics.ts'
 
 const props = defineProps<{
   showModal: boolean
@@ -45,7 +46,7 @@ const emit = defineEmits<{
 
 const show = useVModel(props, 'showModal')
 const searchQuery = ref('')
-const apiList: any = useAppStorage('apiList', [])
+const apiList: any = useAppStorage('apiList', DefaultApiList)
 
 // 过滤模型列表
 const filteredApiList = computed(() => {
