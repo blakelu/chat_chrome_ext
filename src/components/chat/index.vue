@@ -24,6 +24,7 @@
       :picList="picList"
       :selectedText="selectedText"
       @update:selectedText="(val) => (selectedText = val)"
+      @update:picList="(val) => (picList = val)"
       @delete-pic="handleDeletePic"
       @send="handleInputEnter"
       @load-previous="loadPreviousMessage"

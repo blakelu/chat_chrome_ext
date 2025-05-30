@@ -6,7 +6,7 @@
     <div class="avatar" :class="{ 'avatar-left': isUser }">
       <img :src="realMessage.avatar" />
     </div>
-    <div class="content-container">
+    <div class="content-container" :class="{ 'is-self': isUser }">
       <div :class="{ 'content-assistant': isAssistant }" class="content">
         <div v-if="realMessage.content?.type == 'audio'" class="audio-content">
           <audio controls>
@@ -264,9 +264,14 @@ watch(
     }
   }
   .content-container {
+    max-width: 88%;
+    // max-width: calc(100% - 36px - 5%);
     display: flex;
     flex-direction: column;
-    max-width: 88%;
+  }
+  .content-container.is-self {
+    max-width: 84%;
+    justify-content: flex-end;
   }
   .content {
     font-size: 14px;
@@ -317,6 +322,7 @@ watch(
         border-radius: 8px;
         margin: 10px 0;
         overflow: hidden;
+        white-space: pre-wrap;
       }
 
       :deep(code) {
@@ -412,7 +418,7 @@ watch(
 }
 
 :deep(.svg-rendered-image) {
-  max-width: 100%;
+  width: 100%;
   height: auto !important;
   object-fit: contain;
   margin: 8px 0;

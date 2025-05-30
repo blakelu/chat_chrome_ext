@@ -22,7 +22,7 @@ chrome.action.onClicked.addListener(async (tab) => {
 
       // Set the sidebar default width
       if (chrome.sidePanel.setPanelWidth) {
-        await chrome.sidePanel.setPanelWidth({ width: 460 })
+        await chrome.sidePanel.setPanelWidth({ width: 500 })
       }
       registerSidePanel(tab.id, tab.windowId)
     } else {
@@ -41,7 +41,7 @@ function openPopup() {
   chrome.windows.create({
     url: chrome.runtime.getURL('index.html'),
     type: 'popup',
-    width: 460,
+    width: 500,
     height: 600
   })
 }
@@ -87,7 +87,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
         try {
           await chrome.sidePanel.open({ windowId: tab.windowId })
           if (chrome.sidePanel.setPanelWidth) {
-            await chrome.sidePanel.setPanelWidth({ width: 460 })
+            await chrome.sidePanel.setPanelWidth({ width: 500 })
           }
           registerSidePanel(tab.id, tab.windowId)
           return true // Side panel successfully opened
@@ -224,7 +224,28 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message && message.action === 'sidePanelReady') {
     isSidePanelReady = true
     sendResponse({ status: 'acknowledged' })
+  } else if (message && message.action === 'textSelected' && message.text) {
+    // Try sending to the side panel
+    // sendToActiveTabOrBroadcast(message)
+    sendResponse({ status: 'received' })
+  } else if (message && message.action === 'showFloatingMenu' && message.data) {
+    const { text, position } = message.data
+
+    // If message came from a specific tab, try sending directly to that tab
+    if (sender && sender.tab && sender.tab.id) {
+      chrome.tabs
+        .sendMessage(sender.tab.id, {
+          action: 'showFloatingMenu',
+          data: { text, position }
+        })
+        .catch(() => {
+          // Ignore errors if content script isn't ready
+        })
+    }
+
+    sendResponse({ status: 'received' })
   }
+
   // Enable async response
   return true
 })

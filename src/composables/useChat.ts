@@ -21,7 +21,7 @@ export function useChat() {
 
   interface SubmitMessage {
     role: string
-    content: string | any,
+    content: string | any
     title?: string
   }
 
@@ -104,7 +104,7 @@ export function useChat() {
     ['总结页面', '请阅读以下页面内容，并用简明扼要的语言对其进行总结，要求包括主要观点、重要细节和核心结论，总结应突出页面的重点信息'],
     [
       '总结页面并结合SVG展示',
-      '请阅读以下页面内容，并用简明扼要的语言对其进行总结，要求包括主要观点、重要细节和核心结论，总结应突出页面的重点信息，并结合页面内容设计一段精美的SVG代码，用来视觉化表达总结内容。SVG应具备良好的美观性和代表性,整体排版要有呼吸感.'
+      '请阅读以下页面内容，并用简明扼要的语言对其进行总结，要求包括主要观点、重要细节和核心结论，总结应突出页面的重点信息，并结合页面内容设计一段精美的SVG代码，svg的x，y尽量用百分比，不要固定值，使得无论多少分辨率的容器都能显示全，用来视觉化表达总结内容。SVG应具备良好的美观性和代表性,整体排版要有呼吸感.'
     ],
     ['解释', 'Please explain clearly and concisely in Chinese'],
     [
@@ -131,9 +131,11 @@ export function useChat() {
         if (i > 0) {
           result.pop()
         }
-      } else if (isArrayAndWrongModelForNext) {
-        i++
-      } else if (isQuote) {
+      }
+      //  else if (isArrayAndWrongModelForNext) {
+      //   i++
+      // }
+       else if (isQuote) {
         const { role, content: contentObj } = context[i]
         if (isHidden) {
           const text = contentObj.content
@@ -159,7 +161,11 @@ export function useChat() {
     if (commonSettings.value.prompt) {
       customPrompt.unshift({ role: 'system', content: commonSettings.value.prompt })
     }
-    return customPrompt
+    const list = customPrompt.map((item) => {
+      const { title, ...rest } = item
+      return rest
+    })
+    return list
   }
 
   // Handle different model types
