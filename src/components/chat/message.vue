@@ -15,8 +15,17 @@
           <a :href="realMessage.content.audioUrl" target="_blank" download="audio.mp3" class="download-link">下载音频(暂不支持历史记录)</a>
         </div>
         <div v-else-if="realMessage.content?.isQuote" v-html="md.render(realMessage.content.content)" class="markdown-content"></div>
-        <div v-else v-html="md.render(realMessage.content)" class="markdown-content" ref="markdownContentRef"></div>
-        <el-icon v-if="isAssistant && loading" class="loading-icon" color="#333"><ep-Loading /></el-icon>
+        <div v-else class="markdown-content" ref="markdownContentRef">
+          <el-collapse v-if="realMessage.reasonContent" accordion v-model="collapseValue">
+            <el-collapse-item title="推理过程" name="reasoning">
+              <div v-html="md.render(realMessage.reasonContent)" class="text-[#666]"></div>
+            </el-collapse-item>
+          </el-collapse>
+          <div v-if="realMessage.content" v-html="md.render(realMessage.content)"></div>
+        </div>
+        <el-icon v-if="isAssistant && loading" class="loading-icon" :color="uiSettings.theme === 'dark' ? '#fff' : '#333'"
+          ><ep-Loading
+        /></el-icon>
       </div>
       <div class="actions" v-if="isAssistant">
         <el-button class="tool-btn" text @click="handleCopy">
@@ -33,8 +42,32 @@
 
 <script lang="ts" setup>
 import md from '@/composables/markdown.ts'
-import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import ShareModal from './ShareModal.vue'
+
+interface MessageContent {
+  type: 'text' | 'image_url' | 'reasoning' | 'audio'
+  text?: string
+  content?: string
+  image_url?: { url: string }
+}
+
+interface AudioContent {
+  type: 'audio'
+  audioUrl: string
+}
+
+interface MessageInput {
+  content: MessageContent[] | AudioContent | string
+  avatar?: string
+  [key: string]: any
+}
+
+interface FormattedMessage {
+  content: string | { type: 'audio'; audioUrl: string }
+  reasonContent?: string
+  avatar?: string
+  [key: string]: any
+}
 
 const props = defineProps({
   message: {
@@ -50,55 +83,112 @@ const props = defineProps({
     default: () => []
   }
 })
-
+const uiSettings: any = useStorage('UI_SETTINGS', [])
 const realMessage = ref<any>({})
+const collapseValue = ref('reasoning')
 const showShareModal = ref(false)
 const markdownContentRef = ref<HTMLElement | null>(null)
 
-const formatMessage = async (val: any) => {
+const formatMessage = (val: MessageInput): FormattedMessage => {
   const { content } = val
-  if (Array.isArray(content)) {
-    const textInfo = content.find((item) => item.type === 'text')
-    const imageList = content.filter((item) => item.type === 'image_url').map((item) => item.image_url.url)
-    const imgs = imageList.map((item) => `![image](${item})`).join('\n')
-    realMessage.value = {
-      ...val,
-      content: `${imgs}\n${textInfo?.text}`
+
+  try {
+    // 处理数组类型的内容
+    if (Array.isArray(content)) {
+      return handleArrayContent(val, content)
     }
-    return
-  } else if (content?.type === 'audio') {
-    realMessage.value = {
-      avatar: val.avatar,
-      content: {
-        type: 'audio',
-        audioUrl: content.audioUrl
-      }
+
+    // 处理音频内容
+    if (content && typeof content === 'object' && content.type === 'audio') {
+      return handleAudioContent(val, content)
     }
-    return
+
+    // 处理字符串内容
+    if (typeof content === 'string') {
+      return handleStringContent(val, content)
+    }
+
+    // 默认情况直接返回原值
+    return val as FormattedMessage
+  } catch (error) {
+    console.error('Error formatting message:', error)
+    return val as FormattedMessage
   }
-  // 如果val.content里有<artifact>标签，把内容替换成```
-  if (typeof content === 'string' && content.indexOf('<artifact type=') != -1) {
-    const modifiedContent = content
-      .replace(/(<artifact[^>]*>)([\s\S]*?)(<\/artifact>)/g, '$1\n``` xml\n$2\n```\n$3')
-      .replace(/<\/?artifact[^>]*>/g, '')
-    realMessage.value = {
+}
+
+const handleArrayContent = (val: MessageInput, content: MessageContent[]): FormattedMessage => {
+  const textInfo = content.find((item) => item.type === 'text')
+  const imageList = content
+    .filter((item) => item.type === 'image_url')
+    .map((item) => item.image_url?.url)
+    .filter(Boolean) as string[]
+
+  // 处理推理内容
+  const reasonContent = content.find((item) => item.type === 'reasoning')
+  if (reasonContent) {
+    let processedContent = textInfo?.content || ''
+
+    // 在推理逻辑中添加SVG处理
+    processedContent = processSvgContent(processedContent)
+
+    return {
       ...val,
-      content: modifiedContent
+      reasonContent: reasonContent?.content,
+      content: processedContent
     }
-    return
-  }
-  // 如果svg标签没有被```包裹，在svg标签外加上```
-  else if (typeof content === 'string' && content.indexOf('<svg') !== -1) {
-    // Check for SVG tags not already wrapped in code fences
-    const modifiedContent = content.replace(/(?<!```[\s\S]*?)(<svg[\s\S]*?<\/svg>)(?![\s\S]*?```)/g, '```xml\n$1\n```')
-    realMessage.value = {
-      ...val,
-      content: modifiedContent
-    }
-    return
   }
 
-  realMessage.value = val
+  // 处理图片内容
+  if (imageList.length > 0) {
+    const imgs = imageList.map((url) => `![image](${url})`).join('\n')
+
+    return {
+      ...val,
+      content: `${imgs}\n${textInfo?.text || ''}`
+    }
+  }
+
+  return val as FormattedMessage
+}
+
+const handleAudioContent = (val: MessageInput, content: AudioContent): FormattedMessage => {
+  return {
+    avatar: val.avatar,
+    content: {
+      type: 'audio',
+      audioUrl: content.audioUrl
+    }
+  }
+}
+
+const handleStringContent = (val: MessageInput, content: string): FormattedMessage => {
+  // 处理artifact标签
+  if (content.includes('<artifact type=')) {
+    const modifiedContent = processArtifactContent(content)
+    return {
+      ...val,
+      content: modifiedContent
+    }
+  }
+
+  // 处理SVG标签
+  if (content.includes('<svg')) {
+    const modifiedContent = processSvgContent(content)
+    return {
+      ...val,
+      content: modifiedContent
+    }
+  }
+  return val as FormattedMessage
+}
+
+const processArtifactContent = (content: string): string => {
+  return content.replace(/(<artifact[^>]*>)([\s\S]*?)(<\/artifact>)/g, '$1\n```xml\n$2\n```\n$3').replace(/<\/?artifact[^>]*>/g, '')
+}
+
+const processSvgContent = (content: string): string => {
+  // 检查SVG标签是否已经被代码块包裹，如果没有则添加包裹
+  return content.replace(/(?<!```[\s\S]*?)(<svg[\s\S]*?<\/svg>)(?![\s\S]*?```)/g, '```xml\n$1\n```')
 }
 
 const isUser = computed(() => props.message.role === 'user')
@@ -183,7 +273,7 @@ const processSvgInContent = async () => {
 watch(
   () => props.message,
   (val) => {
-    formatMessage(val)
+    realMessage.value = formatMessage(val)
     processSvgInContent()
   },
   { immediate: true, deep: true }
@@ -195,7 +285,7 @@ watch(
   .closeAI-message {
     .content {
       color: var(--app-text-color) !important;
-      background-color: #3A3A3C !important;
+      background-color: #3a3a3c !important;
     }
     .content-assistant {
       color: var(--app-text-color) !important;
@@ -338,6 +428,97 @@ watch(
       :deep(hr) {
         margin-bottom: 4px;
       }
+      :deep(.closeai-collapse) {
+        border-top: none;
+        .closeai-collapse-item__header {
+          height: 34px;
+        }
+      }
+      :deep(table) {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        background-color: #fff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        overflow: hidden;
+        th {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          font-weight: 600;
+          padding: 15px 12px;
+          text-align: left;
+          font-size: 14px;
+          letter-spacing: 0.5px;
+          border-bottom: 2px solid #5a67d8;
+        }
+
+        td {
+          padding: 12px 12px;
+          border-bottom: 1px solid #e2e8f0;
+          font-size: 13px;
+          line-height: 1.5;
+          color: #2d3748;
+          vertical-align: top;
+        }
+
+        tr:nth-child(even) {
+          background-color: #f8fafc;
+        }
+
+        tr:nth-child(odd) {
+          background-color: #ffffff;
+        }
+
+        tr:hover {
+          background-color: #edf2f7;
+          transition: all 0.2s ease;
+        }
+
+        td:first-child {
+          font-weight: 600;
+          color: #2b6cb0;
+          background-color: rgba(59, 130, 246, 0.05);
+          border-right: 2px solid #3b82f6;
+        }
+
+        td strong {
+          color: #e53e3e;
+          font-weight: 700;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+          table {
+            font-size: 12px;
+          }
+
+          th,
+          td {
+            padding: 8px 6px;
+          }
+
+          th {
+            font-size: 12px;
+          }
+        }
+        /* 边框圆角处理 */
+        th:first-child {
+          border-top-left-radius: 8px;
+        }
+
+        th:last-child {
+          border-top-right-radius: 8px;
+        }
+
+        tr:last-child td:first-child {
+          border-bottom-left-radius: 8px;
+        }
+
+        tr:last-child td:last-child {
+          border-bottom-right-radius: 8px;
+        }
+      }
     }
 
     .loading-icon {
@@ -409,7 +590,7 @@ watch(
   margin: 16px 0;
   padding: 16px;
   border-radius: 8px;
-  background-color: #36393F;
+  background-color: #36393f;
   display: flex;
   flex-direction: column;
   align-items: center;

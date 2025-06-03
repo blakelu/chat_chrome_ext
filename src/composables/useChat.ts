@@ -121,13 +121,21 @@ export function useChat() {
     let result = []
 
     for (let i = 0; i < context.length; i++) {
+      console.log('context[i]', context[i])
       const isAudio = Object.prototype.toString.call(context[i].content) === '[object Object]' && context[i].content.type === 'audio'
       const isQuote = context[i].content?.isQuote
       const isHidden = context[i].content?.isHidden
       const hasNext = i + 1 < context.length
       const isArrayAndWrongModelForNext = hasNext && Array.isArray(context[i].content)
-
-      if (isAudio) {
+      
+      let ressonData: any = {}
+      if (Array.isArray(context[i].content)) {
+        const isReasoning = context[i].content.some((item: any) => item.type === 'reasoning')
+        if (isReasoning) {
+          ressonData = context[i].content.find((item: any) => item.type === 'text')
+          result.push({ role: context[i].role, content: ressonData.content })
+        }
+      } else if (isAudio) {
         if (i > 0) {
           result.pop()
         }
@@ -135,7 +143,7 @@ export function useChat() {
       //  else if (isArrayAndWrongModelForNext) {
       //   i++
       // }
-       else if (isQuote) {
+      else if (isQuote) {
         const { role, content: contentObj } = context[i]
         if (isHidden) {
           const text = contentObj.content
@@ -208,20 +216,61 @@ export function useChat() {
       messages: customPrompt,
       temperature: commonSettings.value.temperature,
       stream: commonSettings.value.stream
-      // reasoning_effort: 'high',
     })
+
+    let isReasoning = false
+    const messageIndex = temporaryMessageId - 1
+
+    // 确保消息结构初始化
+    if (!chatMessages.value[messageIndex]) {
+      chatMessages.value[messageIndex] = { content: '' }
+    }
 
     if (commonSettings.value.stream) {
       for await (const chunk of completion) {
+        const reasoning_content = chunk.choices[0]?.delta?.reasoning_content
         const content = chunk.choices[0]?.delta?.content
-        if (!content) continue
-        if (chunk.choices[0]?.finish_reason === 'stop') break
-        chatMessages.value[temporaryMessageId - 1].content += content
+
+        // 处理推理内容
+        if (reasoning_content) {
+          if (!isReasoning) {
+            // 首次遇到推理内容，初始化数组结构
+            isReasoning = true
+            chatMessages.value[messageIndex].content = [
+              { type: 'reasoning', content: '' },
+              { type: 'text', content: '' }
+            ]
+          }
+          chatMessages.value[messageIndex].content[0].content += reasoning_content
+          continue
+        }
+
+        // 处理普通内容
+        if (content) {
+          if (chunk.choices[0]?.finish_reason === 'stop') break
+
+          if (isReasoning) {
+            // 推理模式：添加到文本部分
+            chatMessages.value[messageIndex].content[1].content += content
+          } else {
+            // 非推理模式：直接添加到content
+            if (typeof chatMessages.value[messageIndex].content === 'string') {
+              chatMessages.value[messageIndex].content += content
+            } else {
+              chatMessages.value[messageIndex].content = content
+            }
+          }
+        }
       }
-      chatContext.value.push({ role: 'assistant', content: chatMessages.value[temporaryMessageId - 1].content })
+
+      // 只在最后统一更新chatContext，避免重复
+      chatContext.value.push({
+        role: 'assistant',
+        content: chatMessages.value[messageIndex].content
+      })
     } else {
       const content = completion.choices[0]?.message?.content
-      updateMessageAndContext(temporaryMessageId - 1, content)
+      updateMessageAndContext(messageIndex, content)
     }
   }
 
@@ -271,7 +320,7 @@ export function useChat() {
     if (typeof content === 'object' && content?.isQuote) {
       title = content.content
     }
-    chatMessages.value.push(createMessage(chatMessages.value.length + 1, 'user', USER_AVATAR, content, title))
+    chatMessages.value.push(createMessage(chatMessages.value.length + 1, 'user', USER_AVATAR, content))
     chatContext.value.push({ role: 'user', content, title })
     return chatMessages.value.length
   }
