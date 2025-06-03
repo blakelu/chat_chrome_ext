@@ -24,6 +24,7 @@
       :picList="picList"
       :selectedText="selectedText"
       @update:selectedText="(val) => (selectedText = val)"
+      @update:picList="(val) => (picList = val)"
       @delete-pic="handleDeletePic"
       @send="handleInputEnter"
       @load-previous="loadPreviousMessage"
@@ -126,9 +127,9 @@ setTimeout(() => {
 
 onMounted(() => {
   chrome.runtime.sendMessage({ action: 'sidePanelReady' }).catch((error) => {
-    console.error('Error notifying side panel readiness:', error);
-  });
-  chrome.runtime.connect({ name: 'mySidepanel' });
+    console.error('Error notifying side panel readiness:', error)
+  })
+  chrome.runtime.connect({ name: 'mySidepanel' })
   // 监听选中文本事件
   setupSelectedTextListener()
 
@@ -264,7 +265,7 @@ const handleEscape = () => {
 }
 
 async function handleInputEnter() {
-  if (!inputMessage.value || composing.value) return
+  if ((!inputMessage.value && picList.value.length === 0) || composing.value) return
 
   const result = await processMessage(inputMessage.value, [...picList.value], props.ttsvoice)
 

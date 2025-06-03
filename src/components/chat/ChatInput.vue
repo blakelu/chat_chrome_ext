@@ -45,7 +45,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, watch } from 'vue'
+import { nextTick, onMounted, onUnmounted } from 'vue'
 
 const props = defineProps({
   modelValue: {
@@ -77,7 +77,45 @@ const emit = defineEmits([
   'update:selectedText' // 新增事件
 ])
 
-const inputRef: any = ref(null)
+const inputRef = ref<HTMLInputElement | null>(null)
+
+const handlePaste = (event: ClipboardEvent) => {
+  const items = event.clipboardData?.items
+  if (!items) return
+
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i]
+    if (item.kind === 'file' && item.type.startsWith('image/')) {
+      const file = item.getAsFile()
+      if (file) {
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          emit('update:picList', [...props.picList, e.target?.result])
+        }
+        reader.readAsDataURL(file)
+        event.preventDefault()
+      }
+    }
+  }
+}
+onMounted(() => {
+  nextTick(() => {
+    // 获取 el-input 组件内部的 textarea 元素
+    const textareaElement = inputRef.value?.$el?.querySelector('textarea')
+    if (textareaElement) {
+      textareaElement.addEventListener('paste', handlePaste)
+    }
+  })
+})
+
+onUnmounted(() => {
+  // 清理事件监听器
+  const textareaElement = inputRef.value?.$el?.querySelector('textarea')
+  if (textareaElement) {
+    textareaElement.removeEventListener('paste', handlePaste)
+  }
+})
+
 const focused = ref(false)
 const inputValue = computed({
   get: () => props.modelValue,
@@ -130,7 +168,8 @@ defineExpose({
       padding-left: 10px;
       display: -webkit-box;
       -webkit-box-orient: vertical;
-      -webkit-line-clamp: 3; /* 限制显示3行 */
+      -webkit-line-clamp: 3;
+      /* 限制显示3行 */
       overflow: hidden;
       text-overflow: ellipsis;
 
@@ -282,9 +321,11 @@ defineExpose({
   0% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.6;
   }
+
   100% {
     opacity: 1;
   }

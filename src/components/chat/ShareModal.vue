@@ -292,6 +292,7 @@ onMounted(() => {
       border-radius: 8px;
       margin: 10px 0;
       overflow: hidden;
+      white-space: pre-wrap;
     }
 
     :deep(code) {
