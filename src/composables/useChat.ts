@@ -210,6 +210,97 @@ export function useChat() {
     updateMessageAndContext(temporaryMessageId - 1, data)
   }
 
+  // Helper function to initialize reasoning structure
+  function initializeReasoningStructure(messageIndex: number, existingContent: string = '') {
+    return [
+      { type: 'reasoning', content: '' },
+      { type: 'text', content: existingContent }
+    ]
+  }
+
+  // Helper function to add content to message
+  function addContentToMessage(messageIndex: number, content: string, isReasoning: boolean, isTextPart: boolean = false) {
+    if (isReasoning) {
+      const targetIndex = isTextPart ? 1 : 0
+      chatMessages.value[messageIndex].content[targetIndex].content += content
+    } else {
+      if (typeof chatMessages.value[messageIndex].content === 'string') {
+        chatMessages.value[messageIndex].content += content
+      } else {
+        chatMessages.value[messageIndex].content = content
+      }
+    }
+  }
+
+  // Helper function to process think tag content
+  function processThinkTagContent(content: string, messageIndex: number, isReasoning: boolean, isInThinkTag: boolean, thinkBuffer: string) {
+    let newIsReasoning = isReasoning
+    let newIsInThinkTag = isInThinkTag
+    let newThinkBuffer = thinkBuffer
+    let shouldContinue = false
+
+    // Handle opening <think> tag
+    if (content.includes('<think>')) {
+      const parts = content.split('<think>')
+      if (parts.length > 1) {
+        // Process content before <think>
+        if (parts[0]) {
+          addContentToMessage(messageIndex, parts[0], newIsReasoning, true)
+        }
+        
+        // Initialize reasoning mode if not already active
+        if (!newIsReasoning) {
+          newIsReasoning = true
+          const existingContent = typeof chatMessages.value[messageIndex].content === 'string' 
+            ? chatMessages.value[messageIndex].content 
+            : ''
+          chatMessages.value[messageIndex].content = initializeReasoningStructure(messageIndex, existingContent)
+        }
+        
+        newIsInThinkTag = true
+        newThinkBuffer = parts[1] || ''
+        shouldContinue = true
+      }
+    }
+    
+    // Handle closing </think> tag
+    if (content.includes('</think>') && !shouldContinue) {
+      const parts = content.split('</think>')
+      if (parts.length > 1) {
+        // Add final reasoning content
+        newThinkBuffer += parts[0]
+        if (newIsReasoning && chatMessages.value[messageIndex].content[0]) {
+          chatMessages.value[messageIndex].content[0].content += newThinkBuffer
+        }
+        
+        newIsInThinkTag = false
+        newThinkBuffer = ''
+        
+        // Process content after </think>
+        if (parts[1]) {
+          addContentToMessage(messageIndex, parts[1], newIsReasoning, true)
+        }
+        shouldContinue = true
+      }
+    }
+    
+    // Handle content inside think tags
+    if (newIsInThinkTag && !shouldContinue) {
+      newThinkBuffer += content
+      if (newIsReasoning && chatMessages.value[messageIndex].content[0]) {
+        chatMessages.value[messageIndex].content[0].content += content
+      }
+      shouldContinue = true
+    }
+
+    return {
+      isReasoning: newIsReasoning,
+      isInThinkTag: newIsInThinkTag,
+      thinkBuffer: newThinkBuffer,
+      shouldContinue
+    }
+  }
+
   // Handle chat completion
   async function handleChatModelResponse(customPrompt: any, temporaryMessageId: number) {
     const completion = await openai.chat.completions.create({
@@ -220,6 +311,8 @@ export function useChat() {
     })
 
     let isReasoning = false
+    let isInThinkTag = false
+    let thinkBuffer = ''
     const messageIndex = temporaryMessageId - 1
 
     // 确保消息结构初始化
@@ -232,39 +325,40 @@ export function useChat() {
         const reasoning_content = chunk.choices[0]?.delta?.reasoning_content
         const content = chunk.choices[0]?.delta?.content
 
-        // 处理推理内容
+        // Handle reasoning content (original logic)
         if (reasoning_content) {
           if (!isReasoning) {
-            // 首次遇到推理内容，初始化数组结构
             isReasoning = true
-            chatMessages.value[messageIndex].content = [
-              { type: 'reasoning', content: '' },
-              { type: 'text', content: '' }
-            ]
+            chatMessages.value[messageIndex].content = initializeReasoningStructure(messageIndex)
           }
           chatMessages.value[messageIndex].content[0].content += reasoning_content
           continue
         }
 
-        // 处理普通内容
+        // Handle regular content
         if (content) {
           if (chunk.choices[0]?.finish_reason === 'stop') break
 
-          if (isReasoning) {
-            // 推理模式：添加到文本部分
-            chatMessages.value[messageIndex].content[1].content += content
-          } else {
-            // 非推理模式：直接添加到content
-            if (typeof chatMessages.value[messageIndex].content === 'string') {
-              chatMessages.value[messageIndex].content += content
-            } else {
-              chatMessages.value[messageIndex].content = content
+          // Check for <think> tag reasoning content
+          const hasThinkTags = content.includes('<think>') || content.includes('</think>') || isInThinkTag
+          
+          if (hasThinkTags) {
+            const result = processThinkTagContent(content, messageIndex, isReasoning, isInThinkTag, thinkBuffer)
+            isReasoning = result.isReasoning
+            isInThinkTag = result.isInThinkTag
+            thinkBuffer = result.thinkBuffer
+            
+            if (result.shouldContinue) {
+              continue
             }
           }
+
+          // Handle regular content
+          addContentToMessage(messageIndex, content, isReasoning, true)
         }
       }
 
-      // 只在最后统一更新chatContext，避免重复
+      // Update context at the end
       chatContext.value.push({
         role: 'assistant',
         content: chatMessages.value[messageIndex].content
