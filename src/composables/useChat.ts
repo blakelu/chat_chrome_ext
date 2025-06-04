@@ -34,6 +34,7 @@ export function useChat() {
   const selectedText = ref('')
   const hiddenText = ref('') // 不展示在聊天记录中的文本
   const picList = ref<string[]>([])
+  const selectedRole: any = useAppStorage('selectedRole', null)
 
   // Storage
   const apiInfo: any = useAppStorage('API_INFO', { apiKey: '', apiUrl: '' })
@@ -166,8 +167,8 @@ export function useChat() {
   function prepareCustomPrompt() {
     const limitContext = commonSettings.value.limitContext + 1
     const customPrompt = formatPromptMessages([...chatContext.value.slice(-limitContext)])
-    if (commonSettings.value.prompt) {
-      customPrompt.unshift({ role: 'system', content: commonSettings.value.prompt })
+    if (selectedRole.value?.prompt) {
+      customPrompt.unshift({ role: 'system', content: selectedRole.value.prompt })
     }
     const list = customPrompt.map((item) => {
       const { title, ...rest } = item
@@ -428,6 +429,7 @@ export function useChat() {
     selectedText,
     hiddenText,
     picList,
+    selectedRole,
 
     // Storage
     apiInfo,

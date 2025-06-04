@@ -33,7 +33,6 @@
 import ApiSettings from '@/components/settings/ApiSettings.vue'
 import ModelSettings from '@/components/settings/ModelSettings.vue'
 import ShortcutsSettings from '@/components/settings/ShortcutsSettings.vue'
-import RolePrompt from '@/components/settings/RolePrompt.vue'
 import AboutSection from '@/components/settings/AboutSection.vue'
 import SmartSetting from '@/components/settings/SmartSetting.vue'
 
@@ -47,7 +46,6 @@ const tabs = [
   { label: 'API配置', name: 'ApiSettings', component: ApiSettings, icon: settingConfig },
   { label: '智能设置', name: 'SmartSetting', component: SmartSetting, icon: smartOptimization },
   { label: '其它设置', name: 'ShortcutsSettings', component: ShortcutsSettings, icon: shortCut },
-  // { label: '角色设置', name: 'RolePrompt', component: RolePrompt },
   { label: '关于', name: 'AboutSection', component: AboutSection, icon: info }
 ]
 const activeTitle = computed(() => {

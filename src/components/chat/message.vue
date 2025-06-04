@@ -355,11 +355,12 @@ watch(
   }
   .content-container {
     max-width: 88%;
-    // max-width: calc(100% - 36px - 5%);
+    flex: 1;
     display: flex;
     flex-direction: column;
   }
   .content-container.is-self {
+    flex: none;
     max-width: 84%;
     justify-content: flex-end;
   }

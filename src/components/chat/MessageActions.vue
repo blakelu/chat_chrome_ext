@@ -14,15 +14,19 @@
     </div>
 
     <div class="tools-right">
-      <el-tooltip effect="dark" :content="themeTooltip" placement="top" append-to="#closeAI-app">
-        <el-button class="tool-btn" text @click="handleToggleTheme">
-          <!-- Make sure you have sun.svg and moon.svg in @/assets/icons/ -->
-          <img :src="themeIconSrc" class="w-[16px]" :alt="themeTooltip" />
-        </el-button>
-      </el-tooltip>
       <el-tooltip effect="dark" content="设置" placement="top">
         <el-button class="tool-btn" text @click="$emit('show-settings')">
           <img src="@/assets/icons/setting.svg" class="w-[16px]" alt="设置" />
+        </el-button>
+      </el-tooltip>
+      <el-tooltip effect="dark" :content="themeTooltip" placement="top" append-to="#closeAI-app">
+        <el-button class="tool-btn" text @click="handleToggleTheme">
+          <img :src="themeIconSrc" class="w-[16px]" :alt="themeTooltip" />
+        </el-button>
+      </el-tooltip>
+      <el-tooltip content="选择角色" placement="top">
+        <el-button class="tool-btn" text @click="$emit('show-role-selector')">
+          <img :src="hasSelectedRole ? maskSelected : mask" class="w-[16px]" alt="选择角色" />
         </el-button>
       </el-tooltip>
       <el-tooltip effect="dark" content="清空对话" placement="top" append-to="#closeAI-app">
@@ -48,6 +52,8 @@
 import { computed, inject } from 'vue'
 import sun from '@/assets/icons/sun.svg'
 import moon from '@/assets/icons/moon.svg'
+import mask from '@/assets/icons/mask.svg'
+import maskSelected from '@/assets/icons/mask-selected.svg'
 
 const props = defineProps({
   model: {
@@ -61,10 +67,22 @@ const props = defineProps({
   hasMessages: {
     type: Boolean,
     default: false
+  },
+  selectedRole: {
+    type: Object,
+    default: null
   }
 })
 
-const emit = defineEmits(['upload-image', 'clear-chat', 'show-history', 'new-chat', 'show-settings', 'show-choose-model'])
+const emit = defineEmits([
+  'upload-image',
+  'clear-chat',
+  'show-history',
+  'new-chat',
+  'show-settings',
+  'show-choose-model',
+  'show-role-selector'
+])
 
 const currentTheme = inject<any>('currentTheme')
 const toggleTheme = inject<() => void>('toggleTheme')
@@ -83,6 +101,8 @@ const handleToggleTheme = () => {
     toggleTheme()
   }
 }
+
+const hasSelectedRole = computed(() => !!props.selectedRole)
 </script>
 
 <style lang="less" scoped>
@@ -114,6 +134,7 @@ const handleToggleTheme = () => {
     display: flex;
     align-items: center;
     padding: 6px 10px;
+    max-width: 120px;
     border-radius: 10px;
     background-color: rgba(0, 0, 0, 0.02);
     border: 1px solid rgba(0, 0, 0, 0.03);
