@@ -265,23 +265,25 @@ export function useChat() {
     
     // Handle closing </think> tag
     if (content.includes('</think>') && !shouldContinue) {
-      const parts = content.split('</think>')
-      if (parts.length > 1) {
-        // Add final reasoning content
-        newThinkBuffer += parts[0]
-        if (newIsReasoning && chatMessages.value[messageIndex].content[0]) {
-          chatMessages.value[messageIndex].content[0].content += newThinkBuffer
-        }
+      // const parts = content.split('</think>')
+      // if (parts.length > 1) {
+      //   // Add final reasoning content
+      //   newThinkBuffer += parts[0]
+      //   if (newIsReasoning && chatMessages.value[messageIndex].content[0]) {
+      //     chatMessages.value[messageIndex].content[0].content += newThinkBuffer
+      //   }
         
+      //   newIsInThinkTag = false
+      //   newThinkBuffer = ''
+        
+      //   // Process content after </think>
+      //   if (parts[1]) {
+      //     addContentToMessage(messageIndex, parts[1], newIsReasoning, true)
+      //   }
         newIsInThinkTag = false
         newThinkBuffer = ''
-        
-        // Process content after </think>
-        if (parts[1]) {
-          addContentToMessage(messageIndex, parts[1], newIsReasoning, true)
-        }
         shouldContinue = true
-      }
+      // }
     }
     
     // Handle content inside think tags
