@@ -42,7 +42,7 @@
           <span>+</span>
           <span class="key">Shift</span>
           <span>+</span>
-          <span class="key">I</span>
+          <span class="key">Y</span>
         </div>
       </div>
 

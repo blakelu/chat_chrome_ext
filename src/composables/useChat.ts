@@ -119,45 +119,64 @@ export function useChat() {
   ])
   // Format prompt messages
   function formatPromptMessages(context) {
-    let result = []
+    if (!Array.isArray(context) || context.length === 0) {
+      return []
+    }
+
+    const result = []
 
     for (let i = 0; i < context.length; i++) {
-      console.log('context[i]', context[i])
-      const isAudio = Object.prototype.toString.call(context[i].content) === '[object Object]' && context[i].content.type === 'audio'
-      const isQuote = context[i].content?.isQuote
-      const isHidden = context[i].content?.isHidden
-      const hasNext = i + 1 < context.length
-      const isArrayAndWrongModelForNext = hasNext && Array.isArray(context[i].content)
-      
-      let ressonData: any = {}
-      if (Array.isArray(context[i].content)) {
-        const isReasoning = context[i].content.some((item: any) => item.type === 'reasoning')
-        if (isReasoning) {
-          ressonData = context[i].content.find((item: any) => item.type === 'text')
-          result.push({ role: context[i].role, content: ressonData.content })
-        }
-      } else if (isAudio) {
-        if (i > 0) {
-          result.pop()
-        }
+      const { role, content } = context[i]
+
+      // 跳过无效项
+      if (!role || content === undefined) {
+        continue
       }
-      //  else if (isArrayAndWrongModelForNext) {
-      //   i++
-      // }
-      else if (isQuote) {
-        const { role, content: contentObj } = context[i]
-        if (isHidden) {
-          const text = contentObj.content
-          const hiddenText = contentObj.hiddenText
-          result.push({ role, content: `${toolsObj.get(text)}\n${hiddenText}` })
+
+      // 处理数组类型内容（推理或多模态）
+      if (Array.isArray(content)) {
+        const reasoningItem = content.find((item) => item?.type === 'reasoning')
+        if (reasoningItem) {
+          const textItem = content.find((item) => item?.type === 'text')
+          if (textItem) {
+            result.push({ role, content: textItem.content })
+          }
         } else {
-          const text = contentObj.content
-          const quote = contentObj.quote
-          result.push({ role, content: `${toolsObj.get(text)}:\n${quote}` })
+          result.push({ role, content })
         }
-      } else {
-        result.push(context[i])
+        continue
       }
+
+      // 处理对象类型内容
+      if (content && typeof content === 'object') {
+        const { type, isQuote, isHidden } = content
+
+        // 处理音频内容
+        if (type === 'audio') {
+          if (result.length > 0) {
+            result.pop()
+          }
+          continue
+        }
+
+        // 处理引用内容
+        if (isQuote) {
+          const { content: text, quote, hiddenText } = content
+          const toolText = toolsObj?.get?.(text) || text
+
+          if (isHidden && hiddenText) {
+            result.push({ role, content: `${toolText}\n${hiddenText}` })
+          } else if (quote) {
+            result.push({ role, content: `${toolText}:\n${quote}` })
+          } else {
+            result.push({ role, content: text })
+          }
+          continue
+        }
+      }
+
+      // 处理普通文本内容
+      result.push({ role, content })
     }
 
     return result
@@ -247,22 +266,21 @@ export function useChat() {
         if (parts[0]) {
           addContentToMessage(messageIndex, parts[0], newIsReasoning, true)
         }
-        
+
         // Initialize reasoning mode if not already active
         if (!newIsReasoning) {
           newIsReasoning = true
-          const existingContent = typeof chatMessages.value[messageIndex].content === 'string' 
-            ? chatMessages.value[messageIndex].content 
-            : ''
+          const existingContent =
+            typeof chatMessages.value[messageIndex].content === 'string' ? chatMessages.value[messageIndex].content : ''
           chatMessages.value[messageIndex].content = initializeReasoningStructure(messageIndex, existingContent)
         }
-        
+
         newIsInThinkTag = true
         newThinkBuffer = parts[1] || ''
         shouldContinue = true
       }
     }
-    
+
     // Handle closing </think> tag
     if (content.includes('</think>') && !shouldContinue) {
       // const parts = content.split('</think>')
@@ -272,20 +290,20 @@ export function useChat() {
       //   if (newIsReasoning && chatMessages.value[messageIndex].content[0]) {
       //     chatMessages.value[messageIndex].content[0].content += newThinkBuffer
       //   }
-        
+
       //   newIsInThinkTag = false
       //   newThinkBuffer = ''
-        
+
       //   // Process content after </think>
       //   if (parts[1]) {
       //     addContentToMessage(messageIndex, parts[1], newIsReasoning, true)
       //   }
-        newIsInThinkTag = false
-        newThinkBuffer = ''
-        shouldContinue = true
+      newIsInThinkTag = false
+      newThinkBuffer = ''
+      shouldContinue = true
       // }
     }
-    
+
     // Handle content inside think tags
     if (newIsInThinkTag && !shouldContinue) {
       newThinkBuffer += content
@@ -343,13 +361,13 @@ export function useChat() {
 
           // Check for <think> tag reasoning content
           const hasThinkTags = content.includes('<think>') || content.includes('</think>') || isInThinkTag
-          
+
           if (hasThinkTags) {
             const result = processThinkTagContent(content, messageIndex, isReasoning, isInThinkTag, thinkBuffer)
             isReasoning = result.isReasoning
             isInThinkTag = result.isInThinkTag
             thinkBuffer = result.thinkBuffer
-            
+
             if (result.shouldContinue) {
               continue
             }
