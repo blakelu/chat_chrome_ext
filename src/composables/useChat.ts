@@ -342,7 +342,7 @@ export function useChat() {
 
     if (commonSettings.value.stream) {
       for await (const chunk of completion) {
-        const reasoning_content = chunk.choices[0]?.delta?.reasoning_content
+        const reasoning_content = chunk.choices[0]?.delta?.reasoning_content || chunk.choices[0]?.delta?.reasoning
         const content = chunk.choices[0]?.delta?.content
 
         // Handle reasoning content (original logic)
