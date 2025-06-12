@@ -23,6 +23,9 @@
                     <img :src="item.image_url?.url" class="share-image" />
                   </div>
                   <div>{{ msg.content.find((i) => i.type === 'text')?.text || '' }}</div>
+                  <div v-for="(item, i) in msg.content.filter((i) => i.type === 'text')" :key="i">
+                    <div v-html="md.render(item.content || '')"></div>
+                  </div>
                 </div>
                 <div v-else-if="msg.content?.isQuote" v-html="md.render(msg.content?.content || '')"></div>
                 <div v-else class="markdown-content" v-html="md.render(msg.content || '')"></div>
@@ -302,7 +305,8 @@ onMounted(() => {
 
     :deep(img) {
       border-radius: 8px;
-      max-width: 100%;
+      height: 100px;
+      width: auto;
     }
   }
 }

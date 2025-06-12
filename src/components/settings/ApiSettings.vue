@@ -31,9 +31,9 @@
           添加新配置
         </el-button>
       </div>
-      <div>
+      <!-- <div>
         <el-button @click="handleGetTestConfig"> 获取测试配置 </el-button>
-      </div>
+      </div> -->
     </div>
 
     <div v-if="apiList[currentIndex]" class="card-body-container">

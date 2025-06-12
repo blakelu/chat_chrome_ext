@@ -11,12 +11,14 @@
       :settings="commonSettings"
       :picCount="picList.length"
       :hasMessages="chatMessages.length > 0"
+      :selectedRole="selectedRole"
       @upload-image="uploadPic"
       @clear-chat="clearChat"
       @show-history="$emit('showHistory')"
       @new-chat="$emit('addNewSession')"
       @show-settings="openOptionsPage"
       @show-choose-model="openChooseModel"
+      @show-role-selector="showRoleSelector = true"
     />
 
     <ChatInput
@@ -36,19 +38,23 @@
   </div>
   <ChooseModel v-model:show-modal="showModelModal" @select-model="handleChooseModel" @nav-to-config="handleNavToConfig" />
 
-  <RolePrompt v-model:show="promptVisible" />
+  <RoleSelector
+    v-model:visible="showRoleSelector"
+    @select="handleRoleSelect"
+  />
 </template>
 
 <script lang="ts" setup>
 // Import composable
 import { useChat } from '@/composables/useChat.ts'
+import { useAppStorage } from '@/composables/useAppStorage.ts'
 
 // Import components with better organization
 import ChatMessages from './ChatMessages.vue'
 import MessageActions from './MessageActions.vue'
 import ChatInput from './ChatInput.vue'
 import empty from './empty.vue'
-import RolePrompt from '../settings/RolePrompt.vue'
+import RoleSelector from '../settings/RoleSelector.vue'
 
 // Props and emits
 const props = defineProps({
@@ -83,8 +89,11 @@ const {
   retryMessage
 } = useChat()
 
+// Role selection state
+const selectedRole: any = useAppStorage('selectedRole', null)
+const showRoleSelector = ref(false)
+
 // Local state that's not in the composable
-const promptVisible = ref(false)
 const composing = ref(false)
 const inputHistory = ref<string[]>([])
 const currentHistoryIndex = ref(-1)
@@ -287,6 +296,11 @@ async function handleInputEnter() {
 const emptyConfirm = (data: string) => {
   inputMessage.value = data
   handleInputEnter()
+}
+
+// Handle role selection
+const handleRoleSelect = (role: any) => {
+  selectedRole.value = role
 }
 
 // Expose methods to parent component
