@@ -30,7 +30,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue';
+import { ref, onMounted } from 'vue';
 import { throttle } from 'lodash-es';
 import Message from './Message.vue';
 import NetworkStatus from '@/components/common/NetworkStatus.vue';
@@ -76,21 +76,10 @@ const handleScroll = throttle(() => {
 }, 200);
 
 onMounted(() => {
-  const messagesEl = messagesRef.value;
-  if (messagesEl) {
-    messagesEl.addEventListener('scroll', handleScroll);
-  }
   // Initial scroll to bottom
   nextTick(() => {
     scrollToBottom();
   });
-});
-
-onUnmounted(() => {
-  const messagesEl = messagesRef.value;
-  if (messagesEl) {
-    messagesEl.removeEventListener('scroll', handleScroll);
-  }
 });
 
 // Expose methods

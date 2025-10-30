@@ -1,4 +1,4 @@
-import { ref, watch, Ref } from 'vue'
+import { ref, watch, Ref, onScopeDispose } from 'vue'
 
 type StorageType = 'local' | 'session' | 'chrome'
 
@@ -22,35 +22,44 @@ export function useAppStorage<T>(
   try {
     let value: string | null = null
     if (storage === 'local' && typeof chrome !== 'undefined' && chrome.storage) {
-      // Use Chrome storage API if available
-      chrome.storage.local.get([key], (result: any) => {
-        if (result[key]) {
-          try {
-            // console.log(result[key], 1111)
-            if (typeof result[key] === 'object' && result[key] !== null) {
-              storedValue.value = result[key]
-            } else {
-              storedValue.value = deserialize(result[key])
-            }
-          } catch (error) {
-            onError(new Error(`Failed to parse stored value: ${error}`))
+      const applyStoredValue = (raw: any) => {
+        if (typeof raw === 'undefined') return false
+        try {
+          if (typeof raw === 'object' && raw !== null) {
+            storedValue.value = raw
+          } else {
+            storedValue.value = deserialize(raw)
           }
-        } else {
-          // If no value is found, set the initial value
+          return true
+        } catch (error) {
+          onError(new Error(`Failed to parse stored value: ${error}`))
+          return false
+        }
+      }
+
+      chrome.storage.local.get([key], (result: any) => {
+        const hasValue = applyStoredValue(result[key])
+        if (!hasValue) {
           const serialized = serialize(initialValue)
           chrome.storage.local.set({ [key]: serialized }, () => {
-            storedValue.value = deserialize(serialized)
+            try {
+              storedValue.value = deserialize(serialized)
+            } catch (error) {
+              onError(new Error(`Failed to parse serialized initial value: ${error}`))
+            }
           })
         }
       })
-      chrome.storage.local.onChanged.addListener((changes: any) => {
-        if (changes[key] && changes[key].newValue) {
-          try {
-            storedValue.value = deserialize(changes[key].newValue)
-          } catch (error) {
-            onError(new Error(`Failed to parse stored value: ${error}`))
-          }
+
+      const handleStorageChange = (changes: any) => {
+        if (changes[key]) {
+          applyStoredValue(changes[key].newValue)
         }
+      }
+
+      chrome.storage.local.onChanged.addListener(handleStorageChange)
+      onScopeDispose(() => {
+        chrome.storage?.local?.onChanged.removeListener(handleStorageChange)
       })
     } else {
       // Use web storage API
@@ -66,7 +75,7 @@ export function useAppStorage<T>(
   }
 
   // Watch for changes and update storage
-  watch(
+  const stopWatch = watch(
     storedValue,
     (newValue) => {
       try {
@@ -86,6 +95,10 @@ export function useAppStorage<T>(
     },
     { deep }
   )
+
+  onScopeDispose(() => {
+    stopWatch()
+  })
 
   return storedValue
 }

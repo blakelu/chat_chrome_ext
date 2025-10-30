@@ -17,6 +17,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 
 const isOnline = ref(true);
+let intervalCheck: ReturnType<typeof setInterval> | null = null;
 
 // Check network status and set up listeners
 onMounted(() => {
@@ -25,17 +26,19 @@ onMounted(() => {
   window.addEventListener('online', handleOnline);
   window.addEventListener('offline', handleOffline);
 
-  // Set up periodic check for actual internet connectivity
-  const intervalCheck = setInterval(checkActualConnectivity, 30000);
-
-  onUnmounted(() => {
-    window.removeEventListener('online', handleOnline);
-    window.removeEventListener('offline', handleOffline);
-    clearInterval(intervalCheck);
-  });
+  intervalCheck = window.setInterval(checkActualConnectivity, 30000);
 
   // Initial check
   checkActualConnectivity();
+});
+
+onUnmounted(() => {
+  window.removeEventListener('online', handleOnline);
+  window.removeEventListener('offline', handleOffline);
+  if (intervalCheck !== null) {
+    clearInterval(intervalCheck);
+    intervalCheck = null;
+  }
 });
 
 // Handle online event
@@ -52,18 +55,19 @@ function handleOffline() {
 
 // Check actual connectivity by making a request
 async function checkActualConnectivity() {
-  try {
-    return
-    if (!navigator.onLine) {
+  if (!navigator.onLine) {
+    if (isOnline.value) {
       isOnline.value = false;
-      return;
+      ElMessage.error('网络连接已断开');
     }
+    return;
+  }
 
-    // Use a tiny request to check connectivity
+  try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const timeoutId = window.setTimeout(() => controller.abort(), 5000);
 
-    const response = await fetch('https://www.google.com/favicon.ico', {
+    await fetch('https://www.google.com/favicon.ico', {
       mode: 'no-cors',
       cache: 'no-store',
       signal: controller.signal
@@ -76,7 +80,6 @@ async function checkActualConnectivity() {
       ElMessage.success('网络连接已恢复');
     }
   } catch (error) {
-    // If we were previously online, show notification
     if (isOnline.value) {
       isOnline.value = false;
       ElMessage.error('网络连接不稳定');
