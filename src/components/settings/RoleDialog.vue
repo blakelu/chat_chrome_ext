@@ -22,7 +22,7 @@
           type="textarea"
           placeholder="请输入角色的提示词描述..."
           :rows="16"
-          maxlength="2000"
+          maxlength="3000"
           show-word-limit
         />
       </el-form-item>
@@ -73,7 +73,7 @@ const rules = {
   ],
   prompt: [
     { required: true, message: '请输入角色描述', trigger: 'blur' },
-    { min: 1, max: 1000, message: '角色描述长度在 1 到 1000 个字符', trigger: 'blur' }
+    { min: 1, max: 3000, message: '角色描述长度在 1 到 3000 个字符', trigger: 'blur' }
   ]
 }
 

@@ -112,6 +112,9 @@ const openOptionsPage = () => {
 
 // Initialize with a loading state
 const apiCheckCompleted = ref(false)
+let apiCheckTimer: ReturnType<typeof setTimeout> | null = null
+let runtimeMessageListener: ((message: any, sender: any, sendResponse: (response: any) => void) => boolean | void) | null = null
+let sidepanelPort: any = null
 
 // Watch for API info changes
 watch(
@@ -127,7 +130,7 @@ watch(
 )
 
 // Set a timeout to check if apiInfo is loaded
-setTimeout(() => {
+apiCheckTimer = window.setTimeout(() => {
   apiCheckCompleted.value = true
   if (!unref(apiInfo).apiKey || !unref(apiInfo).apiUrl) {
     openOptionsPage()
@@ -138,7 +141,11 @@ onMounted(() => {
   chrome.runtime.sendMessage({ action: 'sidePanelReady' }).catch((error) => {
     console.error('Error notifying side panel readiness:', error)
   })
-  chrome.runtime.connect({ name: 'mySidepanel' })
+  try {
+    sidepanelPort = chrome.runtime.connect({ name: 'mySidepanel' })
+  } catch (error) {
+    console.error('Error connecting to runtime port:', error)
+  }
   // 监听选中文本事件
   setupSelectedTextListener()
 
@@ -152,7 +159,10 @@ onMounted(() => {
 // 设置选中文本监听器
 const setupSelectedTextListener = () => {
   if (typeof chrome !== 'undefined' && chrome.runtime) {
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (runtimeMessageListener) {
+      chrome.runtime.onMessage.removeListener(runtimeMessageListener)
+    }
+    runtimeMessageListener = (message, sender, sendResponse) => {
       if (message.action === 'textSelected') {
         selectedText.value = message.text
         inputRef.value.focus()
@@ -165,7 +175,8 @@ const setupSelectedTextListener = () => {
         emptyConfirm(prompt)
       }
       return true
-    })
+    }
+    chrome.runtime.onMessage.addListener(runtimeMessageListener)
     try {
       chrome.runtime
         .sendMessage('sidePanelOpened')
@@ -275,7 +286,11 @@ const handleEscape = () => {
 
 async function handleInputEnter() {
   if ((!inputMessage.value && picList.value.length === 0) || composing.value) return
-
+  
+  nextTick(() => {
+    messagesRef.value?.scrollToBottom()
+  })
+  
   const result = await processMessage(inputMessage.value, [...picList.value], props.ttsvoice)
 
   // Add to input history
@@ -289,8 +304,6 @@ async function handleInputEnter() {
 
     currentHistoryIndex.value = -1
   }
-
-  messagesRef.value?.scrollToBottom()
 }
 
 const emptyConfirm = (data: string) => {
@@ -307,6 +320,23 @@ const handleRoleSelect = (role: any) => {
 defineExpose({
   clearChat: handleClearChat,
   initChat
+})
+
+onUnmounted(() => {
+  if (apiCheckTimer) {
+    clearTimeout(apiCheckTimer)
+    apiCheckTimer = null
+  }
+  if (runtimeMessageListener && typeof chrome !== 'undefined' && chrome.runtime) {
+    chrome.runtime.onMessage.removeListener(runtimeMessageListener)
+    runtimeMessageListener = null
+  }
+  try {
+    sidepanelPort?.disconnect()
+  } catch (error) {
+    console.error('Error disconnecting runtime port:', error)
+  }
+  sidepanelPort = null
 })
 </script>
 

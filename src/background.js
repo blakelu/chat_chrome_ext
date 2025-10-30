@@ -254,8 +254,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 function sendToExtension(message) {
   if (isSidePanelReady) {
     // If active side panel info is available, send there
-    if (activeSidePanelInfo.windowId) {
-      chrome.tabs.sendMessage(activeSidePanelInfo.windowId, message).catch(() => {
+    if (activeSidePanelInfo.tabId !== null) {
+      chrome.tabs.sendMessage(activeSidePanelInfo.tabId, message).catch(() => {
         broadcastMessage(message)
       })
     } else {
