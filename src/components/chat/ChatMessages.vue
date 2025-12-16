@@ -1,9 +1,5 @@
 <template>
-  <div 
-    class="closeAI-messages" 
-    ref="messagesRef" 
-    @scroll="handleScroll"
-  >
+  <div class="closeAI-messages" ref="messagesRef" @scroll="handleScroll">
     <template v-if="messages.length === 0">
       <slot name="empty"></slot>
     </template>
@@ -13,27 +9,28 @@
         tag="div"
         class="messages-list"
       > -->
-        <Message
-          v-for="(message, index) in messages"
-          :key="message.id"
-          :message="message"
-          :all-messages="messages"
-          :loading="index + 1 === messages.length && loading"
-          :data-animate-delay="index"
-          @retry="$emit('retry', message)"
-        />
+      <Message
+        v-for="(message, index) in messages"
+        :key="message.id"
+        :message="message"
+        :all-messages="messages"
+        :loading="index + 1 === messages.length && loading"
+        :data-animate-delay="index"
+        @add-note="hanldeAddNote"
+        @retry="$emit('retry', message)"
+      />
       <!-- </TransitionGroup> -->
     </template>
-    
+
     <NetworkStatus />
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue';
-import { throttle } from 'lodash-es';
-import Message from './Message.vue';
-import NetworkStatus from '@/components/common/NetworkStatus.vue';
+import { ref, onMounted } from 'vue'
+import { throttle } from 'lodash-es'
+import Message from './Message.vue'
+import NetworkStatus from '@/components/common/NetworkStatus.vue'
 
 const props = defineProps({
   messages: {
@@ -43,49 +40,52 @@ const props = defineProps({
   loading: {
     type: Boolean,
     default: false
-  },
-});
+  }
+})
 
-const emit = defineEmits(['retry', 'scroll']);
+const emit = defineEmits(['retry', 'scroll', 'addNote'])
 
 // Refs
-const messagesRef = ref<HTMLElement | null>(null);
+const messagesRef = ref<HTMLElement | null>(null)
 
 // Methods
 const scrollToBottom = (force = false) => {
-  const messagesEl = messagesRef.value;
-  if (!messagesEl) return;
-  
+  const messagesEl = messagesRef.value
+  if (!messagesEl) return
+
   if (force) {
     messagesEl.scroll({
       top: messagesEl.scrollHeight,
       behavior: 'smooth'
-    });
+    })
   } else {
-    messagesEl.scrollTop = messagesEl.scrollHeight;
+    messagesEl.scrollTop = messagesEl.scrollHeight
   }
-};
+}
 
 const handleScroll = throttle(() => {
-  const messagesEl = messagesRef.value;
-  if (!messagesEl) return;
-  
-  const { scrollTop, scrollHeight, clientHeight } = messagesEl;
-  
-  emit('scroll', { scrollTop, scrollHeight, clientHeight });
-}, 200);
+  const messagesEl = messagesRef.value
+  if (!messagesEl) return
 
+  const { scrollTop, scrollHeight, clientHeight } = messagesEl
+
+  emit('scroll', { scrollTop, scrollHeight, clientHeight })
+}, 200)
+
+const hanldeAddNote = (content: string) => {
+  emit('addNote', content)
+}
 onMounted(() => {
   // Initial scroll to bottom
   nextTick(() => {
-    scrollToBottom();
-  });
-});
+    scrollToBottom()
+  })
+})
 
 // Expose methods
 defineExpose({
   scrollToBottom
-});
+})
 </script>
 
 <style lang="less" scoped>
@@ -104,15 +104,15 @@ defineExpose({
   scroll-behavior: smooth;
   padding: 6px 0 20px;
   border-radius: 6px 6px 0 0;
-  
+
   &::-webkit-scrollbar {
     width: 8px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background-color: rgba(0, 0, 0, 0.1);
     border-radius: 8px;
@@ -127,9 +127,9 @@ defineExpose({
 }
 
 // Message transition animations
-.message-transition-enter-active, 
+.message-transition-enter-active,
 .message-transition-leave-active {
-  transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1.0);
+  transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 .message-transition-enter-from {
@@ -145,7 +145,7 @@ defineExpose({
 // Fade scale animation for buttons
 .fade-scale-enter-active,
 .fade-scale-leave-active {
-  transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1.0);
+  transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 .fade-scale-enter-from,

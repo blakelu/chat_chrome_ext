@@ -64,7 +64,12 @@ chrome.runtime.onInstalled.addListener((details) => {
     contexts: ['all']
   })
 
-  // Create submenu items
+  chrome.contextMenus.create({
+    id: 'addToBlinko',
+    parentId: 'mainContextMenu',
+    title: '添加到Blinko笔记',
+    contexts: ['selection']
+  })
   chrome.contextMenus.create({
     id: 'summarizePage',
     parentId: 'mainContextMenu',
@@ -128,6 +133,11 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
       .catch((error) => {
         console.error('Error processing summarizePage:', error)
       })
+  }
+
+  // 处理添加到Blinko笔记
+  if (info.menuItemId === 'addToBlinko' && info.selectionText) {
+    addSelectedTextToBlinko(info.selectionText, tab)
   }
 })
 
@@ -211,7 +221,7 @@ function getPageContent() {
     console.log(`getPageContent: Content truncated to ${maxLength} characters.`);
     content = content.slice(0, maxLength);
   }
-  
+
   console.log('getPageContent: Final content snippet:', content.substring(0, 200) + "...");
   return content;
 }
@@ -282,3 +292,101 @@ chrome.runtime.onConnect.addListener(function (port) {
     });
   }
 });
+
+// 添加选中文字到Blinko笔记
+async function addSelectedTextToBlinko(text, tab) {
+  try {
+    // 从 chrome.storage.local 获取 Blinko 配置
+    const result = await chrome.storage.local.get('COMMON_SETTINGS')
+    const settings = JSON.parse(result?.COMMON_SETTINGS)
+
+    if (!settings || !settings.blinkoUrl || !settings.blinkoToken) {
+      // 显示错误提示
+      showNotificationInTab(tab.id, '请先在设置中配置 Blinko 地址和 Token', 'error')
+      // 打开设置页面
+      chrome.runtime.openOptionsPage()
+      return
+    }
+
+    const blinkoUrl = settings.blinkoUrl
+    const blinkoToken = settings.blinkoToken
+
+    // 调用 Blinko API
+    const response = await fetch(`${blinkoUrl}/api/v1/note/upsert`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${blinkoToken}`
+      },
+      body: JSON.stringify({
+        content: text,
+        type: 0
+      })
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const data = await response.json()
+
+    if (data && data.id) {
+      showNotificationInTab(tab.id, '已添加到 Blinko 笔记', 'success')
+    } else {
+      throw new Error('添加失败，未返回有效结果')
+    }
+  } catch (error) {
+    console.error('添加到 Blinko 笔记失败:', error)
+    showNotificationInTab(tab.id, '添加到 Blinko 笔记失败: ' + error.message, 'error')
+  }
+}
+
+// 在页面中显示通知提示
+function showNotificationInTab(tabId, message, type) {
+  chrome.scripting.executeScript({
+    target: { tabId: tabId },
+    func: (msg, notificationType) => {
+      // 移除已存在的通知
+      const existingNotification = document.getElementById('closeai-blinko-notification')
+      if (existingNotification) {
+        existingNotification.remove()
+      }
+
+      // 创建通知元素
+      const notification = document.createElement('div')
+      notification.id = 'closeai-blinko-notification'
+      notification.textContent = msg
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        z-index: 2147483647;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        transform: translateX(0);
+        opacity: 1;
+        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+        ${notificationType === 'success'
+          ? 'background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;'
+          : 'background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white;'
+        }
+      `
+
+      document.body.appendChild(notification)
+
+      // 3秒后自动消失
+      setTimeout(() => {
+        notification.style.opacity = '0'
+        notification.style.transform = 'translateX(100px)'
+        setTimeout(() => notification.remove(), 300)
+      }, 3000)
+    },
+    args: [message, type]
+  }).catch(error => {
+    console.error('显示通知失败:', error)
+  })
+}

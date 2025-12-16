@@ -34,6 +34,9 @@
         <el-button class="tool-btn" text @click="handleShare">
           <el-icon size="16"><ep-share /></el-icon>
         </el-button>
+        <el-button class="tool-btn" text @click="hanldeAddNote">
+          <el-icon size="16"><ep-notebook /></el-icon>
+        </el-button>
       </div>
     </div>
   </div>
@@ -83,6 +86,8 @@ const props = defineProps({
     default: () => []
   }
 })
+const emit = defineEmits(['addNote'])
+
 const uiSettings: any = useStorage('UI_SETTINGS', [])
 const realMessage = ref<any>({})
 const collapseValue = ref('reasoning')
@@ -269,6 +274,18 @@ const processSvgInContent = async () => {
       }
     }
   })
+}
+const hanldeAddNote = async () => {
+  try {
+    await ElMessageBox.confirm('确定要添加到blinko笔记吗?', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'info'
+    })
+    emit('addNote', unref(realMessage).content)
+  } catch (error) {
+    console.log(error)
+  }
 }
 watch(
   () => props.message,

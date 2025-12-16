@@ -1,6 +1,5 @@
 import { ref, computed, watch, unref } from 'vue'
 import OpenAI from 'openai'
-import { useStorage } from '@vueuse/core'
 import { useAppStorage } from './useAppStorage.ts'
 import { ElMessage } from 'element-plus'
 
@@ -43,7 +42,9 @@ export function useChat() {
     temperature: 0.7,
     limitContext: 6,
     stream: true,
-    prompt: ''
+    prompt: '',
+    blinkoUrl: '',
+    blinkoToken: ''
   })
   const commonSettings = useAppStorage('COMMON_SETTINGS', settings.value)
 

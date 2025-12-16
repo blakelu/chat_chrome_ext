@@ -11,7 +11,7 @@ export const get = (url: string, params?: object, headers?: object) => {
   })
 }
 
-export const post = (url: string, data?: object, headersType?: string, headers?: object) => {
+export const post = ({ url, data, headersType, headers }: { url: string; data?: object; headersType?: string; headers?: object }) => {
   return axiosInstance({
     url: url,
     method: 'post',
