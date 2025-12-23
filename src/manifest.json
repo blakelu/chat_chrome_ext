@@ -1,7 +1,7 @@
 {
   "name": "CloseAI Chat",
   "description": "AI chat assistant with support for multiple models, image generation, and voice features",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "manifest_version": 3,
   "icons": {
     "16": "assets/icons/icon.png",
