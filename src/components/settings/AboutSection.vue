@@ -2,10 +2,10 @@
   <div class="about-section">
     <img src="@/assets/icons/icon.png" alt="Logo" class="app-logo">
     <h2>CloseAI</h2>
-    <p class="version">v1.0.0</p>
+    <p class="version">v{{ version }}</p>
     
     <div class="badges">
-      <span class="badge version-badge">1.0.0</span>
+      <span class="badge version-badge">{{ version }}</span>
       <span class="badge type-badge">Chrome 扩展</span>
       <span class="badge status-badge">Beta</span>
     </div>
@@ -52,7 +52,7 @@
 </template>
 
 <script setup lang="ts">
-// No script content needed for this component
+import { version } from '../../../package.json'
 </script>
 
 <style lang="less" scoped>
