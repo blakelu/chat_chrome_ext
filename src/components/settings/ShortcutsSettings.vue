@@ -33,6 +33,26 @@
           <el-slider v-model="commonSettings.limitContext" :min="1" :max="10" :step="1" />
         </div>
       </div>
+      <div class="shortcuts-row">
+        <div class="shortcuts-action">Blinko地址</div>
+        <div class="shortcuts-keys">
+          <el-input v-model="commonSettings.blinkoUrl" size="large" placeholder="输入Blinko地址" clearable>
+            <template #prefix>
+              <el-icon><ep-link /></el-icon>
+            </template>
+          </el-input>
+        </div>
+      </div>
+      <div class="shortcuts-row">
+        <div class="shortcuts-action">Blinko Token</div>
+        <div class="shortcuts-keys">
+          <el-input v-model="commonSettings.blinkoToken" size="large" placeholder="输入Blinko Token" clearable>
+            <template #prefix>
+              <el-icon><ep-key /></el-icon>
+            </template>
+          </el-input>
+        </div>
+      </div>
     </div>
     <div class="shortcuts-table">
       <div class="shortcuts-row">
@@ -87,7 +107,9 @@ const settings = ref({
   temperature: 0.7,
   limitContext: 6,
   stream: true,
-  prompt: ''
+  prompt: '',
+  blinkoUrl: '',
+  blinkoToken: ''
 })
 const commonSettings = useAppStorage('COMMON_SETTINGS', settings.value)
 </script>

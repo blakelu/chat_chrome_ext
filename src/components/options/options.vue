@@ -31,7 +31,6 @@
 
 <script setup lang="ts">
 import ApiSettings from '@/components/settings/ApiSettings.vue'
-import ModelSettings from '@/components/settings/ModelSettings.vue'
 import ShortcutsSettings from '@/components/settings/ShortcutsSettings.vue'
 import AboutSection from '@/components/settings/AboutSection.vue'
 import SmartSetting from '@/components/settings/SmartSetting.vue'

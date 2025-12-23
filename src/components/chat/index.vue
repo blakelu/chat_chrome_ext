@@ -1,5 +1,5 @@
 <template>
-  <ChatMessages :messages="chatMessages" :loading="loading" @retry="retryMessage" ref="messagesRef">
+  <ChatMessages :messages="chatMessages" :loading="loading" @retry="retryMessage" @add-note="handleAddNote" ref="messagesRef">
     <template #empty>
       <empty @confirm="emptyConfirm" />
     </template>
@@ -38,16 +38,14 @@
   </div>
   <ChooseModel v-model:show-modal="showModelModal" @select-model="handleChooseModel" @nav-to-config="handleNavToConfig" />
 
-  <RoleSelector
-    v-model:visible="showRoleSelector"
-    @select="handleRoleSelect"
-  />
+  <RoleSelector v-model:visible="showRoleSelector" @select="handleRoleSelect" />
 </template>
 
 <script lang="ts" setup>
 // Import composable
 import { useChat } from '@/composables/useChat.ts'
 import { useAppStorage } from '@/composables/useAppStorage.ts'
+import { addBlinkoNote } from '@/api/index.ts'
 
 // Import components with better organization
 import ChatMessages from './ChatMessages.vue'
@@ -286,11 +284,11 @@ const handleEscape = () => {
 
 async function handleInputEnter() {
   if ((!inputMessage.value && picList.value.length === 0) || composing.value) return
-  
+
   nextTick(() => {
     messagesRef.value?.scrollToBottom()
   })
-  
+
   const result = await processMessage(inputMessage.value, [...picList.value], props.ttsvoice)
 
   // Add to input history
@@ -314,6 +312,19 @@ const emptyConfirm = (data: string) => {
 // Handle role selection
 const handleRoleSelect = (role: any) => {
   selectedRole.value = role
+}
+
+const handleAddNote = async (content: string) => {
+  if (!unref(commonSettings).blinkoUrl) {
+    ElMessage.error('请先配置blinko')
+    chrome.runtime.openOptionsPage()
+    return
+  }
+  const res = await addBlinkoNote({
+    content,
+    type: 0
+  })
+  if (res?.id) ElMessage.success('添加成功')
 }
 
 // Expose methods to parent component
