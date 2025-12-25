@@ -212,7 +212,12 @@ export function useChat() {
   async function handleDallEModelResponse(content: any, temporaryMessageId: number) {
     const { dalleSize: size, dalleStyle: style, quality } = commonSettings.value
     const image = await openai.images.generate({ model: selectMode.value, prompt: content, size, style, quality })
-    const url = `![image](${image.data[0].url})`
+    let url = ''
+    if (image.data[0].url) {
+      url = `![image](${image.data[0].url})`
+    } else if (image.data[0].b64_json) {
+      url = `![image](data:image/jpeg;base64,${image.data[0].b64_json})`
+    }
     updateMessageAndContext(temporaryMessageId - 1, url)
   }
 
