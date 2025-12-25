@@ -1,7 +1,7 @@
 {
   "name": "CloseAI Chat",
   "description": "AI chat assistant with support for multiple models, image generation, and voice features",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "manifest_version": 3,
   "icons": {
     "16": "assets/icons/icon.png",
@@ -18,9 +18,7 @@
     }
   },
   "permissions": ["storage", "sidePanel", "contextMenus", "scripting"],
-  "host_permissions": [
-    "<all_urls>"
-  ],
+  "host_permissions": ["<all_urls>"],
   "options_page": "../options.html",
   "side_panel": {
     "default_path": "popup.html",
