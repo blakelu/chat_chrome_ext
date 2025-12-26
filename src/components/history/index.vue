@@ -4,13 +4,13 @@
       <template #header>
         <div class="drawer-header">
           <h3>历史会话记录</h3>
-          <el-button v-if="historyInfoList.length > 0" size="small" type="danger" @click="clearAllHistory"> 清空历史 </el-button>
+          <el-button v-if="historyList.length > 0" size="small" type="danger" @click="clearAllHistory"> 清空历史 </el-button>
         </div>
       </template>
       <div class="history-content">
         <div
-          v-for="(item, index) in historyInfoList"
-          :key="index"
+          v-for="item in historyList"
+          :key="item.sessionId"
           class="history-item"
           :class="{ current: item.sessionId === sessionId }"
           @click="navToHistory(item)"
@@ -25,13 +25,13 @@
             </div>
             <div class="item-footer">
               <div class="item-time">{{ formatTime(item.timeStr) }}</div>
-              <el-button text type="danger" size="small" class="delete-btn" @click.stop="confirmDelete(index, item)">
+              <el-button text type="danger" size="small" class="delete-btn" @click.stop="confirmDelete(item)">
                 <el-icon><ep-delete /></el-icon>
               </el-button>
             </div>
           </div>
         </div>
-        <div v-if="historyInfoList.length === 0" class="empty-history">
+        <div v-if="historyList.length === 0" class="empty-history">
           <el-empty description="暂无历史记录" :image-size="120">
             <template #image>
               <img src="@/assets/icons/icon.png" class="empty-icon" />
@@ -49,6 +49,7 @@ import { useVModel } from '@vueuse/core'
 import dayjs from 'dayjs'
 import 'dayjs/locale/zh-cn'
 import relativeTime from 'dayjs/plugin/relativeTime'
+import { useHistoryStorage } from '@/composables/useHistoryStorage.ts'
 
 dayjs.extend(relativeTime)
 dayjs.locale('zh-cn')
@@ -59,17 +60,24 @@ const props = defineProps({
 })
 
 const drawer = useVModel(props, 'drawer')
-const historyInfoList = ref([])
+const { data: historyInfoStorage, isReady, waitForReady } = useHistoryStorage()
 
-watch(drawer, (val) => {
-  if (val) {
-    loadHistoryData()
-  }
-})
+// Local list to prevent flickering from reactive storage updates
+const historyList = ref<any[]>([])
 
-const loadHistoryData = () => {
-  historyInfoList.value = JSON.parse(localStorage.historyInfo || '[]')
-}
+// Sync local list ONLY when drawer opens
+watch(
+  drawer,
+  async (val) => {
+    if (val) {
+      // Wait for storage to be ready
+      await waitForReady()
+      // Sync data to local list
+      historyList.value = [...(historyInfoStorage.value || [])]
+    }
+  },
+  { immediate: true }
+)
 
 // Format time to relative or absolute based on how recent
 const formatTime = (timeStr) => {
@@ -103,23 +111,25 @@ const navToHistory = (item) => {
   drawer.value = false
 }
 
-const confirmDelete = async (index, item) => {
+const confirmDelete = async (item: any) => {
   try {
     await ElMessageBox.confirm('确定要删除这条历史记录吗？', '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
-      type: 'warning',
+      type: 'warning'
       // appendTo: '#closeAI-app'
     })
-    removeItem(index, item)
+    removeItem(item)
   } catch (e) {
     // User canceled deletion
   }
 }
 
-const removeItem = (index, item) => {
-  historyInfoList.value.splice(index, 1)
-  localStorage.historyInfo = JSON.stringify(historyInfoList.value)
+const removeItem = (item: any) => {
+  // Use filter to create new array (triggers save with deep: false)
+  historyInfoStorage.value = historyInfoStorage.value.filter((h: any) => h.sessionId !== item.sessionId)
+  // Also update local list
+  historyList.value = historyList.value.filter((h: any) => h.sessionId !== item.sessionId)
   emit('reload')
 }
 
@@ -133,8 +143,8 @@ const clearAllHistory = async () => {
       confirmButtonClass: 'el-button--danger'
     })
 
-    localStorage.historyInfo = JSON.stringify([])
-    historyInfoList.value = []
+    historyInfoStorage.value = []
+    historyList.value = [] // Also clear local list
     emit('reload')
   } catch (e) {
     // User canceled
