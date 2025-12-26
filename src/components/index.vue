@@ -12,14 +12,9 @@
         @updateTtsVoice="ttsvoice = $event"
       />
     </div>
-    
+
     <!-- 历史记录 drawer -->
-    <History 
-      v-model:drawer="historyDrawer" 
-      :sessionId="sessionId" 
-      @navToHistory="navToHistory" 
-      @reload="initLastInfo" 
-    />
+    <History v-model:drawer="historyDrawer" :sessionId="sessionId" @navToHistory="navToHistory" @reload="initLastInfo" />
   </div>
 </template>
 
@@ -30,11 +25,15 @@ import Chatgpt from './chat/index.vue'
 import History from './history/index.vue'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts.ts'
 import { useAppStorage } from '@/composables/useAppStorage.ts'
+import { useHistoryStorage } from '@/composables/useHistoryStorage.ts'
 
 // 设置选中文字带入sidebar默认值
-const selectedTextInSidebar  = useAppStorage('selectedTextInSidebar', true)
+const selectedTextInSidebar = useAppStorage('selectedTextInSidebar', true)
 const smartMenuEnabled = useAppStorage('smartMenuEnabled', true)
 const smartMenuKey = useAppStorage('smartMenuKey', 'Option')
+
+// 历史记录存储 (使用共享实例)
+const { data: historyInfoStorage, waitForReady } = useHistoryStorage()
 
 const contentRef = ref<any>(null)
 const historyDrawer = ref<boolean>(false) // 历史记录弹窗
@@ -81,7 +80,7 @@ useKeyboardShortcuts([
 
 // 根据timeStr距离当前最近的时间，获取上一次的历史记录
 const initLastInfo = () => {
-  const historyInfo = JSON.parse(localStorage.historyInfo || '[]')
+  const historyInfo = historyInfoStorage.value || []
   const lastIndex = historyInfo.findIndex((item: any) => item.isLast)
   if (lastIndex > -1) {
     const { mode, context: con, sessionId: uuid } = historyInfo[lastIndex]
@@ -96,11 +95,13 @@ const initLastInfo = () => {
 }
 
 // Initialize last session on component mount
-initLastInfo()
+waitForReady().then(() => {
+  initLastInfo()
+})
 
 // 模式切换
 const onChangeMode = () => {
-  const historyInfo = JSON.parse(localStorage.historyInfo || '[]')
+  const historyInfo = historyInfoStorage.value || []
   const historyIndex = historyInfo.findIndex((item: any) => item.sessionId === sessionId.value)
   if (historyIndex > -1) {
     const { context } = historyInfo[historyIndex]
@@ -115,7 +116,7 @@ const addNewSession = () => {
     currentContext.value = []
     sessionId.value = uuidv4()
     contentRef.value.clearChat()
-    
+
     ElMessage({
       message: '已创建新对话',
       type: 'success',
@@ -135,7 +136,7 @@ const navToHistory = (item: any) => {
     addNewSession()
     return
   }
-  
+
   const { mode, context: con, sessionId: uuid } = item
   sessionId.value = uuid
   // selectMode.value = mode
@@ -143,9 +144,9 @@ const navToHistory = (item: any) => {
 }
 
 // 保存历史记录
-const saveHistory = (context: { role: string; content: string, title: string }[]) => {
+const saveHistory = (context: { role: string; content: string; title: string }[]) => {
   // if (context.length === 0) return
-  const historyInfo = JSON.parse(localStorage.historyInfo || '[]')
+  const historyInfo = [...(historyInfoStorage.value || [])]
   const historyIndex = historyInfo.findIndex((item: any) => item.sessionId === sessionId.value)
   historyInfo.forEach((item: any) => {
     item.isLast = false
@@ -164,7 +165,7 @@ const saveHistory = (context: { role: string; content: string, title: string }[]
   } else {
     historyInfo.push({ ...item, sessionId: sessionId.value })
   }
-  localStorage.historyInfo = JSON.stringify(historyInfo)
+  historyInfoStorage.value = historyInfo
 }
 </script>
 
@@ -176,7 +177,7 @@ const saveHistory = (context: { role: string; content: string, title: string }[]
   min-height: 260px;
   background-color: #f7f8f9;
   box-sizing: border-box;
-  
+
   .chat-container {
     flex: 1;
     display: flex;
@@ -186,26 +187,26 @@ const saveHistory = (context: { role: string; content: string, title: string }[]
     border-radius: 12px;
     background-color: var(--app-bg-color);
   }
-  
+
   .model-control-panel {
     margin-bottom: 16px;
     padding-bottom: 16px;
     border-bottom: 1px solid var(--app-border-color);
     display: flex;
     justify-content: flex-end;
-    
+
     .action-buttons {
       display: flex;
       gap: 8px;
     }
   }
-  
+
   .settings-panel {
     padding: 16px;
-    
+
     .settings-section {
       margin-bottom: 24px;
-      
+
       .section-title {
         font-size: 16px;
         font-weight: 500;
@@ -214,42 +215,42 @@ const saveHistory = (context: { role: string; content: string, title: string }[]
         padding-bottom: 8px;
         border-bottom: 1px solid var(--app-border-color);
       }
-      
+
       .setting-item {
         margin-bottom: 16px;
         display: flex;
         align-items: center;
-        
+
         .setting-label {
           width: 80px;
           flex-shrink: 0;
           font-size: 14px;
           color: var(--closeai-text-color-regular);
         }
-        
+
         .setting-control {
           flex-grow: 1;
         }
       }
     }
   }
-  
+
   .keyboard-shortcuts-list {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    
+
     .shortcut-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 8px 0;
       border-bottom: 1px solid var(--app-border-color);
-      
+
       &:last-child {
         border-bottom: none;
       }
-      
+
       .shortcut-description {
         font-size: 14px;
         color: var(--app-text-color);
@@ -264,15 +265,15 @@ const saveHistory = (context: { role: string; content: string, title: string }[]
     margin-right: 0;
     border-bottom: 1px solid var(--app-border-color);
   }
-  
+
   :deep(.closeai-dialog__headerbtn) {
     top: 16px;
   }
-  
+
   :deep(.closeai-dialog__body) {
     padding: 20px;
   }
-  
+
   :deep(.closeai-dialog__footer) {
     padding: 12px 20px;
     border-top: 1px solid var(--app-border-color);

@@ -24,6 +24,22 @@ export function useChat() {
     title?: string
   }
 
+  // Queue status interface
+  interface QueueStatus {
+    waiting: number
+    processing: number
+    completed: number
+    isLoading: boolean
+    tasks?: Array<{
+      task_id?: string
+      type: string
+      prompt: string
+      status: string
+      time: string
+      queue_position?: number
+    }>
+  }
+
   // State
   const chatMessages = ref<Message[]>([])
   const chatContext = ref<SubmitMessage[]>([])
@@ -34,6 +50,13 @@ export function useChat() {
   const hiddenText = ref('') // 不展示在聊天记录中的文本
   const picList = ref<string[]>([])
   const selectedRole: any = useAppStorage('selectedRole', null)
+  const queueStatus = ref<QueueStatus>({
+    waiting: 0,
+    processing: 0,
+    completed: 0,
+    isLoading: false,
+    tasks: []
+  })
 
   // Storage
   const apiInfo: any = useAppStorage('API_INFO', { apiKey: '', apiUrl: '' })
@@ -208,17 +231,135 @@ export function useChat() {
     }
   }
 
-  // Handle DALL-E image generation
+  // Fetch queue status from API
+  async function fetchQueueStatus() {
+    try {
+      queueStatus.value.isLoading = true
+
+      // Use fixed queue API endpoint
+      const queueUrl = 'http://comfyui.yepgoods.com/queue'
+      console.log('Fetching queue status from:', queueUrl)
+
+      const response = await fetch(queueUrl, {
+        method: 'GET',
+        headers: { Accept: 'application/json' }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        queueStatus.value = {
+          waiting: data.queue?.waiting ?? 0,
+          processing: data.queue?.processing ?? 0,
+          completed: data.statistics?.total_processed ?? 0,
+          isLoading: false,
+          tasks: [
+            ...(data.processing_tasks || []).map((t: any) => ({ ...t, status: 'processing', time: `${t.processing_time}s` })),
+            ...(data.waiting_tasks || []).map((t: any) => ({ ...t, status: 'waiting', time: `${t.wait_time}s` }))
+          ]
+        }
+        return queueStatus.value
+      } else {
+        // Non-OK response - endpoint might not exist, silently skip
+        console.warn(`Queue status: Server returned ${response.status}`)
+      }
+    } catch (e) {
+      // Silently fail - queue endpoint might not be available on the server
+      // This is not a critical error, just skip queue status display
+      console.warn('Queue status unavailable (this is normal if server does not support /queue endpoint)')
+    } finally {
+      queueStatus.value.isLoading = false
+    }
+    return null
+  }
+
+  // Handle DALL-E image generation with queue status
   async function handleDallEModelResponse(content: any, temporaryMessageId: number) {
     const { dalleSize: size, dalleStyle: style, quality } = commonSettings.value
-    const image = await openai.images.generate({ model: selectMode.value, prompt: content, size, style, quality })
-    let url = ''
-    if (image.data[0].url) {
-      url = `![image](${image.data[0].url})`
-    } else if (image.data[0].b64_json) {
-      url = `![image](data:image/jpeg;base64,${image.data[0].b64_json})`
+    const messageIndex = temporaryMessageId - 1
+    const promptText = String(content)
+
+    // Queue API base URL
+    const queueBaseUrl = 'http://comfyui.yepgoods.com'
+
+    // Helper function to find task by prompt matching
+    async function findMyTaskByPrompt(): Promise<{
+      status: string
+      queue_position?: number
+      total_waiting?: number
+      processing_time?: number
+    } | null> {
+      try {
+        const response = await fetch(`${queueBaseUrl}/queue/find`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: promptText })
+        })
+        if (response.ok) {
+          return await response.json()
+        }
+      } catch (e) {
+        console.warn('Failed to find task:', e)
+      }
+      return null
     }
-    updateMessageAndContext(temporaryMessageId - 1, url)
+
+    // Helper function to format queue status message
+    async function formatQueueMessage(): Promise<string> {
+      // Fetch overall queue status
+      await fetchQueueStatus()
+      // Find my task by prompt
+      const myStatus = await findMyTaskByPrompt()
+
+      let statusLine = `**队列状态**: 等待 ${queueStatus.value.waiting} | 处理中 ${queueStatus.value.processing}`
+
+      if (myStatus && myStatus.status !== 'not_found') {
+        if (myStatus.status === 'processing') {
+          statusLine += `\n🔄 **您的任务**: 正在处理中...`
+        } else if (myStatus.status === 'waiting' && myStatus.queue_position) {
+          statusLine += `\n⏳ **您的位置**: 第 ${myStatus.queue_position} 位（共 ${myStatus.total_waiting || queueStatus.value.waiting} 个等待中）`
+        }
+      } else {
+        // Task not found - either not yet in queue or already completed
+        statusLine += `\n📝 **您的任务**: 等待进入队列...`
+      }
+
+      return `⏳ 正在排队中...\n${statusLine}\n\n正在生成图片，请稍候...`
+    }
+
+    // Show initial loading message
+    chatMessages.value[messageIndex].content = '⏳ 正在提交任务...'
+
+    // Start polling queue status
+    const pollInterval = setInterval(async () => {
+      if (chatMessages.value[messageIndex] && !chatMessages.value[messageIndex].content?.startsWith('![image]')) {
+        chatMessages.value[messageIndex].content = await formatQueueMessage()
+      }
+    }, 1500)
+
+    try {
+      // Use OpenAI SDK for image generation
+      const image = await openai.images.generate({
+        model: selectMode.value,
+        prompt: promptText,
+        size,
+        style,
+        quality
+      })
+
+      clearInterval(pollInterval)
+
+      let url = ''
+      if (image.data[0].url) {
+        url = `![image](${image.data[0].url})`
+      } else if (image.data[0].b64_json) {
+        url = `![image](data:image/jpeg;base64,${image.data[0].b64_json})`
+      }
+
+      updateMessageAndContext(messageIndex, url)
+    } catch (error) {
+      clearInterval(pollInterval)
+      throw error
+    }
   }
 
   // Handle TTS audio generation
@@ -550,6 +691,7 @@ export function useChat() {
     hiddenText,
     picList,
     selectedRole,
+    queueStatus,
 
     // Storage
     apiInfo,
@@ -573,6 +715,7 @@ export function useChat() {
     updateMessageAndContext,
     sendMessage,
     processMessage,
-    retryMessage
+    retryMessage,
+    fetchQueueStatus
   }
 }
